@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMO 點餐 - 管理員</title>
+<link rel="stylesheet" href="style.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<main class="card">
+  <h1>管理員後台</h1>
+  <p class="hint">僅限白名單管理員。</p>
+
+  <fieldset>
+    <legend>當日訂單統計</legend>
+    <label>日期
+      <input type="date" id="statsDate">
+    </label>
+    <button type="button" id="statsBtn" class="secondary">查詢</button>
+
+    <div id="statsResult" hidden>
+      <div class="stats-grid">
+        <div class="stat"><span class="stat-num" id="cTotal">0</span><span>總筆數</span></div>
+        <div class="stat"><span class="stat-num" id="cBreakfast">0</span><span>早餐</span></div>
+        <div class="stat"><span class="stat-num" id="cLunchA">0</span><span>中餐 A</span></div>
+        <div class="stat"><span class="stat-num" id="cLunchB">0</span><span>中餐 B</span></div>
+        <div class="stat"><span class="stat-num" id="cLunchC">0</span><span>中餐 C</span></div>
+        <div class="stat"><span class="stat-num" id="cDinner">0</span><span>晚餐</span></div>
+      </div>
+      <details class="order-list">
+        <summary>訂單明細 (<span id="cListTotal">0</span> 筆)</summary>
+        <div id="orderList"></div>
+      </details>
+    </div>
+  </fieldset>
+
+  <h2>每日餐點維護</h2>
+  <form id="menuForm">
+    <label>早餐
+      <input name="早餐" placeholder="例：燒餅油條 / 飯糰 / 三明治">
+    </label>
+    <label>中餐 A
+      <input name="中餐A" placeholder="例：滷雞腿便當">
+    </label>
+    <label>中餐 B
+      <input name="中餐B" placeholder="例：排骨便當">
+    </label>
+    <label>中餐 C
+      <input name="中餐C" placeholder="例：素食便當">
+    </label>
+    <label>晚餐
+      <input name="晚餐" placeholder="例：紅燒牛肉麵">
+    </label>
+
+    <button type="submit" id="submitBtn">儲存</button>
+  </form>
+
+  <p id="msg" class="msg" hidden></p>
+  <p class="footer"><a href="order.html">回訂餐頁</a></p>
+</main>
+
+<script>
+const LIFF_ID = '__PASTE_LIFF_ID__';
+const API_URL = '__PASTE_GAS_WEBAPP_URL__';
+
+let idToken = '';
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    idToken = liff.getIDToken() || '';
+  } catch (e) {
+    showMsg('LIFF 初始化失敗：' + e.message, true);
+    return;
+  }
+  await loadMenu();
+  document.getElementById('menuForm').addEventListener('submit', onSubmit);
+
+  document.getElementById('statsDate').valueAsDate = new Date();
+  document.getElementById('statsBtn').addEventListener('click', loadStats);
+}
+
+async function loadStats() {
+  const date = document.getElementById('statsDate').value;
+  if (!date) { showMsg('請選擇日期', true); return; }
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'stats', idToken, date }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '查詢失敗');
+    renderStats(data);
+  } catch (e) {
+    showMsg('統計查詢失敗：' + e.message, true);
+  }
+}
+
+function renderStats(data) {
+  const c = data.counts;
+  document.getElementById('cTotal').textContent     = data.total;
+  document.getElementById('cBreakfast').textContent = c.breakfast;
+  document.getElementById('cLunchA').textContent    = c.lunchA;
+  document.getElementById('cLunchB').textContent    = c.lunchB;
+  document.getElementById('cLunchC').textContent    = c.lunchC;
+  document.getElementById('cDinner').textContent    = c.dinner;
+  document.getElementById('cListTotal').textContent = data.total;
+
+  const list = document.getElementById('orderList');
+  list.innerHTML = '';
+  data.orders.forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'order-row';
+    const meals = [
+      o.breakfast && `早:${o.breakfast}`,
+      o.lunch     && `午:${o.lunch}`,
+      o.dinner    && `晚:${o.dinner}`,
+    ].filter(Boolean).join('  ');
+    div.innerHTML = `
+      <div class="order-head"><strong>${escapeHtml(o.name)}</strong> ${escapeHtml(o.phone)}</div>
+      <div class="order-meals">${escapeHtml(meals)}</div>
+      ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
+    `;
+    list.appendChild(div);
+  });
+  document.getElementById('statsResult').hidden = false;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+async function loadMenu() {
+  try {
+    const res = await fetch(API_URL + '?action=menu');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    Object.entries(data.menu).forEach(([k, v]) => {
+      const el = document.querySelector(`input[name="${k}"]`);
+      if (el) el.value = v;
+    });
+  } catch (e) {
+    showMsg('載入菜單失敗：' + e.message, true);
+  }
+}
+
+async function onSubmit(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+
+  const fd = new FormData(ev.target);
+  const menu = Object.fromEntries(fd.entries());
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'updateMenu', idToken, menu }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '儲存失敗');
+    showMsg('已更新');
+  } catch (e) {
+    showMsg('儲存失敗：' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showMsg(text, isErr) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.hidden = false;
+}
+
+init();
+</script>
+</body>
+</html>

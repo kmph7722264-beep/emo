@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMO 電子點餐</title>
+<link rel="stylesheet" href="style.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<main class="card">
+  <h1>EMO 電子點餐</h1>
+
+  <form id="orderForm">
+    <fieldset>
+      <legend>訂購人資訊</legend>
+      <label>單位 / 姓名 <span class="req">*</span>
+        <input name="name" required autocomplete="name">
+      </label>
+      <label>電話 <span class="req">*</span>
+        <input name="phone" type="tel" required autocomplete="tel" inputmode="tel">
+      </label>
+      <label>訂購日期 <span class="req">*</span>
+        <input name="date" type="date" required>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>訂購餐點</legend>
+      <label>早餐
+        <select name="breakfast">
+          <option value="">不訂購</option>
+          <option data-menu="早餐"></option>
+        </select>
+      </label>
+      <label>中餐便當
+        <select name="lunch">
+          <option value="">不訂購</option>
+          <option data-menu="中餐A" data-prefix="A 餐："></option>
+          <option data-menu="中餐B" data-prefix="B 餐："></option>
+          <option data-menu="中餐C" data-prefix="C 餐："></option>
+        </select>
+      </label>
+      <label>晚餐便當
+        <select name="dinner">
+          <option value="">不訂購</option>
+          <option data-menu="晚餐"></option>
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>備註</legend>
+      <textarea name="note" rows="3" placeholder="特殊需求、過敏、辣度…"></textarea>
+    </fieldset>
+
+    <button type="submit" id="submitBtn">送出訂單</button>
+  </form>
+
+  <p id="msg" class="msg" hidden></p>
+  <p class="footer"><a href="admin.html">管理者入口</a></p>
+</main>
+
+<script>
+const LIFF_ID = '__PASTE_LIFF_ID__';
+const API_URL = '__PASTE_GAS_WEBAPP_URL__';
+
+let idToken = '';
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    idToken = liff.getIDToken() || '';
+  } catch (e) {
+    console.warn('LIFF init failed, fallback to anonymous:', e);
+  }
+
+  // 預設日期為今天
+  document.querySelector('input[name="date"]').valueAsDate = new Date();
+
+  await loadMenu();
+  document.getElementById('orderForm').addEventListener('submit', onSubmit);
+}
+
+async function loadMenu() {
+  try {
+    const res = await fetch(API_URL + '?action=menu');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    document.querySelectorAll('option[data-menu]').forEach(opt => {
+      const key = opt.dataset.menu;
+      const prefix = opt.dataset.prefix || '';
+      const name = data.menu[key] || '';
+      if (!name) {
+        opt.remove();
+        return;
+      }
+      opt.value = prefix + name;
+      opt.textContent = prefix + name;
+    });
+  } catch (e) {
+    showMsg('載入菜單失敗：' + e.message, true);
+  }
+}
+
+async function onSubmit(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  const fd = new FormData(ev.target);
+  const order = Object.fromEntries(fd.entries());
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
+      body: JSON.stringify({ action: 'order', idToken, order }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '送出失敗');
+    showMsg('訂單已送出，感謝您！');
+    ev.target.reset();
+    document.querySelector('input[name="date"]').valueAsDate = new Date();
+  } catch (e) {
+    showMsg('送出失敗：' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showMsg(text, isErr) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.hidden = false;
+}
+
+init();
+</script>
+</body>
+</html>
