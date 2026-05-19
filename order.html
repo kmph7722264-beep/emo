@@ -14,10 +14,13 @@
   <form id="orderForm">
     <fieldset>
       <legend>訂購人資訊</legend>
-      <label>單位 / 姓名 <span class="req">*</span>
+      <label>單位 <span class="req">*</span>
+        <input name="unit" required autocomplete="organization">
+      </label>
+      <label>訂購人 <span class="req">*</span>
         <input name="name" required autocomplete="name">
       </label>
-      <label>電話 <span class="req">*</span>
+      <label>警用電話 <span class="req">*</span>
         <input name="phone" type="tel" required autocomplete="tel" inputmode="tel">
       </label>
       <label>訂購日期 <span class="req">*</span>
@@ -36,10 +39,11 @@
       <label>中餐便當
         <select name="lunch">
           <option value="">不訂購</option>
-          <option data-menu="中餐A" data-prefix="A 餐："></option>
-          <option data-menu="中餐B" data-prefix="B 餐："></option>
-          <option data-menu="中餐C" data-prefix="C 餐："></option>
+          <option data-menu="中餐A" data-prefix="A 餐：" data-lunch="A"></option>
+          <option data-menu="中餐B" data-prefix="B 餐：" data-lunch="B"></option>
+          <option data-menu="中餐C" data-prefix="C 餐：" data-lunch="C"></option>
         </select>
+        <small class="field-hint" id="lunchRemaining">每日上限 40 份，剩餘量載入中…</small>
       </label>
       <label>晚餐便當
         <select name="dinner">
@@ -77,15 +81,19 @@ async function init() {
   }
 
   // 預設日期為今天
-  document.querySelector('input[name="date"]').valueAsDate = new Date();
+  const dateInput = document.querySelector('input[name="date"]');
+  dateInput.valueAsDate = new Date();
 
   await loadMenu();
+  dateInput.addEventListener('change', loadMenu);
   document.getElementById('orderForm').addEventListener('submit', onSubmit);
 }
 
 async function loadMenu() {
   try {
-    const res = await fetch(API_URL + '?action=menu');
+    const date = document.querySelector('input[name="date"]').value || '';
+    const url = API_URL + '?action=menu' + (date ? '&date=' + encodeURIComponent(date) : '');
+    const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     document.querySelectorAll('option[data-menu]').forEach(opt => {
@@ -96,9 +104,35 @@ async function loadMenu() {
         opt.remove();
         return;
       }
-      opt.value = prefix + name;
-      opt.textContent = prefix + name;
+      const baseLabel = prefix + name;
+      opt.value = baseLabel;
+      const lunchKey = opt.dataset.lunch;
+      if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
+        const left = data.remaining[lunchKey];
+        opt.textContent = `${baseLabel}（剩 ${left}）`;
+        opt.disabled = left <= 0;
+      } else {
+        opt.textContent = baseLabel;
+      }
     });
+
+    // 中餐剩餘量小字
+    const hint = document.getElementById('lunchRemaining');
+    if (hint) {
+      if (data.remaining) {
+        const r = data.remaining;
+        const limit = data.limit || 40;
+        hint.textContent = `每日上限 ${limit} 份｜A 剩 ${r.A} ／ B 剩 ${r.B} ／ C 剩 ${r.C}`;
+      } else {
+        hint.textContent = '';
+      }
+    }
+
+    // 若目前選到的中餐已達上限，清掉它
+    const lunchSel = document.querySelector('select[name="lunch"]');
+    if (lunchSel && lunchSel.selectedOptions[0] && lunchSel.selectedOptions[0].disabled) {
+      lunchSel.value = '';
+    }
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
   }
@@ -119,9 +153,11 @@ async function onSubmit(ev) {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
-    showMsg('訂單已送出，感謝您！');
+    const noText = data.orderNo ? `　您的訂單編號：${data.orderNo}（請於領餐時出示）` : '';
+    showMsg('訂單已送出，感謝您！' + noText);
     ev.target.reset();
     document.querySelector('input[name="date"]').valueAsDate = new Date();
+    await loadMenu();
   } catch (e) {
     showMsg('送出失敗：' + e.message, true);
   } finally {

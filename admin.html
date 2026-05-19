@@ -27,16 +27,41 @@
         <div class="stat"><span class="stat-num" id="cLunchB">0</span><span>中餐 B</span></div>
         <div class="stat"><span class="stat-num" id="cLunchC">0</span><span>中餐 C</span></div>
         <div class="stat"><span class="stat-num" id="cDinner">0</span><span>晚餐</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cPicked">0</span><span>已領餐</span></div>
+        <div class="stat stat-unpicked"><span class="stat-num" id="cUnpicked">0</span><span>未領餐</span></div>
       </div>
-      <details class="order-list">
+
+      <details class="order-list" open>
         <summary>訂單明細 (<span id="cListTotal">0</span> 筆)</summary>
+        <label class="filter-row">
+          <input type="checkbox" id="filterUnpicked"> 只看未領餐
+        </label>
         <div id="orderList"></div>
       </details>
     </div>
   </fieldset>
 
+  <fieldset>
+    <legend>領餐快速查詢</legend>
+    <label>訂單編號
+      <input type="text" id="pickupNo" placeholder="例：20260520-001" autocomplete="off" inputmode="text">
+    </label>
+    <div class="btn-row">
+      <button type="button" id="pickupFindBtn" class="secondary">查詢</button>
+    </div>
+    <div id="pickupResult" hidden></div>
+  </fieldset>
+
   <h2>每日餐點維護</h2>
+  <p class="hint">可指定特定日期；新日期可直接儲存（系統先帶入最近一日的菜單作為基底）。</p>
   <form id="menuForm">
+    <label>適用日期
+      <input type="date" id="menuDate">
+    </label>
+    <div class="btn-row">
+      <button type="button" id="menuLoadBtn" class="secondary">載入該日菜單</button>
+    </div>
+
     <label>早餐
       <input name="早餐" placeholder="例：燒餅油條 / 飯糰 / 三明治">
     </label>
@@ -53,7 +78,7 @@
       <input name="晚餐" placeholder="例：紅燒牛肉麵">
     </label>
 
-    <button type="submit" id="submitBtn">儲存</button>
+    <button type="submit" id="submitBtn">儲存當日菜單</button>
   </form>
 
   <p id="msg" class="msg" hidden></p>
@@ -65,6 +90,7 @@ const LIFF_ID = '2010095803-1ayMPRJ6';
 const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
+let lastStats = null;
 
 async function init() {
   try {
@@ -75,58 +101,228 @@ async function init() {
     showMsg('LIFF 初始化失敗：' + e.message, true);
     return;
   }
-  await loadMenu();
-  document.getElementById('menuForm').addEventListener('submit', onSubmit);
 
-  document.getElementById('statsDate').valueAsDate = new Date();
+  const today = new Date();
+  document.getElementById('statsDate').valueAsDate = today;
+  document.getElementById('menuDate').valueAsDate  = today;
+
+  await loadMenuForDate(toDateStr(today));
+
   document.getElementById('statsBtn').addEventListener('click', loadStats);
+  document.getElementById('menuLoadBtn').addEventListener('click', () => {
+    const d = document.getElementById('menuDate').value;
+    if (!d) { showMsg('請選擇日期', true); return; }
+    loadMenuForDate(d);
+  });
+  document.getElementById('menuForm').addEventListener('submit', onSubmitMenu);
+  document.getElementById('pickupFindBtn').addEventListener('click', onFindOrder);
+  document.getElementById('pickupNo').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); onFindOrder(); }
+  });
+  document.getElementById('filterUnpicked').addEventListener('change', renderOrderList);
+}
+
+function toDateStr(d) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
 }
 
 async function loadStats() {
   const date = document.getElementById('statsDate').value;
   if (!date) { showMsg('請選擇日期', true); return; }
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'stats', idToken, date }),
-    });
-    const data = await res.json();
+    const data = await postJson({ action: 'stats', idToken, date });
     if (!data.ok) throw new Error(data.error || '查詢失敗');
-    renderStats(data);
+    lastStats = data;
+    renderStats();
   } catch (e) {
     showMsg('統計查詢失敗：' + e.message, true);
   }
 }
 
-function renderStats(data) {
-  const c = data.counts;
-  document.getElementById('cTotal').textContent     = data.total;
+function renderStats() {
+  if (!lastStats) return;
+  const c = lastStats.counts;
+  document.getElementById('cTotal').textContent     = lastStats.total;
   document.getElementById('cBreakfast').textContent = c.breakfast;
   document.getElementById('cLunchA').textContent    = c.lunchA;
   document.getElementById('cLunchB').textContent    = c.lunchB;
   document.getElementById('cLunchC').textContent    = c.lunchC;
   document.getElementById('cDinner').textContent    = c.dinner;
-  document.getElementById('cListTotal').textContent = data.total;
+  document.getElementById('cPicked').textContent    = c.picked;
+  document.getElementById('cUnpicked').textContent  = c.unpicked;
+  document.getElementById('cListTotal').textContent = lastStats.total;
+  document.getElementById('statsResult').hidden = false;
+  renderOrderList();
+}
 
+function renderOrderList() {
+  if (!lastStats) return;
+  const onlyUnpicked = document.getElementById('filterUnpicked').checked;
   const list = document.getElementById('orderList');
   list.innerHTML = '';
-  data.orders.forEach(o => {
-    const div = document.createElement('div');
-    div.className = 'order-row';
-    const meals = [
-      o.breakfast && `早:${o.breakfast}`,
-      o.lunch     && `午:${o.lunch}`,
-      o.dinner    && `晚:${o.dinner}`,
-    ].filter(Boolean).join('  ');
-    div.innerHTML = `
-      <div class="order-head"><strong>${escapeHtml(o.name)}</strong> ${escapeHtml(o.phone)}</div>
-      <div class="order-meals">${escapeHtml(meals)}</div>
-      ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
-    `;
-    list.appendChild(div);
+  const filtered = lastStats.orders.filter(o => !onlyUnpicked || !o.picked);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-hint">無符合條件的訂單</div>';
+    return;
+  }
+
+  filtered.forEach(o => list.appendChild(buildOrderCard(o)));
+}
+
+function buildOrderCard(o) {
+  const div = document.createElement('div');
+  div.className = 'order-row' + (o.picked ? ' picked' : ' unpicked');
+
+  const meals = [
+    o.breakfast && `早:${o.breakfast}`,
+    o.lunch     && `午:${o.lunch}`,
+    o.dinner    && `晚:${o.dinner}`,
+  ].filter(Boolean).join('　');
+
+  const headLeft = [
+    o.unit && escapeHtml(o.unit),
+    `<strong>${escapeHtml(o.name)}</strong>`,
+    o.phone && escapeHtml(o.phone),
+  ].filter(Boolean).join('｜');
+
+  const orderNoHtml = o.orderNo
+    ? `<span class="order-no">${escapeHtml(o.orderNo)}</span>` : '';
+  const badgeHtml = o.picked
+    ? `<span class="badge picked">已領 ✓</span>`
+    : `<span class="badge unpicked">未領</span>`;
+
+  const actionHtml = o.picked
+    ? `<button type="button" class="btn-mini btn-undo" data-action="unpick" data-order="${escapeHtml(o.orderNo)}">取消已領</button>`
+    : `<button type="button" class="btn-mini btn-pick" data-action="pick"   data-order="${escapeHtml(o.orderNo)}">標記已領</button>`;
+
+  div.innerHTML = `
+    <div class="order-head">
+      ${orderNoHtml}${badgeHtml}
+      <div class="order-meta">${headLeft}</div>
+    </div>
+    <div class="order-meals">${escapeHtml(meals)}</div>
+    ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
+    <div class="order-actions">${actionHtml}</div>
+  `;
+
+  div.querySelector('button[data-action]').addEventListener('click', async ev => {
+    const orderNo = ev.currentTarget.dataset.order;
+    const picked  = ev.currentTarget.dataset.action === 'pick';
+    await markPickup(orderNo, picked);
   });
-  document.getElementById('statsResult').hidden = false;
+  return div;
+}
+
+async function markPickup(orderNo, picked) {
+  if (!orderNo) { showMsg('此筆訂單無編號，無法標記', true); return; }
+  try {
+    const data = await postJson({ action: 'markPickup', idToken, orderNo, picked });
+    if (!data.ok) throw new Error(data.error || '更新失敗');
+    showMsg(`${orderNo} 已${picked ? '標記為已領' : '取消已領'}`);
+    if (lastStats) {
+      const o = lastStats.orders.find(x => x.orderNo === orderNo);
+      if (o) {
+        const wasPicked = o.picked;
+        o.picked = picked;
+        o.pickedAt = picked ? new Date().toISOString() : '';
+        if (wasPicked !== picked) {
+          lastStats.counts.picked   += picked ? 1 : -1;
+          lastStats.counts.unpicked -= picked ? 1 : -1;
+        }
+        renderStats();
+      }
+    }
+    // 若是從快速查單觸發的，更新該卡片
+    refreshPickupCard(orderNo, picked);
+  } catch (e) {
+    showMsg('標記失敗：' + e.message, true);
+  }
+}
+
+async function onFindOrder() {
+  const orderNo = document.getElementById('pickupNo').value.trim();
+  if (!orderNo) { showMsg('請輸入訂單編號', true); return; }
+  try {
+    const data = await postJson({ action: 'findOrder', idToken, orderNo });
+    if (!data.ok) throw new Error(data.error || '查無此單');
+    renderPickupResult(data.order);
+  } catch (e) {
+    renderPickupError(e.message);
+  }
+}
+
+function renderPickupResult(o) {
+  const box = document.getElementById('pickupResult');
+  const meals = [
+    o.breakfast && `早:${o.breakfast}`,
+    o.lunch     && `午:${o.lunch}`,
+    o.dinner    && `晚:${o.dinner}`,
+  ].filter(Boolean).join('　');
+  const headLeft = [
+    o.unit && escapeHtml(o.unit),
+    `<strong>${escapeHtml(o.name)}</strong>`,
+    o.phone && escapeHtml(o.phone),
+  ].filter(Boolean).join('｜');
+
+  const badge = o.picked
+    ? `<span class="badge picked">已領 ✓</span>`
+    : `<span class="badge unpicked">未領</span>`;
+  const action = o.picked
+    ? `<button type="button" class="btn-mini btn-undo" data-action="unpick" data-order="${escapeHtml(o.orderNo)}">取消已領</button>`
+    : `<button type="button" class="btn-mini btn-pick" data-action="pick"   data-order="${escapeHtml(o.orderNo)}">標記已領</button>`;
+
+  box.hidden = false;
+  box.className = 'pickup-card ' + (o.picked ? 'picked' : 'unpicked');
+  box.innerHTML = `
+    <div class="order-head">
+      <span class="order-no">${escapeHtml(o.orderNo)}</span>${badge}
+      <div class="order-meta">${headLeft}</div>
+    </div>
+    <div class="order-meals">日期 ${escapeHtml(o.date)}　${escapeHtml(meals)}</div>
+    ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
+    ${o.pickedAt ? `<div class="order-note">領餐時間：${escapeHtml(formatLocal(o.pickedAt))}</div>` : ''}
+    <div class="order-actions">${action}</div>
+  `;
+  box.querySelector('button[data-action]').addEventListener('click', async ev => {
+    const orderNo = ev.currentTarget.dataset.order;
+    const picked  = ev.currentTarget.dataset.action === 'pick';
+    await markPickup(orderNo, picked);
+  });
+}
+
+function refreshPickupCard(orderNo, picked) {
+  const box = document.getElementById('pickupResult');
+  if (box.hidden) return;
+  const cur = box.querySelector('.order-no');
+  if (!cur || cur.textContent !== orderNo) return;
+  // 重新查單以反映最新狀態
+  onFindOrder();
+}
+
+function renderPickupError(msg) {
+  const box = document.getElementById('pickupResult');
+  box.hidden = false;
+  box.className = 'pickup-card err';
+  box.innerHTML = `<div class="order-note err">${escapeHtml(msg)}</div>`;
+}
+
+function formatLocal(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function escapeHtml(s) {
@@ -135,9 +331,10 @@ function escapeHtml(s) {
   }[c]));
 }
 
-async function loadMenu() {
+async function loadMenuForDate(date) {
   try {
-    const res = await fetch(API_URL + '?action=menu');
+    const url = API_URL + '?action=menu' + (date ? '&date=' + encodeURIComponent(date) : '');
+    const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     Object.entries(data.menu).forEach(([k, v]) => {
@@ -149,23 +346,21 @@ async function loadMenu() {
   }
 }
 
-async function onSubmit(ev) {
+async function onSubmitMenu(ev) {
   ev.preventDefault();
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
+
+  const date = document.getElementById('menuDate').value;
+  if (!date) { showMsg('請選擇日期', true); btn.disabled = false; return; }
 
   const fd = new FormData(ev.target);
   const menu = Object.fromEntries(fd.entries());
 
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'updateMenu', idToken, menu }),
-    });
-    const data = await res.json();
+    const data = await postJson({ action: 'updateMenu', idToken, date, menu });
     if (!data.ok) throw new Error(data.error || '儲存失敗');
-    showMsg('已更新');
+    showMsg(`已更新 ${date} 的菜單`);
   } catch (e) {
     showMsg('儲存失敗：' + e.message, true);
   } finally {
