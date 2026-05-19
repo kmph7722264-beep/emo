@@ -61,6 +61,7 @@
     <div class="btn-row">
       <button type="button" id="menuLoadBtn" class="secondary">載入該日菜單</button>
     </div>
+    <small class="field-hint" id="menuOrdered">當日已訂數量載入中…</small>
 
     <label>早餐
       <input name="早餐" placeholder="例：燒餅油條 / 飯糰 / 三明治">
@@ -87,7 +88,7 @@
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycby0WSA9THEjZNqtLftEGLzI6x57Pi3_rVxbVAOKuMqr0WTmu217ieXhr47WiZ3dn5DeMA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -107,8 +108,9 @@ async function init() {
   document.getElementById('menuDate').valueAsDate  = today;
 
   await loadMenuForDate(toDateStr(today));
+  await loadStats({ silent: true });
 
-  document.getElementById('statsBtn').addEventListener('click', loadStats);
+  document.getElementById('statsBtn').addEventListener('click', () => loadStats());
   document.getElementById('menuLoadBtn').addEventListener('click', () => {
     const d = document.getElementById('menuDate').value;
     if (!d) { showMsg('請選擇日期', true); return; }
@@ -136,16 +138,17 @@ async function postJson(payload) {
   return res.json();
 }
 
-async function loadStats() {
+async function loadStats(opts) {
+  const silent = !!(opts && opts.silent);
   const date = document.getElementById('statsDate').value;
-  if (!date) { showMsg('請選擇日期', true); return; }
+  if (!date) { if (!silent) showMsg('請選擇日期', true); return; }
   try {
     const data = await postJson({ action: 'stats', idToken, date });
     if (!data.ok) throw new Error(data.error || '查詢失敗');
     lastStats = data;
     renderStats();
   } catch (e) {
-    showMsg('統計查詢失敗：' + e.message, true);
+    if (!silent) showMsg('統計查詢失敗：' + e.message, true);
   }
 }
 
@@ -332,6 +335,7 @@ function escapeHtml(s) {
 }
 
 async function loadMenuForDate(date) {
+  const hint = document.getElementById('menuOrdered');
   try {
     const url = API_URL + '?action=menu' + (date ? '&date=' + encodeURIComponent(date) : '');
     const res = await fetch(url);
@@ -341,7 +345,17 @@ async function loadMenuForDate(date) {
       const el = document.querySelector(`input[name="${k}"]`);
       if (el) el.value = v;
     });
+    if (hint) {
+      if (data.remaining && typeof data.limit === 'number') {
+        const r = data.remaining, lim = data.limit;
+        hint.textContent =
+          `${data.date || date} 中餐已訂｜A ${lim - r.A}／B ${lim - r.B}／C ${lim - r.C}（上限 ${lim}）`;
+      } else {
+        hint.textContent = '';
+      }
+    }
   } catch (e) {
+    if (hint) hint.textContent = '';
     showMsg('載入菜單失敗：' + e.message, true);
   }
 }
