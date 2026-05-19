@@ -23,12 +23,13 @@
       <div class="stats-grid">
         <div class="stat"><span class="stat-num" id="cTotal">0</span><span>總筆數</span></div>
         <div class="stat"><span class="stat-num" id="cBreakfast">0</span><span>早餐</span></div>
+        <div class="stat"><span class="stat-num" id="cDinner">0</span><span>晚餐</span></div>
         <div class="stat"><span class="stat-num" id="cLunchA">0</span><span>中餐 A</span></div>
         <div class="stat"><span class="stat-num" id="cLunchB">0</span><span>中餐 B</span></div>
         <div class="stat"><span class="stat-num" id="cLunchC">0</span><span>中餐 C</span></div>
-        <div class="stat"><span class="stat-num" id="cDinner">0</span><span>晚餐</span></div>
-        <div class="stat stat-picked"><span class="stat-num" id="cPicked">0</span><span>已領餐</span></div>
-        <div class="stat stat-unpicked"><span class="stat-num" id="cUnpicked">0</span><span>未領餐</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cBreakfastPicked">0/0</span><span>早餐已領</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cLunchPicked">0/0</span><span>中餐已領</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cDinnerPicked">0/0</span><span>晚餐已領</span></div>
       </div>
 
       <details class="order-list" open>
@@ -88,7 +89,7 @@
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycby0WSA9THEjZNqtLftEGLzI6x57Pi3_rVxbVAOKuMqr0WTmu217ieXhr47WiZ3dn5DeMA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -155,14 +156,16 @@ async function loadStats(opts) {
 function renderStats() {
   if (!lastStats) return;
   const c = lastStats.counts;
+  const lunchTotal = (c.lunchA || 0) + (c.lunchB || 0) + (c.lunchC || 0) + (c.lunchOther || 0);
   document.getElementById('cTotal').textContent     = lastStats.total;
   document.getElementById('cBreakfast').textContent = c.breakfast;
+  document.getElementById('cDinner').textContent    = c.dinner;
   document.getElementById('cLunchA').textContent    = c.lunchA;
   document.getElementById('cLunchB').textContent    = c.lunchB;
   document.getElementById('cLunchC').textContent    = c.lunchC;
-  document.getElementById('cDinner').textContent    = c.dinner;
-  document.getElementById('cPicked').textContent    = c.picked;
-  document.getElementById('cUnpicked').textContent  = c.unpicked;
+  document.getElementById('cBreakfastPicked').textContent = `${c.breakfastPicked}/${c.breakfast}`;
+  document.getElementById('cLunchPicked').textContent     = `${c.lunchPicked}/${lunchTotal}`;
+  document.getElementById('cDinnerPicked').textContent    = `${c.dinnerPicked}/${c.dinner}`;
   document.getElementById('cListTotal').textContent = lastStats.total;
   document.getElementById('statsResult').hidden = false;
   renderOrderList();
@@ -173,7 +176,7 @@ function renderOrderList() {
   const onlyUnpicked = document.getElementById('filterUnpicked').checked;
   const list = document.getElementById('orderList');
   list.innerHTML = '';
-  const filtered = lastStats.orders.filter(o => !onlyUnpicked || !o.picked);
+  const filtered = lastStats.orders.filter(o => !onlyUnpicked || hasUnpickedMeal(o));
 
   if (filtered.length === 0) {
     list.innerHTML = '<div class="empty-hint">無符合條件的訂單</div>';
@@ -183,15 +186,45 @@ function renderOrderList() {
   filtered.forEach(o => list.appendChild(buildOrderCard(o)));
 }
 
+function hasUnpickedMeal(o) {
+  return (o.breakfast && !o.breakfastPicked) ||
+         (o.lunch     && !o.lunchPicked) ||
+         (o.dinner    && !o.dinnerPicked);
+}
+
+function mealLabel(meal) {
+  return ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal] || meal;
+}
+
+function buildMealRowsHtml(o) {
+  const meals = [
+    { key: 'breakfast', label: '早', name: o.breakfast, picked: o.breakfastPicked },
+    { key: 'lunch',     label: '午', name: o.lunch,     picked: o.lunchPicked },
+    { key: 'dinner',    label: '晚', name: o.dinner,    picked: o.dinnerPicked },
+  ];
+  const orderAttr = escapeHtml(o.orderNo || '');
+  return meals.filter(m => m.name).map(m => {
+    const badge = m.picked
+      ? `<span class="badge picked">已領 ✓</span>`
+      : `<span class="badge unpicked">未領</span>`;
+    const btn = m.picked
+      ? `<button type="button" class="btn-mini btn-undo" data-meal="${m.key}" data-action="unpick" data-order="${orderAttr}">取消已領</button>`
+      : `<button type="button" class="btn-mini btn-pick" data-meal="${m.key}" data-action="pick"   data-order="${orderAttr}">標記已領</button>`;
+    return `
+      <div class="meal-row ${m.picked ? 'picked' : 'unpicked'}">
+        <span class="meal-label">${m.label}</span>
+        <span class="meal-name">${escapeHtml(m.name)}</span>
+        ${badge}
+        ${btn}
+      </div>`;
+  }).join('');
+}
+
 function buildOrderCard(o) {
   const div = document.createElement('div');
-  div.className = 'order-row' + (o.picked ? ' picked' : ' unpicked');
-
-  const meals = [
-    o.breakfast && `早:${o.breakfast}`,
-    o.lunch     && `午:${o.lunch}`,
-    o.dinner    && `晚:${o.dinner}`,
-  ].filter(Boolean).join('　');
+  const hasAny = !!(o.breakfast || o.lunch || o.dinner);
+  const allPicked = hasAny && !hasUnpickedMeal(o);
+  div.className = 'order-row' + (allPicked ? ' picked' : ' unpicked');
 
   const headLeft = [
     o.unit && escapeHtml(o.unit),
@@ -201,53 +234,50 @@ function buildOrderCard(o) {
 
   const orderNoHtml = o.orderNo
     ? `<span class="order-no">${escapeHtml(o.orderNo)}</span>` : '';
-  const badgeHtml = o.picked
-    ? `<span class="badge picked">已領 ✓</span>`
-    : `<span class="badge unpicked">未領</span>`;
-
-  const actionHtml = o.picked
-    ? `<button type="button" class="btn-mini btn-undo" data-action="unpick" data-order="${escapeHtml(o.orderNo)}">取消已領</button>`
-    : `<button type="button" class="btn-mini btn-pick" data-action="pick"   data-order="${escapeHtml(o.orderNo)}">標記已領</button>`;
 
   div.innerHTML = `
     <div class="order-head">
-      ${orderNoHtml}${badgeHtml}
+      ${orderNoHtml}
       <div class="order-meta">${headLeft}</div>
     </div>
-    <div class="order-meals">${escapeHtml(meals)}</div>
+    <div class="meal-list">${buildMealRowsHtml(o)}</div>
     ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
-    <div class="order-actions">${actionHtml}</div>
   `;
 
-  div.querySelector('button[data-action]').addEventListener('click', async ev => {
-    const orderNo = ev.currentTarget.dataset.order;
-    const picked  = ev.currentTarget.dataset.action === 'pick';
-    await markPickup(orderNo, picked);
+  div.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      const meal    = ev.currentTarget.dataset.meal;
+      const picked  = ev.currentTarget.dataset.action === 'pick';
+      await markPickup(orderNo, meal, picked);
+    });
   });
   return div;
 }
 
-async function markPickup(orderNo, picked) {
+async function markPickup(orderNo, meal, picked) {
   if (!orderNo) { showMsg('此筆訂單無編號，無法標記', true); return; }
+  if (!meal)    { showMsg('缺少餐別參數', true); return; }
   try {
-    const data = await postJson({ action: 'markPickup', idToken, orderNo, picked });
+    const data = await postJson({ action: 'markPickup', idToken, orderNo, meal, picked });
     if (!data.ok) throw new Error(data.error || '更新失敗');
-    showMsg(`${orderNo} 已${picked ? '標記為已領' : '取消已領'}`);
+    showMsg(`${orderNo} ${mealLabel(meal)}${picked ? '已標記為已領' : '已取消已領'}`);
     if (lastStats) {
       const o = lastStats.orders.find(x => x.orderNo === orderNo);
       if (o) {
-        const wasPicked = o.picked;
-        o.picked = picked;
-        o.pickedAt = picked ? new Date().toISOString() : '';
+        const pickKey = meal + 'Picked';
+        const atKey   = meal + 'PickedAt';
+        const wasPicked = !!o[pickKey];
+        o[pickKey] = picked;
+        o[atKey]   = picked ? new Date().toISOString() : '';
         if (wasPicked !== picked) {
-          lastStats.counts.picked   += picked ? 1 : -1;
-          lastStats.counts.unpicked -= picked ? 1 : -1;
+          lastStats.counts[pickKey] = (lastStats.counts[pickKey] || 0) + (picked ? 1 : -1);
         }
         renderStats();
       }
     }
     // 若是從快速查單觸發的，更新該卡片
-    refreshPickupCard(orderNo, picked);
+    refreshPickupCard(orderNo);
   } catch (e) {
     showMsg('標記失敗：' + e.message, true);
   }
@@ -267,44 +297,46 @@ async function onFindOrder() {
 
 function renderPickupResult(o) {
   const box = document.getElementById('pickupResult');
-  const meals = [
-    o.breakfast && `早:${o.breakfast}`,
-    o.lunch     && `午:${o.lunch}`,
-    o.dinner    && `晚:${o.dinner}`,
-  ].filter(Boolean).join('　');
   const headLeft = [
     o.unit && escapeHtml(o.unit),
     `<strong>${escapeHtml(o.name)}</strong>`,
     o.phone && escapeHtml(o.phone),
   ].filter(Boolean).join('｜');
 
-  const badge = o.picked
-    ? `<span class="badge picked">已領 ✓</span>`
-    : `<span class="badge unpicked">未領</span>`;
-  const action = o.picked
-    ? `<button type="button" class="btn-mini btn-undo" data-action="unpick" data-order="${escapeHtml(o.orderNo)}">取消已領</button>`
-    : `<button type="button" class="btn-mini btn-pick" data-action="pick"   data-order="${escapeHtml(o.orderNo)}">標記已領</button>`;
+  const hasAny = !!(o.breakfast || o.lunch || o.dinner);
+  const allPicked = hasAny && !hasUnpickedMeal(o);
+
+  const pickTimes = [
+    { label: '早餐', at: o.breakfastPickedAt, has: !!o.breakfast },
+    { label: '中餐', at: o.lunchPickedAt,     has: !!o.lunch },
+    { label: '晚餐', at: o.dinnerPickedAt,    has: !!o.dinner },
+  ].filter(r => r.has && r.at)
+   .map(r => `<div class="order-note">${r.label}領餐時間：${escapeHtml(formatLocal(r.at))}</div>`)
+   .join('');
 
   box.hidden = false;
-  box.className = 'pickup-card ' + (o.picked ? 'picked' : 'unpicked');
+  box.className = 'pickup-card ' + (allPicked ? 'picked' : 'unpicked');
   box.innerHTML = `
     <div class="order-head">
-      <span class="order-no">${escapeHtml(o.orderNo)}</span>${badge}
+      <span class="order-no">${escapeHtml(o.orderNo)}</span>
       <div class="order-meta">${headLeft}</div>
     </div>
-    <div class="order-meals">日期 ${escapeHtml(o.date)}　${escapeHtml(meals)}</div>
+    <div class="order-meals">日期 ${escapeHtml(o.date)}</div>
+    <div class="meal-list">${buildMealRowsHtml(o)}</div>
     ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
-    ${o.pickedAt ? `<div class="order-note">領餐時間：${escapeHtml(formatLocal(o.pickedAt))}</div>` : ''}
-    <div class="order-actions">${action}</div>
+    ${pickTimes}
   `;
-  box.querySelector('button[data-action]').addEventListener('click', async ev => {
-    const orderNo = ev.currentTarget.dataset.order;
-    const picked  = ev.currentTarget.dataset.action === 'pick';
-    await markPickup(orderNo, picked);
+  box.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      const meal    = ev.currentTarget.dataset.meal;
+      const picked  = ev.currentTarget.dataset.action === 'pick';
+      await markPickup(orderNo, meal, picked);
+    });
   });
 }
 
-function refreshPickupCard(orderNo, picked) {
+function refreshPickupCard(orderNo) {
   const box = document.getElementById('pickupResult');
   if (box.hidden) return;
   const cur = box.querySelector('.order-no');
