@@ -85,12 +85,12 @@
   </form>
 
   <p id="msg" class="msg" hidden></p>
-  <p class="footer"><a href="https://liff.line.me/2010095803-Neg2TBst">回訂餐頁</a></p>
+  <p class="footer"><a href="#" id="orderEntry">回訂餐頁</a></p>
 </main>
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -125,6 +125,19 @@ async function init() {
     if (e.key === 'Enter') { e.preventDefault(); onFindOrder(); }
   });
   document.getElementById('filterUnpicked').addEventListener('change', renderOrderList);
+
+  const orderLink = document.getElementById('orderEntry');
+  if (orderLink) {
+    orderLink.addEventListener('click', e => {
+      e.preventDefault();
+      const url = 'https://liff.line.me/2010095803-Neg2TBst';
+      if (window.liff && typeof liff.openWindow === 'function') {
+        liff.openWindow({ url, external: false });
+      } else {
+        window.location.href = url;
+      }
+    });
+  }
 }
 
 function toDateStr(d) {

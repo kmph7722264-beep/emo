@@ -9,7 +9,7 @@
 </head>
 <body>
 <main class="card">
-  <h1>興園 EMO 電子點餐</h1>
+    <h1>興園 EMO 電子點餐</h1>
 
   <form id="orderForm">
     <fieldset>
@@ -62,12 +62,12 @@
   </form>
 
   <p id="msg" class="msg" hidden></p>
-  <p class="footer"><a href="admin.html">管理者入口</a></p>
+  <p class="footer"><a href="#" id="adminEntry">管理者入口</a></p>
 </main>
 
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 
@@ -87,6 +87,19 @@ async function init() {
   await loadMenu();
   dateInput.addEventListener('change', loadMenu);
   document.getElementById('orderForm').addEventListener('submit', onSubmit);
+
+  const adminLink = document.getElementById('adminEntry');
+  if (adminLink) {
+    adminLink.addEventListener('click', e => {
+      e.preventDefault();
+      const url = 'https://liff.line.me/2010095803-1ayMPRJ6';
+      if (window.liff && typeof liff.openWindow === 'function') {
+        liff.openWindow({ url, external: false });
+      } else {
+        window.location.href = url;
+      }
+    });
+  }
 }
 
 async function loadMenu() {
