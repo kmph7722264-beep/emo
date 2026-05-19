@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>興園 EMO 電子點餐</title>
+<title>EMO 電子點餐</title>
 <link rel="stylesheet" href="style.css">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
 <main class="card">
-  <h1>興園 EMO 電子點餐</h1>
+  <h1>EMO 電子點餐</h1>
 
   <form id="orderForm">
     <fieldset>
@@ -67,7 +67,7 @@
 
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 
@@ -96,6 +96,10 @@ async function loadMenu() {
     const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
+    // 各餐所屬下拉是哪個 select.name
+    const mealOfMenuKey = { '早餐': 'breakfast', '中餐A': 'lunch', '中餐B': 'lunch', '中餐C': 'lunch', '晚餐': 'dinner' };
+    const orderable = data.orderable || { breakfast: true, lunch: true, dinner: true };
+
     document.querySelectorAll('option[data-menu]').forEach(opt => {
       const key = opt.dataset.menu;
       const prefix = opt.dataset.prefix || '';
@@ -106,20 +110,31 @@ async function loadMenu() {
       }
       const baseLabel = prefix + name;
       opt.value = baseLabel;
+      const meal = mealOfMenuKey[key];
+      const closed = meal && orderable[meal] === false;
+
       const lunchKey = opt.dataset.lunch;
-      if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
+      let suffix = '';
+      let disabled = false;
+      if (closed) {
+        suffix = '（已截止）';
+        disabled = true;
+      } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
         const left = data.remaining[lunchKey];
-        opt.textContent = `${baseLabel}（剩 ${left}）`;
-        opt.disabled = left <= 0;
-      } else {
-        opt.textContent = baseLabel;
+        suffix = `（剩 ${left}）`;
+        disabled = left <= 0;
       }
+      opt.textContent = baseLabel + suffix;
+      opt.disabled = disabled;
     });
 
-    // 中餐剩餘量小字
+    // 中餐剩餘量小字（截止時改顯示截止提示）
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
-      if (data.remaining) {
+      if (orderable.lunch === false) {
+        const t = (data.orderCutoff && data.orderCutoff.lunch) || '10:30';
+        hint.textContent = `午餐進單已於 ${t} 結束`;
+      } else if (data.remaining) {
         const r = data.remaining;
         const limit = data.limit || 40;
         hint.textContent = `每日上限 ${limit} 份｜A 剩 ${r.A} ／ B 剩 ${r.B} ／ C 剩 ${r.C}`;
@@ -128,11 +143,13 @@ async function loadMenu() {
       }
     }
 
-    // 若目前選到的中餐已達上限，清掉它
-    const lunchSel = document.querySelector('select[name="lunch"]');
-    if (lunchSel && lunchSel.selectedOptions[0] && lunchSel.selectedOptions[0].disabled) {
-      lunchSel.value = '';
-    }
+    // 若目前已選的選項被 disable（售完或已截止），清掉它
+    ['breakfast', 'lunch', 'dinner'].forEach(name => {
+      const sel = document.querySelector(`select[name="${name}"]`);
+      if (sel && sel.selectedOptions[0] && sel.selectedOptions[0].disabled) {
+        sel.value = '';
+      }
+    });
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
   }
