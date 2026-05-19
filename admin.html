@@ -85,12 +85,12 @@
   </form>
 
   <p id="msg" class="msg" hidden></p>
-  <p class="footer"><a href="order.html">回訂餐頁</a></p>
+  <p class="footer"><a href="https://liff.line.me/2010095803-Neg2TBst">回訂餐頁</a></p>
 </main>
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -286,8 +286,16 @@ async function markPickup(orderNo, meal, picked) {
 }
 
 async function onScanCode() {
-  if (!liff || typeof liff.scanCodeV2 !== 'function') {
-    showMsg('此 LINE 版本不支援 QR 掃描，請改用手動輸入或更新 LINE App', true);
+  if (!window.liff) {
+    alert('LIFF SDK 未載入，請重新整理頁面');
+    return;
+  }
+  if (typeof liff.isInClient === 'function' && !liff.isInClient()) {
+    alert('QR 掃描功能僅能在 LINE 內使用。\n請改從 LINE 開啟管理 LIFF 短網址，或手動輸入訂單編號。');
+    return;
+  }
+  if (typeof liff.scanCodeV2 !== 'function') {
+    alert('此 LINE 版本不支援 QR 掃描，請更新 LINE App 至最新版');
     return;
   }
   try {
@@ -299,7 +307,7 @@ async function onScanCode() {
   } catch (e) {
     const msg = String((e && e.message) || e || '');
     if (/cancel/i.test(msg) || /user.*cancel/i.test(msg)) return;
-    showMsg('掃描失敗：' + msg, true);
+    alert('掃描失敗：' + msg + '\n\n請確認 LINE Developers Console → 管理 LIFF → Scan QR 已設為 ON。');
   }
 }
 
