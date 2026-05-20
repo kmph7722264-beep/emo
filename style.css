@@ -114,8 +114,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   font-size: 14px;
 }
 
-.msg.ok  { background: #e8f7ee; color: var(--ok); }
-.msg.err { background: #fdecec; color: var(--err); }
+.msg.ok   { background: #e8f7ee; color: var(--ok); }
+.msg.warn { background: #fff7e0; color: #92500a; }
+.msg.err  { background: #fdecec; color: var(--err); }
 
 .footer {
   margin-top: 20px;
@@ -284,3 +285,39 @@ button.secondary:hover:not(:disabled) {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* 三餐分開標領餐 */
+.meal-list { margin-top: 6px; }
+.meal-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-top: 4px;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.meal-row.picked   { background: #f0fdf4; border-color: #bbf7d0; }
+.meal-row.unpicked { background: #fffbeb; border-color: #fde68a; }
+.meal-label {
+  display: inline-block;
+  min-width: 22px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--muted);
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+.meal-name {
+  flex: 1;
+  min-width: 120px;
+  color: var(--text);
+  word-break: break-all;
+}
+.meal-row .badge { margin-left: auto; }
+.meal-row .btn-mini { flex-shrink: 0; }

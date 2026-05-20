@@ -100,7 +100,7 @@
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -333,17 +333,71 @@ async function onScanCode() {
     alert('此 LINE 版本不支援 QR 掃描，請更新 LINE App 至最新版');
     return;
   }
+  let orderNo = '';
   try {
     const result = await liff.scanCodeV2();
-    const v = result && result.value ? String(result.value).trim() : '';
-    if (!v) return;
-    document.getElementById('pickupNo').value = v;
-    await onFindOrder();
+    orderNo = result && result.value ? String(result.value).trim() : '';
+    if (!orderNo) return;
   } catch (e) {
     const msg = String((e && e.message) || e || '');
     if (/cancel/i.test(msg) || /user.*cancel/i.test(msg)) return;
     alert('掃描失敗：' + msg + '\n\n請確認 LINE Developers Console → 管理 LIFF → Scan QR 已設為 ON。');
+    return;
   }
+  document.getElementById('pickupNo').value = orderNo;
+  await scanPickup(orderNo);
+}
+
+/**
+ * QR 掃描後自動依時段標領。
+ * 後端回應四種：
+ *   ok: true                        → 綠 toast「✓ 已領取」
+ *   reason: 'out_of_window'         → 紅 toast，並把訂單卡片載出來方便手動標
+ *   reason: 'not_ordered'           → 紅 toast「沒訂該餐」
+ *   reason: 'already_picked'        → 黃 toast「已於 HH:mm 領取」
+ *   其他 ok:false（例：訂單編號錯）→ 紅 toast 顯示 error
+ */
+async function scanPickup(orderNo) {
+  if (!orderNo) { showMsg('缺少訂單編號', true); return; }
+  let data;
+  try {
+    data = await postJson({ action: 'scanPickup', idToken, orderNo });
+  } catch (e) {
+    showMsg('連線失敗：' + e.message, true);
+    return;
+  }
+
+  if (data.ok) {
+    showMsg(`✅ ${orderNo} ${mealLabel(data.meal)} 領取完成`);
+    await onFindOrder();      // 卡片同步更新
+    if (lastStats) await loadStats({ silent: true }); // 統計即時更新
+    return;
+  }
+
+  if (data.reason === 'already_picked') {
+    showMsg(`⚠️ ${orderNo} ${mealLabel(data.meal)}已於 ${shortTime(data.pickedAt)} 領取`, 'warn');
+    await onFindOrder();
+    return;
+  }
+
+  if (data.reason === 'out_of_window') {
+    // 時段外：載出該單卡片，讓管理員手動標領
+    showMsg(data.error || '現在不是取餐時段', true);
+    await onFindOrder();
+    return;
+  }
+
+  // not_ordered 或其他錯誤
+  showMsg(data.error || '掃描失敗', true);
+  await onFindOrder();
+}
+
+function shortTime(v) {
+  if (!v) return '—';
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return String(v);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 async function onFindOrder() {
@@ -477,10 +531,14 @@ async function onSubmitMenu(ev) {
   }
 }
 
-function showMsg(text, isErr) {
+function showMsg(text, mode) {
+  // mode: undefined / false → 'ok'（綠）
+  //       true              → 'err'（紅，保留舊呼叫相容）
+  //       'warn'            → 'warn'（黃，警告但非錯誤）
+  const cls = mode === 'warn' ? 'warn' : mode ? 'err' : 'ok';
   const el = document.getElementById('msg');
   el.textContent = text;
-  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.className = 'msg ' + cls;
   el.hidden = false;
 }
 
