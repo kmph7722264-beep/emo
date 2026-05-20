@@ -148,12 +148,78 @@ button.secondary:hover:not(:disabled) {
   background: #f0fdf4;
 }
 
+button.danger {
+  display: inline-block;
+  width: auto;
+  margin-top: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--err);
+  border: 1px solid var(--err);
+}
+button.danger:hover:not(:disabled) {
+  background: #fdecec;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-top: 14px;
 }
+
+.stat-extra {
+  margin-top: 10px;
+  padding: 6px 10px;
+  background: #fff1f1;
+  color: #991b1b;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* 管理員操作紀錄 */
+.audit-list {
+  margin-top: 10px;
+  font-size: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+}
+.audit-row {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+.audit-row:last-child { border-bottom: 0; }
+.audit-row.failed { background: #fef2f2; }
+.audit-row .audit-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+}
+.audit-row .audit-time { color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.audit-row .audit-action {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-weight: 600;
+}
+.audit-row .audit-action.cancelOrder { background: #fee2e2; color: #991b1b; }
+.audit-row .audit-action.updateMenu  { background: #fef3c7; color: #92400e; }
+.audit-row .audit-operator { color: var(--text); }
+.audit-row .audit-target { color: var(--text); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.audit-row .audit-details { color: var(--muted); font-size: 11px; }
+.audit-row .audit-result.err { color: var(--err); font-weight: 600; }
+.audit-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 13px; }
 
 .stat {
   display: flex;
@@ -205,6 +271,29 @@ button.secondary:hover:not(:disabled) {
 
 .order-row.picked   { background: #f0fdf4; border-color: #bbf7d0; }
 .order-row.unpicked { background: #fffbeb; border-color: #fde68a; }
+
+/* 已取消訂單：整張卡片變灰，字色淡，名稱與餐點打刪除線 */
+.order-row.cancelled,
+.pickup-card.cancelled {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+.order-row.cancelled .order-meals,
+.order-row.cancelled .meal-list,
+.pickup-card.cancelled .order-meals,
+.pickup-card.cancelled .meal-list {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+.cancel-info {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 6px;
+  font-size: 12px;
+}
 
 .order-no {
   display: inline-block;

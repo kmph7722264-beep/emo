@@ -41,6 +41,8 @@
         <div class="stat stat-picked"><span class="stat-num" id="cDinnerPicked">0/0</span><span>晚餐已領</span></div>
       </div>
 
+      <p class="stat-extra" id="cCancelledHint" hidden>⛔ 其中已取消：<span id="cCancelled">0</span> 筆（不計入上方領取與棄單）</p>
+
       <details class="order-list" open>
         <summary>訂單明細 (<span id="cListTotal">0</span> 筆)</summary>
         <label class="filter-row">
@@ -93,6 +95,33 @@
     <button type="submit" id="submitBtn">儲存當日菜單</button>
   </form>
 
+  <fieldset>
+    <legend>📜 管理員操作紀錄</legend>
+    <p class="hint">記錄所有管理員的標領、掃 QR、取消訂單、修改菜單等操作（含成敗）。</p>
+    <div class="btn-row">
+      <label style="flex:1; min-width:120px">日期
+        <input type="date" id="auditDate">
+      </label>
+      <label style="flex:1; min-width:120px">動作
+        <select id="auditAction">
+          <option value="all">全部</option>
+          <option value="markPickup">手動標領</option>
+          <option value="scanPickup">掃 QR 標領</option>
+          <option value="cancelOrder">取消訂單</option>
+          <option value="updateMenu">修改菜單</option>
+        </select>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button type="button" id="auditLoadBtn" class="secondary">載入</button>
+      <button type="button" id="auditClearDateBtn" class="secondary">不限日期</button>
+    </div>
+    <div id="auditResult" hidden>
+      <div class="audit-meta hint" id="auditMeta"></div>
+      <div class="audit-list" id="auditList"></div>
+    </div>
+  </fieldset>
+
   <p id="msg" class="msg" hidden></p>
   <p class="footer"><a href="#" id="orderEntry">回訂餐頁</a></p>
   </div>
@@ -100,7 +129,7 @@
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -130,6 +159,7 @@ async function init() {
   const today = new Date();
   document.getElementById('statsDate').valueAsDate = today;
   document.getElementById('menuDate').valueAsDate  = today;
+  document.getElementById('auditDate').valueAsDate = today;
 
   await loadMenuForDate(toDateStr(today));
   await loadStats({ silent: true });
@@ -147,6 +177,11 @@ async function init() {
     if (e.key === 'Enter') { e.preventDefault(); onFindOrder(); }
   });
   document.getElementById('filterUnpicked').addEventListener('change', renderOrderList);
+  document.getElementById('auditLoadBtn').addEventListener('click', loadAuditLog);
+  document.getElementById('auditClearDateBtn').addEventListener('click', () => {
+    document.getElementById('auditDate').value = '';
+    loadAuditLog();
+  });
 
   const orderLink = document.getElementById('orderEntry');
   if (orderLink) {
@@ -194,6 +229,7 @@ function renderStats() {
   if (!lastStats) return;
   const c = lastStats.counts;
   const lunchTotal = (c.lunchA || 0) + (c.lunchB || 0) + (c.lunchC || 0) + (c.lunchOther || 0);
+  const cancelled  = c.cancelled || 0;
   document.getElementById('cTotal').textContent     = lastStats.total;
   document.getElementById('cBreakfast').textContent = c.breakfast;
   document.getElementById('cDinner').textContent    = c.dinner;
@@ -203,6 +239,8 @@ function renderStats() {
   document.getElementById('cBreakfastPicked').textContent = `${c.breakfastPicked}/${c.breakfast}`;
   document.getElementById('cLunchPicked').textContent     = `${c.lunchPicked}/${lunchTotal}`;
   document.getElementById('cDinnerPicked').textContent    = `${c.dinnerPicked}/${c.dinner}`;
+  document.getElementById('cCancelled').textContent = cancelled;
+  document.getElementById('cCancelledHint').hidden  = cancelled === 0;
   document.getElementById('cListTotal').textContent = lastStats.total;
   document.getElementById('statsResult').hidden = false;
   renderOrderList();
@@ -224,9 +262,18 @@ function renderOrderList() {
 }
 
 function hasUnpickedMeal(o) {
+  if (o.cancelled) return false;
   return (o.breakfast && !o.breakfastPicked) ||
          (o.lunch     && !o.lunchPicked) ||
          (o.dinner    && !o.dinnerPicked);
+}
+
+function buildCancelInfoHtml(o) {
+  if (!o.cancelled) return '';
+  const at = o.cancelledAt ? formatLocal(o.cancelledAt) : '—';
+  const by = o.cancelledBy ? escapeHtml(o.cancelledBy) : '—';
+  const reason = o.cancelReason ? `　原因：${escapeHtml(o.cancelReason)}` : '';
+  return `<div class="cancel-info">⛔ 已取消　${escapeHtml(at)}　操作者：${by}${reason}</div>`;
 }
 
 function mealLabel(meal) {
@@ -261,7 +308,11 @@ function buildOrderCard(o) {
   const div = document.createElement('div');
   const hasAny = !!(o.breakfast || o.lunch || o.dinner);
   const allPicked = hasAny && !hasUnpickedMeal(o);
-  div.className = 'order-row' + (allPicked ? ' picked' : ' unpicked');
+  if (o.cancelled) {
+    div.className = 'order-row cancelled';
+  } else {
+    div.className = 'order-row' + (allPicked ? ' picked' : ' unpicked');
+  }
 
   const headLeft = [
     o.unit && escapeHtml(o.unit),
@@ -272,13 +323,24 @@ function buildOrderCard(o) {
   const orderNoHtml = o.orderNo
     ? `<span class="order-no">${escapeHtml(o.orderNo)}</span>` : '';
 
+  // 已取消的卡片：不顯示領餐按鈕、改顯示取消資訊；未取消的：底部加「取消訂單」按鈕
+  const mealsHtml = o.cancelled
+    ? `<div class="meal-list">${buildMealsReadonlyHtml(o)}</div>`
+    : `<div class="meal-list">${buildMealRowsHtml(o)}</div>`;
+
+  const cancelBtnHtml = o.cancelled
+    ? ''
+    : `<button type="button" class="danger btn-cancel-order" data-order="${escapeHtml(o.orderNo || '')}">⛔ 取消訂單</button>`;
+
   div.innerHTML = `
     <div class="order-head">
       ${orderNoHtml}
       <div class="order-meta">${headLeft}</div>
     </div>
-    <div class="meal-list">${buildMealRowsHtml(o)}</div>
+    ${mealsHtml}
     ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
+    ${buildCancelInfoHtml(o)}
+    ${cancelBtnHtml}
   `;
 
   div.querySelectorAll('button[data-action]').forEach(btn => {
@@ -289,7 +351,27 @@ function buildOrderCard(o) {
       await markPickup(orderNo, meal, picked);
     });
   });
+  div.querySelectorAll('button.btn-cancel-order').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      onCancelOrder(orderNo);
+    });
+  });
   return div;
+}
+
+/** 已取消單的三餐唯讀顯示（無按鈕、無徽章變化） */
+function buildMealsReadonlyHtml(o) {
+  const meals = [
+    { label: '早', name: o.breakfast },
+    { label: '午', name: o.lunch },
+    { label: '晚', name: o.dinner },
+  ];
+  return meals.filter(m => m.name).map(m => `
+    <div class="meal-row">
+      <span class="meal-label">${m.label}</span>
+      <span class="meal-name">${escapeHtml(m.name)}</span>
+    </div>`).join('');
 }
 
 async function markPickup(orderNo, meal, picked) {
@@ -318,6 +400,97 @@ async function markPickup(orderNo, meal, picked) {
   } catch (e) {
     showMsg('標記失敗：' + e.message, true);
   }
+}
+
+/**
+ * 取消訂單（軟刪除）— 二次確認 + 收集原因。
+ * 取消後資料仍保留於試算表，可從統計卡片「已取消 X 筆」追蹤。
+ */
+async function onCancelOrder(orderNo) {
+  if (!orderNo) { showMsg('此筆訂單無編號，無法取消', true); return; }
+  if (!confirm(`確定要取消訂單 ${orderNo}？\n\n資料會保留在試算表，並記錄操作者、時間與原因。\n已寄出的 LINE 通知無法撤回。`)) return;
+  const reason = (prompt(`請輸入取消原因（可留白，例如：訂購人通知不能來、餐點供應問題…）`, '') || '').trim();
+  let data;
+  try {
+    data = await postJson({ action: 'cancelOrder', idToken, orderNo, reason });
+  } catch (e) {
+    showMsg('連線失敗：' + e.message, true);
+    return;
+  }
+  if (!data.ok) {
+    showMsg(data.error || '取消失敗', true);
+    return;
+  }
+  showMsg(`✅ ${orderNo} 已取消（操作者：${data.cancelledBy || '—'}）`);
+  // 重新拉統計 → 自動 re-render 列表（取消後該卡片變灰、總筆數計入 cancelled）
+  await loadStats({ silent: true });
+  refreshPickupCard(orderNo);
+}
+
+const AUDIT_ACTION_LABELS = {
+  markPickup:  '手動標領',
+  scanPickup:  '掃 QR 標領',
+  cancelOrder: '取消訂單',
+  updateMenu:  '修改菜單',
+};
+
+async function loadAuditLog() {
+  const date   = document.getElementById('auditDate').value || '';
+  const action = document.getElementById('auditAction').value || 'all';
+  const box    = document.getElementById('auditResult');
+  const meta   = document.getElementById('auditMeta');
+  const list   = document.getElementById('auditList');
+  box.hidden = false;
+  list.innerHTML = '<div class="audit-empty">載入中…</div>';
+  meta.textContent = '';
+  let data;
+  try {
+    data = await postJson({ action: 'listAuditLog', idToken, date, action, limit: 200 });
+  } catch (e) {
+    list.innerHTML = `<div class="audit-empty">連線失敗：${escapeHtml(e.message)}</div>`;
+    return;
+  }
+  if (!data.ok) {
+    list.innerHTML = `<div class="audit-empty">${escapeHtml(data.error || '載入失敗')}</div>`;
+    return;
+  }
+  renderAuditList(data, date, action);
+}
+
+function renderAuditList(data, date, actionFilter) {
+  const meta = document.getElementById('auditMeta');
+  const list = document.getElementById('auditList');
+  const parts = [];
+  if (date) parts.push(date);
+  else parts.push('不限日期');
+  if (actionFilter && actionFilter !== 'all') {
+    parts.push(AUDIT_ACTION_LABELS[actionFilter] || actionFilter);
+  }
+  meta.textContent = `${parts.join('｜')}　共 ${data.total} 筆${data.total > data.logs.length ? `（顯示最近 ${data.logs.length}）` : ''}`;
+
+  if (data.logs.length === 0) {
+    list.innerHTML = '<div class="audit-empty">沒有符合條件的紀錄</div>';
+    return;
+  }
+
+  list.innerHTML = data.logs.map(r => {
+    const failed = r.result && r.result !== 'ok';
+    const actionLabel = AUDIT_ACTION_LABELS[r.action] || r.action || '?';
+    const resultHtml = failed
+      ? `<span class="audit-result err">${escapeHtml(r.result)}</span>`
+      : `<span class="audit-result">ok</span>`;
+    return `
+      <div class="audit-row ${failed ? 'failed' : ''}">
+        <div class="audit-head">
+          <span class="audit-time">${escapeHtml(formatLocal(r.time))}</span>
+          <span class="audit-action ${escapeHtml(r.action)}">${escapeHtml(actionLabel)}</span>
+          <span class="audit-operator">${escapeHtml(r.operatorName || r.userId || '—')}</span>
+        </div>
+        ${r.target ? `<div class="audit-target">目標：${escapeHtml(r.target)}</div>` : ''}
+        ${r.details ? `<div class="audit-details">${escapeHtml(r.details)}</div>` : ''}
+        <div>${resultHtml}</div>
+      </div>`;
+  }).join('');
 }
 
 async function onScanCode() {
@@ -350,11 +523,12 @@ async function onScanCode() {
 
 /**
  * QR 掃描後自動依時段標領。
- * 後端回應四種：
+ * 後端回應：
  *   ok: true                        → 綠 toast「✓ 已領取」
  *   reason: 'out_of_window'         → 紅 toast，並把訂單卡片載出來方便手動標
  *   reason: 'not_ordered'           → 紅 toast「沒訂該餐」
  *   reason: 'already_picked'        → 黃 toast「已於 HH:mm 領取」
+ *   reason: 'cancelled'             → 紅 toast「訂單已取消，無法標領」
  *   其他 ok:false（例：訂單編號錯）→ 紅 toast 顯示 error
  */
 async function scanPickup(orderNo) {
@@ -371,6 +545,12 @@ async function scanPickup(orderNo) {
     showMsg(`✅ ${orderNo} ${mealLabel(data.meal)} 領取完成`);
     await onFindOrder();      // 卡片同步更新
     if (lastStats) await loadStats({ silent: true }); // 統計即時更新
+    return;
+  }
+
+  if (data.reason === 'cancelled') {
+    showMsg(data.error || `${orderNo} 已取消，無法標領`, true);
+    await onFindOrder();
     return;
   }
 
@@ -423,7 +603,7 @@ function renderPickupResult(o) {
   const hasAny = !!(o.breakfast || o.lunch || o.dinner);
   const allPicked = hasAny && !hasUnpickedMeal(o);
 
-  const pickTimes = [
+  const pickTimes = o.cancelled ? '' : [
     { label: '早餐', at: o.breakfastPickedAt, has: !!o.breakfast },
     { label: '中餐', at: o.lunchPickedAt,     has: !!o.lunch },
     { label: '晚餐', at: o.dinnerPickedAt,    has: !!o.dinner },
@@ -431,17 +611,26 @@ function renderPickupResult(o) {
    .map(r => `<div class="order-note">${r.label}領餐時間：${escapeHtml(formatLocal(r.at))}</div>`)
    .join('');
 
+  const mealsHtml = o.cancelled
+    ? `<div class="meal-list">${buildMealsReadonlyHtml(o)}</div>`
+    : `<div class="meal-list">${buildMealRowsHtml(o)}</div>`;
+  const cancelBtnHtml = o.cancelled
+    ? ''
+    : `<button type="button" class="danger btn-cancel-order" data-order="${escapeHtml(o.orderNo || '')}">⛔ 取消訂單</button>`;
+
   box.hidden = false;
-  box.className = 'pickup-card ' + (allPicked ? 'picked' : 'unpicked');
+  box.className = 'pickup-card ' + (o.cancelled ? 'cancelled' : (allPicked ? 'picked' : 'unpicked'));
   box.innerHTML = `
     <div class="order-head">
       <span class="order-no">${escapeHtml(o.orderNo)}</span>
       <div class="order-meta">${headLeft}</div>
     </div>
     <div class="order-meals">日期 ${escapeHtml(o.date)}</div>
-    <div class="meal-list">${buildMealRowsHtml(o)}</div>
+    ${mealsHtml}
     ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
     ${pickTimes}
+    ${buildCancelInfoHtml(o)}
+    ${cancelBtnHtml}
   `;
   box.querySelectorAll('button[data-action]').forEach(btn => {
     btn.addEventListener('click', async ev => {
@@ -449,6 +638,12 @@ function renderPickupResult(o) {
       const meal    = ev.currentTarget.dataset.meal;
       const picked  = ev.currentTarget.dataset.action === 'pick';
       await markPickup(orderNo, meal, picked);
+    });
+  });
+  box.querySelectorAll('button.btn-cancel-order').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      onCancelOrder(orderNo);
     });
   });
 }
