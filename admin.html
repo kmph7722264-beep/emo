@@ -12,6 +12,15 @@
   <h1>管理員後台</h1>
   <p class="hint">僅限白名單管理員。</p>
 
+  <div id="denied" class="msg err" hidden>
+    <strong>無管理員權限</strong>
+    <div style="margin-top:6px">此頁僅限白名單管理員使用。如需開通請聯絡系統管理員，將您的 LINE userId 加入 <code>Admins</code> 工作表。</div>
+    <div class="btn-row" style="margin-top:10px">
+      <button type="button" id="backToOrderBtn" class="secondary">回訂餐頁</button>
+    </div>
+  </div>
+
+  <div id="adminContent">
   <fieldset>
     <legend>當日訂單統計</legend>
     <label>日期
@@ -86,11 +95,12 @@
 
   <p id="msg" class="msg" hidden></p>
   <p class="footer"><a href="#" id="orderEntry">回訂餐頁</a></p>
+  </div>
 </main>
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -102,6 +112,18 @@ async function init() {
     idToken = liff.getIDToken() || '';
   } catch (e) {
     showMsg('LIFF 初始化失敗：' + e.message, true);
+    return;
+  }
+
+  // 守門：非管理員直接顯示拒絕畫面，不載入任何資料
+  try {
+    const chk = await postJson({ action: 'checkAdmin', idToken });
+    if (!chk.ok || !chk.isAdmin) {
+      showDenied();
+      return;
+    }
+  } catch (e) {
+    showDenied('權限驗證失敗：' + e.message);
     return;
   }
 
@@ -460,6 +482,32 @@ function showMsg(text, isErr) {
   el.textContent = text;
   el.className = 'msg ' + (isErr ? 'err' : 'ok');
   el.hidden = false;
+}
+
+function gotoOrderPage() {
+  const url = 'https://liff.line.me/2010095803-Neg2TBst';
+  if (window.liff && typeof liff.openWindow === 'function') {
+    liff.openWindow({ url, external: false });
+  } else {
+    window.location.href = url;
+  }
+}
+
+function showDenied(extraMsg) {
+  const content = document.getElementById('adminContent');
+  if (content) content.hidden = true;
+  const box = document.getElementById('denied');
+  if (box) {
+    box.hidden = false;
+    if (extraMsg) {
+      const extra = document.createElement('div');
+      extra.style.marginTop = '6px';
+      extra.textContent = extraMsg;
+      box.appendChild(extra);
+    }
+  }
+  const backBtn = document.getElementById('backToOrderBtn');
+  if (backBtn) backBtn.addEventListener('click', e => { e.preventDefault(); gotoOrderPage(); });
 }
 
 init();
