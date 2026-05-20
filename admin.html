@@ -66,7 +66,7 @@
   </fieldset>
 
   <h2>每日餐點維護</h2>
-  <p class="hint">可指定特定日期；新日期可直接儲存（系統先帶入最近一日的菜單作為基底）。</p>
+  <p class="hint">可指定特定日期；新日期可直接儲存（系統先帶入最近一日的菜單作為基底）。輸入欄可從歷史菜單下拉選或直接打新名稱。</p>
   <form id="menuForm">
     <label>適用日期
       <input type="date" id="menuDate">
@@ -77,19 +77,24 @@
     <small class="field-hint" id="menuOrdered">當日已訂數量載入中…</small>
 
     <label>早餐
-      <input name="早餐" placeholder="例：燒餅油條 / 飯糰 / 三明治">
+      <input name="早餐" list="hist-早餐" placeholder="例：燒餅油條 / 飯糰 / 三明治">
+      <datalist id="hist-早餐"></datalist>
     </label>
     <label>中餐 A
-      <input name="中餐A" placeholder="例：滷雞腿便當">
+      <input name="中餐A" list="hist-中餐A" placeholder="例：滷雞腿便當">
+      <datalist id="hist-中餐A"></datalist>
     </label>
     <label>中餐 B
-      <input name="中餐B" placeholder="例：排骨便當">
+      <input name="中餐B" list="hist-中餐B" placeholder="例：排骨便當">
+      <datalist id="hist-中餐B"></datalist>
     </label>
     <label>中餐 C
-      <input name="中餐C" placeholder="例：素食便當">
+      <input name="中餐C" list="hist-中餐C" placeholder="例：素食便當">
+      <datalist id="hist-中餐C"></datalist>
     </label>
     <label>晚餐
-      <input name="晚餐" placeholder="例：紅燒牛肉麵">
+      <input name="晚餐" list="hist-晚餐" placeholder="例：紅燒牛肉麵">
+      <datalist id="hist-晚餐"></datalist>
     </label>
 
     <button type="submit" id="submitBtn">儲存當日菜單</button>
@@ -129,7 +134,7 @@
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -163,6 +168,7 @@ async function init() {
 
   await loadMenuForDate(toDateStr(today));
   await loadStats({ silent: true });
+  loadMenuHistory(); // 背景載入歷史菜單供 datalist 下拉用，不 await
 
   document.getElementById('statsBtn').addEventListener('click', () => loadStats());
   document.getElementById('menuLoadBtn').addEventListener('click', () => {
@@ -719,11 +725,36 @@ async function onSubmitMenu(ev) {
     const data = await postJson({ action: 'updateMenu', idToken, date, menu });
     if (!data.ok) throw new Error(data.error || '儲存失敗');
     showMsg(`已更新 ${date} 的菜單`);
+    // 儲存後重新拉歷史菜單，讓新增的選項立刻能在下拉裡選到
+    loadMenuHistory();
   } catch (e) {
     showMsg('儲存失敗：' + e.message, true);
   } finally {
     btn.disabled = false;
   }
+}
+
+/**
+ * 載入每個餐別的歷史菜單名稱，填入對應 <datalist>。
+ * input 的 list 屬性指向同名 datalist → 瀏覽器自動顯示下拉 + 過濾。
+ * 排序：最近使用的在最前面。
+ */
+async function loadMenuHistory() {
+  let data;
+  try {
+    data = await postJson({ action: 'menuHistory', idToken });
+  } catch (e) {
+    console.warn('loadMenuHistory failed:', e);
+    return;
+  }
+  if (!data.ok || !data.history) return;
+  Object.entries(data.history).forEach(([item, names]) => {
+    const dl = document.getElementById(`hist-${item}`);
+    if (!dl) return;
+    dl.innerHTML = (names || [])
+      .map(n => `<option value="${escapeHtml(n)}"></option>`)
+      .join('');
+  });
 }
 
 function showMsg(text, mode) {
