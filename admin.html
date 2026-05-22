@@ -133,18 +133,67 @@
   </div>
 </main>
 
+<!-- 筆電 / 外部瀏覽器使用的領餐大通知（手機 LINE App 內不顯示，避免擋畫面） -->
+<div id="pickupToast" class="pickup-toast" hidden>
+  <div class="pickup-toast-card" id="pickupToastCard">
+    <div class="pickup-toast-icon" id="ptIcon">✅</div>
+    <div class="pickup-toast-title" id="ptTitle">領取完成</div>
+    <div class="pickup-toast-order" id="ptOrder">—</div>
+    <div class="pickup-toast-lines" id="ptLines"></div>
+    <div class="pickup-toast-hint">點任意處或按 Esc 關閉（5 秒後自動關閉）</div>
+  </div>
+</div>
+
+<style>
+  .pickup-toast {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    animation: pt-fade 0.15s ease-out;
+  }
+  .pickup-toast-card {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; min-width: 320px; max-width: 92vw;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border-top: 8px solid #06c755;
+    animation: pt-pop 0.18s ease-out;
+  }
+  .pickup-toast-card.err  { border-top-color: #d23f3f; }
+  .pickup-toast-card.warn { border-top-color: #d49a00; }
+  .pickup-toast-card.info { border-top-color: #0d3b66; }
+  .pickup-toast-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+  .pickup-toast-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
+  .pickup-toast-order {
+    font-size: 40px; font-weight: 800; letter-spacing: 1px;
+    color: #047a3a; margin-bottom: 10px; font-family: ui-monospace, "Menlo", "Consolas", monospace;
+  }
+  .pickup-toast-card.err  .pickup-toast-order { color: #b3261e; }
+  .pickup-toast-card.warn .pickup-toast-order { color: #8a6500; }
+  .pickup-toast-card.info .pickup-toast-order { color: #0d3b66; }
+  .pickup-toast-lines  { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 12px; }
+  .pickup-toast-lines div { margin: 2px 0; }
+  .pickup-toast-hint   { font-size: 12px; color: #6b7280; margin-top: 8px; }
+  @keyframes pt-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pt-pop  { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
     const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
 
 let idToken = '';
 let lastStats = null;
+// 筆電 / 外部瀏覽器（非 LINE App 內）登入時啟用領餐大通知；手機 LINE App 內維持原 toast 不擋畫面
+let useBigToast = false;
 
 async function init() {
   try {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
     idToken = liff.getIDToken() || '';
+    // 非 LINE App 內（筆電瀏覽器、行動瀏覽器）→ 啟用領餐大通知
+    useBigToast = typeof liff.isInClient !== 'function' || !liff.isInClient();
   } catch (e) {
     showMsg('LIFF 初始化失敗：' + e.message, true);
     return;
@@ -184,7 +233,15 @@ async function init() {
   document.getElementById('pickupFindBtn').addEventListener('click', onFindOrder);
   document.getElementById('pickupScanBtn').addEventListener('click', onScanCode);
   document.getElementById('pickupNo').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); onFindOrder(); }
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    // 筆電 / 外部瀏覽器（USB QR 掃描器情境）：Enter = 直接掃 QR 標領 + 跳大通知
+    // 手機 LINE App 內：Enter = 維持原本查單，避免誤觸自動標領
+    if (useBigToast) {
+      scanPickup(document.getElementById('pickupNo').value);
+    } else {
+      onFindOrder();
+    }
   });
   document.getElementById('filterUnpicked').addEventListener('change', renderOrderList);
   document.getElementById('auditLoadBtn').addEventListener('click', loadAuditLog);
@@ -242,18 +299,28 @@ function prefillPickupNo() {
 
 /**
  * 取得使用者輸入後實際要查詢的訂單編號。
- * 規則：
- *   - 純數字 1~3 碼 → 補上當日 YYYYMMDD- 前綴 + zero-pad 至 3 碼
- *   - 已是「YYYYMMDD-NNN」格式 → 直接回傳
- *   - 其他（QR 掃出來的整碼或手打整碼）→ 原樣回傳
+ * 規則（由強到弱，命中即回傳）：
+ *   1. 字串末尾存在完整「YYYYMMDD-NNN」 → 取末尾那一段
+ *      涵蓋情境：USB QR 掃描器把整碼接在預填的 YYYYMMDD- 之後（避免變成 YYYYMMDD-YYYYMMDD-NNN）；
+ *               貼上整碼、手機 QR 整碼；正常打整碼亦適用
+ *   2. 純數字 1~3 碼 → 補當日前綴 + zero-pad
+ *   3. 「-NNN」格式 → 補當日前綴
+ *   4. 其他 → 原樣回傳（讓後端決定怎麼處理）
  */
 function normalizePickupNo(raw) {
   const s = String(raw || '').trim();
   if (!s) return '';
+  // 1. 字串末尾出現完整 YYYYMMDD-NNN（含被預填前綴重複夾擊的情境）
+  const tail = s.match(/(\d{8}-\d{1,3})\s*$/);
+  if (tail) {
+    const parts = tail[1].split('-');
+    return parts[0] + '-' + parts[1].padStart(3, '0');
+  }
+  // 2. 純末 3 碼
   if (/^\d{1,3}$/.test(s)) {
     return todayOrderPrefix() + s.padStart(3, '0');
   }
-  // 只輸入「-NNN」也接受
+  // 3. 「-NNN」格式
   const m = s.match(/^-?(\d{1,3})$/);
   if (m) return todayOrderPrefix() + m[1].padStart(3, '0');
   return s;
@@ -438,6 +505,21 @@ async function markPickup(orderNo, meal, picked) {
     const data = await postJson({ action: 'markPickup', idToken, orderNo, meal, picked });
     if (!data.ok) throw new Error(data.error || '更新失敗');
     showMsg(`${orderNo} ${mealLabel(meal)}${picked ? '已標記為已領' : '已取消已領'}`);
+    if (useBigToast && picked) {
+      // 取消已領（picked=false）不跳大通知，避免誤觸；只有確實標領才跳
+      const o = lookupOrderForToast(orderNo);
+      const item = o ? (meal === 'breakfast' ? o.breakfast : meal === 'lunch' ? o.lunch : o.dinner) : '';
+      showPickupToast({
+        status: 'ok',
+        title: '✓ 領取完成',
+        orderNo,
+        lines: [
+          o ? `${o.unit || ''}　${o.name || ''}` : '',
+          `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
+          `領餐時間：${shortTime(new Date().toISOString())}`,
+        ],
+      });
+    }
     if (lastStats) {
       const o = lastStats.orders.find(x => x.orderNo === orderNo);
       if (o) {
@@ -587,46 +669,120 @@ async function onScanCode() {
  *   reason: 'already_picked'        → 黃 toast「已於 HH:mm 領取」
  *   reason: 'cancelled'             → 紅 toast「訂單已取消，無法標領」
  *   其他 ok:false（例：訂單編號錯）→ 紅 toast 顯示 error
+ *
+ * 筆電 / 外部瀏覽器（useBigToast=true）→ 跳全屏大通知 + 音效
  */
-async function scanPickup(orderNo) {
-  if (!orderNo) { showMsg('缺少訂單編號', true); return; }
+async function scanPickup(rawOrderNo) {
+  // USB QR 掃描器可能把整碼接在預填 YYYYMMDD- 之後，先正規化
+  const orderNo = normalizePickupNo(rawOrderNo);
+  if (!orderNo || orderNo === todayOrderPrefix()) {
+    showMsg('缺少訂單編號', true);
+    return;
+  }
+  // 把正規化後的值回填欄位，方便確認
+  const inputEl = document.getElementById('pickupNo');
+  if (inputEl) inputEl.value = orderNo;
+
   let data;
   try {
     data = await postJson({ action: 'scanPickup', idToken, orderNo });
   } catch (e) {
     showMsg('連線失敗：' + e.message, true);
+    if (useBigToast) showPickupToast({ status: 'err', title: '連線失敗', orderNo, lines: [e.message || ''] });
     return;
   }
 
   if (data.ok) {
     showMsg(`✅ ${orderNo} ${mealLabel(data.meal)} 領取完成`);
+    if (useBigToast) {
+      // 撈該訂單完整資料（單位 / 訂購人 / 警用電話 / 餐項）丟到大通知
+      const o = await fetchOrderDetail(orderNo) || lookupOrderForToast(orderNo) || {};
+      const meal = data.meal;
+      const item = meal === 'breakfast' ? (o.breakfast || '')
+                 : meal === 'lunch'     ? (o.lunch || '')
+                 : meal === 'dinner'    ? (o.dinner || '') : '';
+      showPickupToast({
+        status: 'ok',
+        title: '✓ 領取完成',
+        orderNo,
+        lines: [
+          (o.unit || o.name) ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
+          o.phone ? `警用電話：${o.phone}` : '',
+          `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
+          `領餐時間：${shortTime(data.pickedAt)}`,
+        ].filter(Boolean),
+      });
+    }
     await onFindOrder();      // 卡片同步更新
     if (lastStats) await loadStats({ silent: true }); // 統計即時更新
+    // 重置查詢欄位回預填前綴，準備下一張 QR
+    if (inputEl) inputEl.value = todayOrderPrefix();
     return;
   }
 
+  // 以下都是失敗情境：先撈一次訂單詳細丟到大通知，並在最後重置欄位
+  const orderForToast = useBigToast ? (await fetchOrderDetail(orderNo) || {}) : {};
+  const headerLine = (orderForToast.unit || orderForToast.name)
+    ? `${orderForToast.unit || ''}　${orderForToast.name || ''}`.trim()
+    : '';
+
   if (data.reason === 'cancelled') {
     showMsg(data.error || `${orderNo} 已取消，無法標領`, true);
+    if (useBigToast) showPickupToast({
+      status: 'err', title: '訂單已取消', orderNo,
+      lines: [headerLine, '此單已被管理員取消，無法領餐'].filter(Boolean),
+    });
     await onFindOrder();
+    if (inputEl) inputEl.value = todayOrderPrefix();
     return;
   }
 
   if (data.reason === 'already_picked') {
     showMsg(`⚠️ ${orderNo} ${mealLabel(data.meal)}已於 ${shortTime(data.pickedAt)} 領取`, 'warn');
+    if (useBigToast) {
+      showPickupToast({
+        status: 'warn',
+        title: '⚠ 已領過餐',
+        orderNo,
+        lines: [
+          headerLine,
+          `${MEAL_LABEL_FULL[data.meal] || data.meal}已於 ${shortTime(data.pickedAt)} 領取`,
+        ].filter(Boolean),
+      });
+    }
     await onFindOrder();
+    if (inputEl) inputEl.value = todayOrderPrefix();
     return;
   }
 
   if (data.reason === 'out_of_window') {
     // 時段外：載出該單卡片，讓管理員手動標領
     showMsg(data.error || '現在不是取餐時段', true);
+    if (useBigToast) {
+      showPickupToast({
+        status: 'warn',
+        title: '不在取餐時段',
+        orderNo,
+        lines: [headerLine, '請使用卡片上的「標記已領」按鈕'].filter(Boolean),
+      });
+    }
     await onFindOrder();
+    if (inputEl) inputEl.value = todayOrderPrefix();
     return;
   }
 
   // not_ordered 或其他錯誤
   showMsg(data.error || '掃描失敗', true);
+  if (useBigToast) {
+    showPickupToast({
+      status: 'err',
+      title: data.reason === 'not_ordered' ? '沒訂該餐' : '無法領取',
+      orderNo,
+      lines: [headerLine, data.error || ''].filter(Boolean),
+    });
+  }
   await onFindOrder();
+  if (inputEl) inputEl.value = todayOrderPrefix();
 }
 
 function shortTime(v) {
@@ -823,6 +979,108 @@ function showMsg(text, mode) {
   el.textContent = text;
   el.className = 'msg ' + cls;
   el.hidden = false;
+}
+
+/* =========================================================
+ * 領餐大通知（筆電 / 外部瀏覽器使用）
+ *   - 全屏覆蓋、大字訂單編號、餐別資訊
+ *   - 成功綠 / 已領過黃 / 取消或錯誤紅
+ *   - 5 秒後自動關閉，或點任意處 / 按 Esc 立刻關閉
+ *   - 連續掃多張：下次呼叫直接覆寫內容
+ * ========================================================= */
+
+let pickupToastTimer = null;
+
+/**
+ * @param {object} opts
+ *   status:   'ok' | 'err' | 'warn' | 'info'
+ *   title:    上方標題（例：✓ 領取完成）
+ *   orderNo:  訂單編號（大字）
+ *   lines:    細項陣列（每項一行：訂購人、餐別、時間…）
+ *   beep:     true=成功音 / 'err'=失敗音
+ */
+function showPickupToast(opts) {
+  const { status = 'ok', title = '', orderNo = '', lines = [], beep = true } = opts || {};
+  const box  = document.getElementById('pickupToast');
+  const card = document.getElementById('pickupToastCard');
+  card.className = 'pickup-toast-card ' + status;
+  document.getElementById('ptIcon').textContent  =
+    status === 'ok'   ? '✅' :
+    status === 'warn' ? '⚠️' :
+    status === 'info' ? 'ℹ️' : '⛔';
+  document.getElementById('ptTitle').textContent = title || (
+    status === 'ok' ? '領取完成' :
+    status === 'warn' ? '注意' :
+    status === 'info' ? '提示' : '無法領取'
+  );
+  document.getElementById('ptOrder').textContent = orderNo || '—';
+  document.getElementById('ptLines').innerHTML =
+    (lines || []).filter(Boolean).map(l => `<div>${escapeHtml(l)}</div>`).join('');
+  box.hidden = false;
+
+  if (beep) playBeep(status === 'ok' ? 'ok' : 'err');
+
+  if (pickupToastTimer) clearTimeout(pickupToastTimer);
+  pickupToastTimer = setTimeout(hidePickupToast, 5000);
+}
+
+function hidePickupToast() {
+  const box = document.getElementById('pickupToast');
+  if (box) box.hidden = true;
+  if (pickupToastTimer) { clearTimeout(pickupToastTimer); pickupToastTimer = null; }
+}
+
+// 點背景或按 Esc 關閉
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'pickupToast') hidePickupToast();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hidePickupToast();
+});
+
+/**
+ * 簡短「叮」音效（成功）或「嗶嗶」音效（失敗），用 Web Audio API 生成不需音檔。
+ * 筆電瀏覽器有效；手機 LINE App 內可能被 mute。
+ */
+function playBeep(kind) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (kind === 'ok') {
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      osc.start(); osc.stop(ctx.currentTime + 0.18);
+    } else {
+      osc.frequency.value = 220;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      osc.start(); osc.stop(ctx.currentTime + 0.30);
+    }
+    setTimeout(() => ctx.close(), 500);
+  } catch (_) { /* 音效失敗無關緊要 */ }
+}
+
+const MEAL_LABEL_FULL = { breakfast: '早餐', lunch: '中餐', dinner: '晚餐' };
+
+/**
+ * 從 lastStats 找該訂單，組出大通知細項（訂購人、單位、餐項）
+ */
+function lookupOrderForToast(orderNo) {
+  if (!lastStats || !lastStats.orders) return null;
+  return lastStats.orders.find(o => o.orderNo === orderNo) || null;
+}
+
+/**
+ * 撈單筆訂單完整資料（供大通知顯示領用人資訊用）。
+ * 失敗回 null，呼叫端可 fallback 到 lookupOrderForToast 或空物件。
+ */
+async function fetchOrderDetail(orderNo) {
+  try {
+    const data = await postJson({ action: 'findOrder', idToken, orderNo });
+    if (data && data.ok && data.order) return data.order;
+  } catch (_) {}
+  return null;
 }
 
 function gotoOrderPage() {

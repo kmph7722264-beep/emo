@@ -73,9 +73,50 @@
   <p class="footer"><a href="#" id="adminEntry">管理者入口</a></p>
 </main>
 
+<!-- 現場下單成功大通知（不發 LINE 通知，需用此畫面顯示訂單編號供領餐） -->
+<div id="walkinToast" class="walkin-toast" hidden>
+  <div class="walkin-toast-card" id="walkinToastCard">
+    <div class="walkin-toast-icon">🟠</div>
+    <div class="walkin-toast-title">現場訂單成立</div>
+    <div class="walkin-toast-order" id="wtOrder">—</div>
+    <div class="walkin-toast-lines" id="wtLines"></div>
+    <div class="walkin-toast-hint">⚠ 請拍照 / 抄下訂單編號，領餐時須出示</div>
+    <button type="button" id="walkinToastClose" class="walkin-toast-close">我知道了</button>
+  </div>
+</div>
+
+<style>
+  .walkin-toast {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .walkin-toast-card {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; min-width: 320px; max-width: 92vw;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border-top: 8px solid #f59f00;
+  }
+  .walkin-toast-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+  .walkin-toast-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 14px; }
+  .walkin-toast-order {
+    font-size: 44px; font-weight: 800; letter-spacing: 1px; color: #b76e00;
+    margin-bottom: 12px; font-family: ui-monospace, "Menlo", "Consolas", monospace;
+    background: #fff8e1; border-radius: 10px; padding: 10px 6px;
+  }
+  .walkin-toast-lines { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 10px; }
+  .walkin-toast-lines div { margin: 2px 0; }
+  .walkin-toast-hint  { font-size: 13px; color: #b3261e; margin: 10px 0 16px; font-weight: bold; }
+  .walkin-toast-close {
+    margin: 0; padding: 12px 24px; border: 0; border-radius: 8px;
+    background: #06c755; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
+  }
+</style>
+
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let walkinMode = false; // 現場點餐：掃 QR 後啟用，送出帶 body.walkin=true
@@ -197,6 +238,12 @@ async function onSubmit(ev) {
     const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
     const walkinNote = data.walkin ? '（現場點餐，未發送通知）' : '（請於領餐時出示訂單編號）';
     showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
+
+    // 現場點餐 → 跳大通知顯示訂單編號（因不發 LINE，需此畫面讓客人記下）
+    if (data.walkin && data.orderNo) {
+      showWalkinToast(data.orderNo, order);
+    }
+
     ev.target.reset();
     document.querySelector('input[name="date"]').valueAsDate = new Date();
     setWalkinMode(false);
@@ -214,6 +261,44 @@ function showMsg(text, isErr) {
   el.className = 'msg ' + (isErr ? 'err' : 'ok');
   el.hidden = false;
 }
+
+/**
+ * 現場點餐成功大通知：顯示訂單編號 + 訂餐內容，讓客人拍照/抄下作為領餐憑證。
+ * 因為現場點餐不發任何 LINE 通知（無 Flex / 無 QR 圖），此畫面是唯一憑證來源。
+ */
+function showWalkinToast(orderNo, order) {
+  document.getElementById('wtOrder').textContent = orderNo;
+  const lines = [
+    order.unit && `單位：${order.unit}`,
+    order.name && `訂購人：${order.name}`,
+    order.breakfast && `早餐：${order.breakfast}`,
+    order.lunch     && `中餐：${order.lunch}`,
+    order.dinner    && `晚餐：${order.dinner}`,
+  ].filter(Boolean);
+  document.getElementById('wtLines').innerHTML =
+    lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
+  document.getElementById('walkinToast').hidden = false;
+}
+
+function hideWalkinToast() {
+  const box = document.getElementById('walkinToast');
+  if (box) box.hidden = true;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+document.addEventListener('click', e => {
+  if (e.target && (e.target.id === 'walkinToast' || e.target.id === 'walkinToastClose')) {
+    hideWalkinToast();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideWalkinToast();
+});
 
 /**
  * 切換現場點餐模式。
