@@ -56,7 +56,8 @@
   <fieldset>
     <legend>領餐快速查詢</legend>
     <label>訂單編號
-      <input type="text" id="pickupNo" placeholder="例：20260520-001 或按右側「掃描 QR」" autocomplete="off" inputmode="text">
+      <input type="text" id="pickupNo" placeholder="輸入末 3 碼（例 001）即可，或按右側「掃描 QR」" autocomplete="off" inputmode="text">
+      <small class="field-hint">已自動帶入今日前 8 碼，輸入後 3 碼即可。掃描 QR 會直接覆寫整碼。</small>
     </label>
     <div class="btn-row">
       <button type="button" id="pickupScanBtn" class="secondary">📷 掃描 QR</button>
@@ -166,6 +167,9 @@ async function init() {
   document.getElementById('menuDate').valueAsDate  = today;
   document.getElementById('auditDate').valueAsDate = today;
 
+  // 快速查詢自動帶入「YYYYMMDD-」前綴，管理員只需打末 3 碼
+  prefillPickupNo();
+
   await loadMenuForDate(toDateStr(today));
   await loadStats({ silent: true });
   loadMenuHistory(); // 背景載入歷史菜單供 datalist 下拉用，不 await
@@ -206,6 +210,53 @@ async function init() {
 function toDateStr(d) {
   const pad = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function todayOrderPrefix() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-`;
+}
+
+/**
+ * 預填快速查詢欄位為「YYYYMMDD-」，並把游標移到 - 之後。
+ * 對應的查詢函式 onFindOrder 會在送出前再正規化：
+ *   - 純末 3 碼 → 補當日前綴 + zero-pad
+ *   - 已含「-」 → 直接送
+ *   - 完整 11 碼 → 直接送
+ */
+function prefillPickupNo() {
+  const el = document.getElementById('pickupNo');
+  if (!el) return;
+  const prefix = todayOrderPrefix();
+  el.value = prefix;
+  // 點擊時若僅剩前綴或為空，將游標移到尾端方便接著輸入末 3 碼
+  el.addEventListener('focus', () => {
+    if (!el.value) el.value = prefix;
+    setTimeout(() => {
+      const len = el.value.length;
+      try { el.setSelectionRange(len, len); } catch (_) {}
+    }, 0);
+  });
+}
+
+/**
+ * 取得使用者輸入後實際要查詢的訂單編號。
+ * 規則：
+ *   - 純數字 1~3 碼 → 補上當日 YYYYMMDD- 前綴 + zero-pad 至 3 碼
+ *   - 已是「YYYYMMDD-NNN」格式 → 直接回傳
+ *   - 其他（QR 掃出來的整碼或手打整碼）→ 原樣回傳
+ */
+function normalizePickupNo(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^\d{1,3}$/.test(s)) {
+    return todayOrderPrefix() + s.padStart(3, '0');
+  }
+  // 只輸入「-NNN」也接受
+  const m = s.match(/^-?(\d{1,3})$/);
+  if (m) return todayOrderPrefix() + m[1].padStart(3, '0');
+  return s;
 }
 
 async function postJson(payload) {
@@ -587,8 +638,14 @@ function shortTime(v) {
 }
 
 async function onFindOrder() {
-  const orderNo = document.getElementById('pickupNo').value.trim();
-  if (!orderNo) { showMsg('請輸入訂單編號', true); return; }
+  const input = document.getElementById('pickupNo');
+  const orderNo = normalizePickupNo(input.value);
+  if (!orderNo || orderNo === todayOrderPrefix()) {
+    showMsg('請輸入訂單編號末 3 碼', true);
+    return;
+  }
+  // 把正規化後的完整編號回填欄位，方便管理員確認
+  input.value = orderNo;
   try {
     const data = await postJson({ action: 'findOrder', idToken, orderNo });
     if (!data.ok) throw new Error(data.error || '查無此單');

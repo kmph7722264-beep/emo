@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMO 用餐回饋問卷</title>
+<link rel="stylesheet" href="style.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  .survey-banner { padding: 20px 16px; border-radius: 12px; text-align: center; margin: 16px 0; }
+  .survey-banner.err  { background: #fff1f0; color: #b3261e; border: 1px solid #f5c2c0; }
+  .survey-banner.info { background: #eef6ff; color: #0d3b66; border: 1px solid #cfe1f7; }
+  .survey-banner.ok   { background: #ecfdf3; color: #047a3a; border: 1px solid #c6efd6; }
+  .survey-banner h2 { margin: 0 0 6px; font-size: 17px; }
+  .survey-banner p  { margin: 0; font-size: 14px; }
+  .meals-picked { background: #f7f8fa; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #1a1a1a; }
+  .meals-picked div { margin: 2px 0; }
+  .rating-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;
+  }
+  .rating-row label {
+    flex: 1; min-width: 48px; padding: 10px 4px; border: 1px solid var(--border);
+    border-radius: 8px; text-align: center; cursor: pointer; background: #fff;
+    font-size: 14px; user-select: none;
+  }
+  .rating-row label.active {
+    background: var(--line-green); color: #fff; border-color: var(--line-green-dark);
+    font-weight: bold;
+  }
+  .rating-row input[type=radio] { display: none; }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>📝 用餐回饋問卷</h1>
+
+  <div id="loading" class="survey-banner info">
+    <h2>檢查問卷有效性…</h2>
+    <p>請稍候</p>
+  </div>
+
+  <div id="invalid" class="survey-banner err" hidden>
+    <h2 id="invalidTitle">問卷已過期失效</h2>
+    <p id="invalidMsg"></p>
+  </div>
+
+  <div id="thanks" class="survey-banner ok" hidden>
+    <h2>✅ 已收到您的回饋</h2>
+    <p>感謝您撥空填寫，期待下次為您服務。</p>
+  </div>
+
+  <form id="surveyForm" hidden>
+    <fieldset>
+      <legend>訂單資訊</legend>
+      <div class="meals-picked" id="orderInfo"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>整體滿意度 <span class="req">*</span></legend>
+      <div class="rating-row" data-name="overall"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>餐點品質 <span class="req">*</span></legend>
+      <div class="rating-row" data-name="food"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>服務態度 <span class="req">*</span></legend>
+      <div class="rating-row" data-name="service"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>其他建議</legend>
+      <textarea name="comment" rows="3" maxlength="500" placeholder="想說的話、改善建議…（最多 500 字）"></textarea>
+    </fieldset>
+
+    <button type="submit" id="submitBtn">送出問卷</button>
+  </form>
+
+  <p id="msg" class="msg" hidden></p>
+</main>
+
+<script>
+const LIFF_ID = '2010095803-L0dVVn2z';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
+
+const RATING_LABELS = ['1 很差', '2 不滿意', '3 普通', '4 滿意', '5 很好'];
+
+function getToken() {
+  const qs = new URLSearchParams(location.search);
+  let t = qs.get('t') || '';
+  if (!t && location.hash) {
+    // 兼容 LIFF 把 query 塞進 hash 的情境
+    const hashQs = new URLSearchParams(location.hash.replace(/^#/, ''));
+    t = hashQs.get('t') || hashQs.get('liff.state') || '';
+    if (t.startsWith('?')) t = new URLSearchParams(t).get('t') || '';
+  }
+  // LIFF 會以 liff.state 包 query string
+  const ls = qs.get('liff.state');
+  if (!t && ls) {
+    const sub = new URLSearchParams(ls.startsWith('?') ? ls.slice(1) : ls);
+    t = sub.get('t') || '';
+  }
+  return t;
+}
+
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+function showInvalid(title, msg) {
+  document.getElementById('loading').hidden = true;
+  document.getElementById('surveyForm').hidden = true;
+  const box = document.getElementById('invalid');
+  document.getElementById('invalidTitle').textContent = title || '問卷已過期失效';
+  document.getElementById('invalidMsg').textContent = msg || '';
+  box.hidden = false;
+}
+
+function buildRatings() {
+  document.querySelectorAll('.rating-row').forEach(row => {
+    const name = row.dataset.name;
+    row.innerHTML = RATING_LABELS.map((label, i) => {
+      const v = i + 1;
+      return `<label data-value="${v}">
+        <input type="radio" name="${name}" value="${v}" required>
+        ${label}
+      </label>`;
+    }).join('');
+    row.addEventListener('click', ev => {
+      const lbl = ev.target.closest('label');
+      if (!lbl) return;
+      row.querySelectorAll('label').forEach(l => l.classList.toggle('active', l === lbl));
+    });
+  });
+}
+
+function renderOrderInfo(order) {
+  const html = [
+    `<div><strong>訂單編號</strong>　${order.orderNo}</div>`,
+    `<div><strong>訂購日期</strong>　${order.date}</div>`,
+    order.unit ? `<div><strong>單位</strong>　${order.unit}</div>` : '',
+    order.name ? `<div><strong>訂購人</strong>　${order.name}</div>` : '',
+  ].filter(Boolean);
+  if (order.mealsPicked && order.mealsPicked.length) {
+    html.push('<div><strong>已領餐點</strong></div>');
+    order.mealsPicked.forEach(m => html.push(`<div>　・${m}</div>`));
+  } else {
+    html.push('<div style="color:#6b7280;margin-top:4px">尚無已領餐記錄</div>');
+  }
+  document.getElementById('orderInfo').innerHTML = html.join('');
+}
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+  } catch (e) {
+    showInvalid('LIFF 初始化失敗', e.message || String(e));
+    return;
+  }
+
+  const token = getToken();
+  if (!token) {
+    showInvalid('找不到問卷識別碼', '請從 LINE 訊息中的「前往填寫問卷」按鈕進入此頁。');
+    return;
+  }
+
+  // 進入問卷前先檢查有效性：token 簽章 + 訂單存在 + 帳號相符 + 未取消 + 當日訂單 + 未填過
+  let ctx;
+  try {
+    ctx = await postJson({ action: 'getSurveyContext', token });
+  } catch (e) {
+    showInvalid('連線失敗', e.message || String(e));
+    return;
+  }
+  if (!ctx.ok) {
+    const reason = ctx.reason || '';
+    const title = reason === 'expired'   ? '問卷已過期失效'
+                : reason === 'duplicate' ? '已提交過問卷'
+                : reason === 'cancelled' ? '訂單已取消'
+                : reason === 'mismatch'  ? '與您的 LINE 帳號不符'
+                : reason === 'not_found' ? '找不到訂單'
+                : '問卷無法填寫';
+    showInvalid(title, ctx.error || '');
+    return;
+  }
+
+  // 有效 → 顯示表單
+  document.getElementById('loading').hidden = true;
+  renderOrderInfo(ctx.order);
+  buildRatings();
+  document.getElementById('surveyForm').hidden = false;
+
+  document.getElementById('surveyForm').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    const fd = new FormData(ev.target);
+    const answers = {
+      overall: fd.get('overall'),
+      food:    fd.get('food'),
+      service: fd.get('service'),
+      comment: fd.get('comment') || '',
+    };
+    if (!answers.overall || !answers.food || !answers.service) {
+      showMsg('請完成全部評分項目', true);
+      btn.disabled = false;
+      return;
+    }
+    try {
+      const data = await postJson({ action: 'submitSurvey', token, answers });
+      if (!data.ok) {
+        const reason = data.reason || '';
+        if (['expired', 'duplicate', 'cancelled', 'mismatch', 'not_found', 'invalid'].includes(reason)) {
+          showInvalid(data.error || '問卷無法送出', '');
+          return;
+        }
+        throw new Error(data.error || '送出失敗');
+      }
+      document.getElementById('surveyForm').hidden = true;
+      document.getElementById('thanks').hidden = false;
+    } catch (e) {
+      showMsg('送出失敗：' + (e.message || e), true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+function showMsg(text, isErr) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.hidden = false;
+}
+
+init();
+</script>
+</body>
+</html>

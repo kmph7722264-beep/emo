@@ -14,6 +14,14 @@
   <form id="orderForm">
     <fieldset>
       <legend>訂購人資訊</legend>
+      <div class="btn-row">
+        <button type="button" id="scanPrefillBtn" class="secondary">📷 掃描 QR 自動帶入（現場點餐）</button>
+        <button type="button" id="walkinExitBtn" class="secondary" hidden>離開現場模式</button>
+      </div>
+      <small class="field-hint">現場點餐可掃舊訂單 QR：自動帶入第一次下單的單位/姓名，並依當下時段自動選好餐點。</small>
+      <div id="walkinBanner" class="msg" hidden style="margin-top:8px">
+        🟠 現場點餐模式：中餐不分 A/B/C、不受上限限制、<strong>不發送 LINE 通知與問卷</strong>。
+      </div>
       <label>單位 <span class="req">*</span>
         <input name="unit" required autocomplete="organization">
       </label>
@@ -67,9 +75,10 @@
 
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
+let walkinMode = false; // 現場點餐：掃 QR 後啟用，送出帶 body.walkin=true
 
 async function init() {
   try {
@@ -87,6 +96,8 @@ async function init() {
   await loadMenu();
   dateInput.addEventListener('change', loadMenu);
   document.getElementById('orderForm').addEventListener('submit', onSubmit);
+  document.getElementById('scanPrefillBtn').addEventListener('click', onScanPrefill);
+  document.getElementById('walkinExitBtn').addEventListener('click', () => setWalkinMode(false));
 
   const adminLink = document.getElementById('adminEntry');
   if (adminLink) {
@@ -179,14 +190,16 @@ async function onSubmit(ev) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
-      body: JSON.stringify({ action: 'order', idToken, order }),
+      body: JSON.stringify({ action: 'order', idToken, order, walkin: walkinMode }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
-    const noText = data.orderNo ? `　您的訂單編號：${data.orderNo}（請於領餐時出示）` : '';
-    showMsg('訂單已送出，感謝您！' + noText);
+    const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
+    const walkinNote = data.walkin ? '（現場點餐，未發送通知）' : '（請於領餐時出示訂單編號）';
+    showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
     ev.target.reset();
     document.querySelector('input[name="date"]').valueAsDate = new Date();
+    setWalkinMode(false);
     await loadMenu();
   } catch (e) {
     showMsg('送出失敗：' + e.message, true);
@@ -200,6 +213,87 @@ function showMsg(text, isErr) {
   el.textContent = text;
   el.className = 'msg ' + (isErr ? 'err' : 'ok');
   el.hidden = false;
+}
+
+/**
+ * 切換現場點餐模式。
+ * 開啟：掃 QR 帶入成功後自動啟用（顯示橘色 banner，送出帶 walkin=true）
+ * 關閉：使用者按「離開現場模式」或訂單送出後自動歸位
+ */
+function setWalkinMode(on) {
+  walkinMode = !!on;
+  document.getElementById('walkinBanner').hidden  = !walkinMode;
+  document.getElementById('walkinExitBtn').hidden = !walkinMode;
+}
+
+/**
+ * 掃描 QR 自動帶入：
+ *   1. liff.scanCodeV2 取得 QR 內容（通常是訂單編號 YYYYMMDD-NNN）
+ *   2. 後端 lookupOrderProfile → 拿到第一次訂單的單位/姓名/電話 + 當時段建議餐點
+ *   3. 套到表單欄位上；user 仍可手動覆寫；啟用現場點餐模式
+ */
+async function onScanPrefill() {
+  if (!window.liff) { alert('LIFF SDK 未載入，請重新整理'); return; }
+  if (typeof liff.isInClient === 'function' && !liff.isInClient()) {
+    alert('QR 掃描功能僅能在 LINE App 內使用。請改從 LINE 開啟此頁。');
+    return;
+  }
+  if (typeof liff.scanCodeV2 !== 'function') {
+    alert('此 LINE 版本不支援 QR 掃描，請更新 LINE App。');
+    return;
+  }
+  let value = '';
+  try {
+    const res = await liff.scanCodeV2();
+    value = res && res.value ? String(res.value).trim() : '';
+    if (!value) return;
+  } catch (e) {
+    const m = String((e && e.message) || e || '');
+    if (/cancel/i.test(m)) return;
+    alert('掃描失敗：' + m);
+    return;
+  }
+  // 訂單日期預設今天，避免帶到歷史日期
+  document.querySelector('input[name="date"]').valueAsDate = new Date();
+  await loadMenu();
+
+  let data;
+  try {
+    data = await postJson({ action: 'lookupOrderProfile', idToken, query: value });
+  } catch (e) {
+    showMsg('反查失敗：' + e.message, true);
+    return;
+  }
+  if (!data.ok) { showMsg(data.error || '帶入失敗', true); return; }
+
+  const p = data.profile || {};
+  if (p.unit)  document.querySelector('input[name="unit"]').value  = p.unit;
+  if (p.name)  document.querySelector('input[name="name"]').value  = p.name;
+  if (p.phone) document.querySelector('input[name="phone"]').value = p.phone;
+
+  // 依後端時段建議自動選餐點下拉
+  const meal = data.meal || {};
+  if (meal.key && meal.suggest) {
+    const sel = document.querySelector(`select[name="${meal.key}"]`);
+    if (sel) {
+      const opt = Array.from(sel.options).find(o => o.value === meal.suggest);
+      if (opt && !opt.disabled) sel.value = meal.suggest;
+    }
+  }
+
+  setWalkinMode(true);
+
+  const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
+  showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，並預選${mealLabel}：${meal.suggest}` : ''}（現場模式）`);
+}
+
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
 }
 
 init();
