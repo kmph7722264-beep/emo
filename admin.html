@@ -145,6 +145,7 @@
 </div>
 
 <style>
+  .empty-field { color: #b3261e; font-style: italic; }
   .pickup-toast[hidden] { display: none !important; }
   .pickup-toast {
     position: fixed; inset: 0; z-index: 9999;
@@ -181,7 +182,7 @@
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx1Ko7cP5-8uasGuPMOhKa80hOzq4yS8OzvYCFRjBjc9ePWJ-1mbezYJ4KMUsyZGJ_mfA/exec';
 
 let idToken = '';
 let lastStats = null;
@@ -439,11 +440,12 @@ function buildOrderCard(o) {
     div.className = 'order-row' + (allPicked ? ' picked' : ' unpicked');
   }
 
+  // 空欄位用「—」佔位，避免後續欄位前移（單位空白時看起來欄位錯位）
   const headLeft = [
-    o.unit && escapeHtml(o.unit),
-    `<strong>${escapeHtml(o.name)}</strong>`,
-    o.phone && escapeHtml(o.phone),
-  ].filter(Boolean).join('｜');
+    `<span class="${o.unit ? '' : 'empty-field'}">${o.unit ? escapeHtml(o.unit) : '— 未填單位'}</span>`,
+    `<strong>${escapeHtml(o.name || '—')}</strong>`,
+    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(o.phone) : '—'}</span>`,
+  ].join('｜');
 
   const orderNoHtml = o.orderNo
     ? `<span class="order-no">${escapeHtml(o.orderNo)}</span>` : '';
@@ -815,10 +817,10 @@ async function onFindOrder() {
 function renderPickupResult(o) {
   const box = document.getElementById('pickupResult');
   const headLeft = [
-    o.unit && escapeHtml(o.unit),
-    `<strong>${escapeHtml(o.name)}</strong>`,
-    o.phone && escapeHtml(o.phone),
-  ].filter(Boolean).join('｜');
+    `<span class="${o.unit ? '' : 'empty-field'}">${o.unit ? escapeHtml(o.unit) : '— 未填單位'}</span>`,
+    `<strong>${escapeHtml(o.name || '—')}</strong>`,
+    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(o.phone) : '—'}</span>`,
+  ].join('｜');
 
   const hasAny = !!(o.breakfast || o.lunch || o.dinner);
   const allPicked = hasAny && !hasUnpickedMeal(o);
