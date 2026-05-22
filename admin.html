@@ -133,14 +133,17 @@
   </div>
 </main>
 
-<!-- 筆電 / 外部瀏覽器使用的領餐大通知（手機 LINE App 內不顯示，避免擋畫面） -->
+<!-- 領餐大通知（手機 + 筆電皆顯示） -->
 <div id="pickupToast" class="pickup-toast" hidden>
   <div class="pickup-toast-card" id="pickupToastCard">
     <div class="pickup-toast-icon" id="ptIcon">✅</div>
     <div class="pickup-toast-title" id="ptTitle">領取完成</div>
     <div class="pickup-toast-order" id="ptOrder">—</div>
     <div class="pickup-toast-lines" id="ptLines"></div>
-    <div class="pickup-toast-hint">點任意處或按 Esc 關閉（5 秒後自動關閉）</div>
+    <div class="pickup-toast-actions" id="ptActions">
+      <button type="button" id="byobBtn" class="byob-btn">🥢 自備餐具</button>
+    </div>
+    <div class="pickup-toast-hint">未按「自備餐具」視為正常（店家提供餐具）。<br>點背景 / 按 Esc 關閉（10 秒後自動關閉）</div>
   </div>
 </div>
 
@@ -175,7 +178,17 @@
   .pickup-toast-card.info .pickup-toast-order { color: #0d3b66; }
   .pickup-toast-lines  { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 12px; }
   .pickup-toast-lines div { margin: 2px 0; }
-  .pickup-toast-hint   { font-size: 12px; color: #6b7280; margin-top: 8px; }
+  .pickup-toast-actions { margin: 12px 0 8px; display: flex; justify-content: center; }
+  .pickup-toast-actions[hidden] { display: none !important; }
+  .byob-btn {
+    padding: 14px 24px; border: 2px solid #d49a00; border-radius: 10px;
+    background: #fff8e1; color: #8a6500; font-size: 18px; font-weight: bold;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .byob-btn:hover  { background: #ffe082; }
+  .byob-btn.done   { background: #06c755; color: #fff; border-color: #047a3a; cursor: default; }
+  .byob-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+  .pickup-toast-hint   { font-size: 12px; color: #6b7280; margin-top: 8px; line-height: 1.6; }
   @keyframes pt-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes pt-pop  { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>
@@ -194,8 +207,9 @@ async function init() {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
     idToken = liff.getIDToken() || '';
-    // 非 LINE App 內（筆電瀏覽器、行動瀏覽器）→ 啟用領餐大通知
-    useBigToast = typeof liff.isInClient !== 'function' || !liff.isInClient();
+    // 領餐大通知一律啟用（手機 LINE + 筆電瀏覽器 + 行動瀏覽器）
+    // 讓現場管理員不論用哪個裝置都能看到大通知 + 自備餐具按鈕
+    useBigToast = true;
   } catch (e) {
     showMsg('LIFF 初始化失敗：' + e.message, true);
     return;
@@ -516,6 +530,7 @@ async function markPickup(orderNo, meal, picked) {
         status: 'ok',
         title: '✓ 領取完成',
         orderNo,
+        meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
         lines: [
           o ? `${o.unit || ''}　${o.name || ''}` : '',
           `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
@@ -708,6 +723,7 @@ async function scanPickup(rawOrderNo) {
         status: 'ok',
         title: '✓ 領取完成',
         orderNo,
+        meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
         lines: [
           (o.unit || o.name) ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
           o.phone ? `警用電話：${o.phone}` : '',
@@ -1001,9 +1017,10 @@ let pickupToastTimer = null;
  *   orderNo:  訂單編號（大字）
  *   lines:    細項陣列（每項一行：訂購人、餐別、時間…）
  *   beep:     true=成功音 / 'err'=失敗音
+ *   meal:     成功標領的餐別（'breakfast'|'lunch'|'dinner'）— 有值時顯示「自備餐具」按鈕
  */
 function showPickupToast(opts) {
-  const { status = 'ok', title = '', orderNo = '', lines = [], beep = true } = opts || {};
+  const { status = 'ok', title = '', orderNo = '', lines = [], beep = true, meal = '' } = opts || {};
   const box  = document.getElementById('pickupToast');
   const card = document.getElementById('pickupToastCard');
   card.className = 'pickup-toast-card ' + status;
@@ -1019,12 +1036,28 @@ function showPickupToast(opts) {
   document.getElementById('ptOrder').textContent = orderNo || '—';
   document.getElementById('ptLines').innerHTML =
     (lines || []).filter(Boolean).map(l => `<div>${escapeHtml(l)}</div>`).join('');
+
+  // 自備餐具按鈕：只有「標領成功」(status=ok 且有 meal) 才顯示
+  const actions = document.getElementById('ptActions');
+  const byobBtn = document.getElementById('byobBtn');
+  if (status === 'ok' && meal && orderNo) {
+    actions.hidden = false;
+    byobBtn.disabled = false;
+    byobBtn.classList.remove('done');
+    byobBtn.textContent = '🥢 自備餐具';
+    byobBtn.dataset.orderNo = orderNo;
+    byobBtn.dataset.meal = meal;
+  } else {
+    actions.hidden = true;
+  }
+
   box.hidden = false;
 
   if (beep) playBeep(status === 'ok' ? 'ok' : 'err');
 
   if (pickupToastTimer) clearTimeout(pickupToastTimer);
-  pickupToastTimer = setTimeout(hidePickupToast, 5000);
+  // 有自備餐具按鈕時延長到 10 秒，方便管理員按；失敗或無 meal 維持 5 秒
+  pickupToastTimer = setTimeout(hidePickupToast, (status === 'ok' && meal) ? 10000 : 5000);
 }
 
 function hidePickupToast() {
@@ -1033,9 +1066,37 @@ function hidePickupToast() {
   if (pickupToastTimer) { clearTimeout(pickupToastTimer); pickupToastTimer = null; }
 }
 
-// 點背景或按 Esc 關閉
+/**
+ * 按下「自備餐具」按鈕 → 呼叫後端 setByob 寫 AuditLog 標記。
+ * 成功後按鈕變綠色「✓ 已記錄自備餐具」並 disable，10 秒後通知自動關閉。
+ */
+async function onByobClick() {
+  const btn = document.getElementById('byobBtn');
+  const orderNo = btn.dataset.orderNo;
+  const meal    = btn.dataset.meal;
+  if (!orderNo || !meal) return;
+  btn.disabled = true;
+  btn.textContent = '送出中…';
+  try {
+    const data = await postJson({ action: 'setByob', idToken, orderNo, meal, byob: true });
+    if (!data.ok) throw new Error(data.error || '標記失敗');
+    btn.classList.add('done');
+    btn.textContent = '✓ 已記錄自備餐具';
+    // 標記成功後延長關閉時間讓使用者看清楚
+    if (pickupToastTimer) clearTimeout(pickupToastTimer);
+    pickupToastTimer = setTimeout(hidePickupToast, 4000);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '🥢 自備餐具';
+    alert('標記自備餐具失敗：' + e.message);
+  }
+}
+
+// 點背景或按 Esc 關閉；按按鈕觸發 byob
 document.addEventListener('click', e => {
-  if (e.target && e.target.id === 'pickupToast') hidePickupToast();
+  if (!e.target) return;
+  if (e.target.id === 'byobBtn') { onByobClick(); return; }
+  if (e.target.id === 'pickupToast') hidePickupToast();
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') hidePickupToast();
