@@ -37,22 +37,22 @@
       <label>早餐
         <select name="breakfast">
           <option value="">不訂購</option>
-          <option data-menu="早餐"></option>
+          <option data-menu="早餐" hidden></option>
         </select>
       </label>
       <label>中餐
         <select name="lunch">
           <option value="">不訂購</option>
-          <option data-menu="中餐A" data-prefix="A 餐：" data-lunch="A"></option>
-          <option data-menu="中餐B" data-prefix="B 餐：" data-lunch="B"></option>
-          <option data-menu="中餐C" data-prefix="C 餐：" data-lunch="C"></option>
+          <option data-menu="中餐A" data-prefix="A 餐：" data-lunch="A" hidden></option>
+          <option data-menu="中餐B" data-prefix="B 餐：" data-lunch="B" hidden></option>
+          <option data-menu="中餐C" data-prefix="C 餐：" data-lunch="C" hidden></option>
         </select>
         <small class="field-hint" id="lunchRemaining">每日上限 40 份，剩餘量載入中…</small>
       </label>
       <label>晚餐
         <select name="dinner">
           <option value="">不訂購</option>
-          <option data-menu="晚餐"></option>
+          <option data-menu="晚餐" hidden></option>
         </select>
       </label>
     </fieldset>
@@ -205,6 +205,7 @@ async function loadMenu() {
         disabled = left <= 0;
       }
       opt.textContent = baseLabel + suffix;
+      opt.hidden = false;
       opt.disabled = disabled;
     });
 
