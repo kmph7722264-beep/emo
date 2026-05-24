@@ -60,17 +60,17 @@
     <fieldset>
       <legend>備註</legend>
       <textarea name="note" rows="3" placeholder="特殊需求、過敏、辣度…"></textarea>
-    </fieldset>
-
-    <fieldset id="walkinOptionsFieldset" hidden>
-      <legend>現場用餐選項</legend>
-      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
         <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px">
         🥢 自備餐具（帶自己的餐盒 / 環保餐具）
       </label>
+    </fieldset>
+
+    <fieldset id="walkinOptionsFieldset" hidden>
+      <legend>現場訂餐選項</legend>
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px">
         <input type="checkbox" name="dineIn" id="dineInCheck" style="width:20px;height:20px">
-        🍽️ 現場用餐
+        🍽️ 現場訂餐
       </label>
     </fieldset>
 
@@ -302,8 +302,8 @@ function showWalkinToast(orderNo, order, byob, dineIn) {
     order.breakfast && `早餐：${order.breakfast}`,
     order.lunch     && `中餐：${order.lunch}`,
     order.dinner    && `晚餐：${order.dinner}`,
-    byob   ? '🥢 自備餐具' : '店家提供餐具',
-    dineIn ? '🍽️ 現場用餐' : '打包帶走',
+    byob   ? '🥢 自備餐具' : '自購餐具',
+    dineIn ? '🍽️ 現場訂餐' : '自購餐具，打包帶走',
   ].filter(Boolean);
   document.getElementById('wtLines').innerHTML =
     lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');

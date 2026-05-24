@@ -143,7 +143,7 @@
     <div class="pickup-toast-actions" id="ptActions">
       <button type="button" id="byobBtn" class="byob-btn">🥢 自備餐具</button>
     </div>
-    <div class="pickup-toast-hint">未按「自備餐具」視為正常（店家提供餐具）。<br>點背景 / 按 Esc 關閉（10 秒後自動關閉）</div>
+    <div class="pickup-toast-hint">點背景 / 按 Esc 關閉（10 秒後自動關閉）</div>
   </div>
 </div>
 
@@ -1053,8 +1053,8 @@ async function pollWalkinOrders() {
 }
 
 function showNewWalkinToast(o) {
-  const byobLine  = o.byob   ? '🥢 自備餐具' : '店家提供餐具';
-  const dineInLine = o.dineIn ? '🍽️ 現場用餐' : '打包帶走';
+  const byobLine  = o.byob   ? '🥢 自備餐具' : '自購餐具';
+  const dineInLine = o.dineIn ? '🍽️ 現場用餐' : '自購餐具，打包帶走';
   const meals = [
     o.breakfast ? `早：${o.breakfast}` : '',
     o.lunch     ? `中：${o.lunch}`     : '',
