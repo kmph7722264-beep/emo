@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日菜單</title>
+<link rel="stylesheet" href="style.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+.date-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.date-bar input[type="date"] {
+  flex: 1; font-size: 16px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: #fff; color: var(--text);
+}
+.btn-today {
+  flex-shrink: 0; padding: 10px 14px;
+  font: 600 14px/1 inherit; color: var(--line-green-dark);
+  background: #f0fdf4; border: 1px solid var(--line-green);
+  border-radius: 8px; cursor: pointer;
+}
+/* 餐別大卡片 */
+.meal-card {
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 14px; overflow: hidden;
+}
+.meal-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  font-weight: 700; font-size: 15px;
+}
+.meal-card-header .meal-icon { font-size: 20px; }
+.meal-card-body { padding: 0 16px 14px; }
+/* 餐點名稱 */
+.meal-name {
+  font-size: 17px; font-weight: 600; color: var(--text);
+  margin: 10px 0 6px;
+}
+.meal-name.empty { color: var(--muted); font-size: 14px; font-weight: 400; }
+/* 狀態 badge */
+.status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.badge-status {
+  display: inline-block; padding: 3px 10px;
+  font-size: 12px; font-weight: 600; border-radius: 999px;
+}
+.badge-open     { background: #dcfce7; color: #166534; }
+.badge-closed   { background: #fee2e2; color: #991b1b; }
+.badge-full     { background: #fef3c7; color: #92400e; }
+.badge-future   { background: #e0f2fe; color: #075985; }
+.remain-text { font-size: 12px; color: var(--muted); }
+/* 中餐 A/B/C 子卡 */
+.lunch-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.lunch-item {
+  background: #fafafa; border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.lunch-item-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.lunch-label {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.lunch-label.A { background: #2563eb; }
+.lunch-label.B { background: #16a34a; }
+.lunch-label.C { background: #d97706; }
+.lunch-name { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; }
+.lunch-remain { font-size: 12px; color: var(--muted); }
+/* header 顏色 */
+.mc-breakfast .meal-card-header { background: #fffbeb; }
+.mc-lunch     .meal-card-header { background: #f0fdf4; }
+.mc-dinner    .meal-card-header { background: #eff6ff; }
+/* 底部訂餐按鈕 */
+.order-btn-wrap { margin-top: 20px; }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>📋 每日菜單</h1>
+
+  <div class="date-bar">
+    <input type="date" id="dateInput">
+    <button class="btn-today" id="btnToday">今天</button>
+  </div>
+
+  <div id="menuContent"></div>
+
+  <div class="order-btn-wrap">
+    <button id="btnOrder">🛒 前往訂餐</button>
+  </div>
+
+  <p id="msg" class="msg" hidden></p>
+</main>
+
+<script>
+const LIFF_ID  = '2010095803-RMGuPkW1';
+const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const ORDER_URL = 'https://liff.line.me/2010095803-Neg2TBst';
+
+const $date    = document.getElementById('dateInput');
+const $content = document.getElementById('menuContent');
+const $msg     = document.getElementById('msg');
+const $btnOrder = document.getElementById('btnOrder');
+
+function todayStr() {
+  return new Date().toLocaleDateString('sv-SE');   // YYYY-MM-DD
+}
+
+function fmt(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return isNaN(dt) ? String(d) : `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+}
+
+function badge(label, cls) {
+  return `<span class="badge-status ${cls}">${label}</span>`;
+}
+
+function mealStatus(orderable, isPast) {
+  if (isPast) return badge('已結單', 'badge-closed');
+  if (orderable) return badge('可訂購', 'badge-open');
+  return badge('今日已結單', 'badge-closed');
+}
+
+async function loadMenu() {
+  const date = $date.value || todayStr();
+  $content.innerHTML = '<p class="hint">載入中…</p>';
+  $msg.hidden = true;
+  try {
+    const res  = await fetch(`${API_URL}?action=menu&date=${encodeURIComponent(date)}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const { menu, remaining, orderable, orderCutoff } = data;
+    const today   = todayStr();
+    const isPast  = date < today;
+    const isFuture = date > today;
+
+    let html = '';
+
+    // ── 早餐 ───────────────────────────────────────
+    const bfStatus = isFuture ? badge('未來日期', 'badge-future')
+                   : mealStatus(orderable.breakfast, isPast);
+    html += `
+    <div class="meal-card mc-breakfast">
+      <div class="meal-card-header">
+        <span class="meal-icon">🌅</span> 早餐
+        <span style="margin-left:auto">${bfStatus}</span>
+      </div>
+      <div class="meal-card-body">
+        <div class="meal-name ${menu['早餐'] ? '' : 'empty'}">
+          ${menu['早餐'] || '（尚未設定）'}
+        </div>
+        ${!isPast && !isFuture ? `<div class="remain-text">結單時間 ${orderCutoff.breakfast}</div>` : ''}
+      </div>
+    </div>`;
+
+    // ── 中餐 A / B / C ─────────────────────────────
+    const lunchStatus = isFuture ? badge('未來日期', 'badge-future')
+                      : mealStatus(orderable.lunch, isPast);
+    const lunchItems = ['A','B','C'].map(k => {
+      const name = menu[`中餐${k}`] || '（尚未設定）';
+      const rem  = remaining ? remaining[k] : null;
+      const isFull = rem !== null && rem <= 0;
+      const remBadge = isFull ? badge('已額滿', 'badge-full')
+                     : rem !== null ? `<span class="lunch-remain">剩 ${rem} 份</span>` : '';
+      return `
+      <div class="lunch-item">
+        <div class="lunch-item-head">
+          <span class="lunch-label ${k}">${k}</span>
+          <span class="lunch-name ${name === '（尚未設定）' ? 'empty' : ''}">${name}</span>
+          ${remBadge}
+        </div>
+      </div>`;
+    }).join('');
+
+    html += `
+    <div class="meal-card mc-lunch">
+      <div class="meal-card-header">
+        <span class="meal-icon">☀️</span> 中餐
+        <span style="margin-left:auto">${lunchStatus}</span>
+      </div>
+      <div class="meal-card-body">
+        <div class="lunch-grid">${lunchItems}</div>
+        ${!isPast && !isFuture ? `<div class="remain-text" style="margin-top:6px">結單時間 ${orderCutoff.lunch}　每餐上限 40 份</div>` : ''}
+      </div>
+    </div>`;
+
+    // ── 晚餐 ───────────────────────────────────────
+    const dnStatus = isFuture ? badge('未來日期', 'badge-future')
+                   : mealStatus(orderable.dinner, isPast);
+    html += `
+    <div class="meal-card mc-dinner">
+      <div class="meal-card-header">
+        <span class="meal-icon">🌙</span> 晚餐
+        <span style="margin-left:auto">${dnStatus}</span>
+      </div>
+      <div class="meal-card-body">
+        <div class="meal-name ${menu['晚餐'] ? '' : 'empty'}">
+          ${menu['晚餐'] || '（尚未設定）'}
+        </div>
+        ${!isPast && !isFuture ? `<div class="remain-text">結單時間 ${orderCutoff.dinner}</div>` : ''}
+      </div>
+    </div>`;
+
+    $content.innerHTML = html;
+  } catch (e) {
+    $content.innerHTML = '';
+    $msg.textContent = '載入失敗：' + e.message;
+    $msg.className = 'msg err'; $msg.hidden = false;
+  }
+}
+
+document.getElementById('btnToday').addEventListener('click', () => {
+  $date.value = todayStr();
+  loadMenu();
+});
+
+$date.addEventListener('change', loadMenu);
+
+$btnOrder.addEventListener('click', () => {
+  const dest = ORDER_URL + '?date=' + encodeURIComponent($date.value || todayStr());
+  if (window.liff && liff.openWindow) {
+    liff.openWindow({ url: dest, external: false });
+  } else {
+    location.href = dest;
+  }
+});
+
+// 初始化
+(async () => {
+  $date.value = todayStr();
+  try {
+    await liff.init({ liffId: LIFF_ID });
+  } catch (e) { /* 允許非 LIFF 環境使用 */ }
+  loadMenu();
+})();
+</script>
+</body>
+</html>
