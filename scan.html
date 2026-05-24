@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>現場用餐 掃碼點餐</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<!-- jsQR：純 JS QR 辨識，用於 fallback 相機模式 -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --orange: #f58012;
+  --orange-d: #c9640a;
+  --green: #06c755;
+  --err: #d23f3f;
+}
+
+body {
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Noto Sans TC",
+        "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: #000;
+  color: #fff;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── 載入中 ─────────────────────────────────────────── */
+#loadScreen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+  background: #111;
+}
+.spinner {
+  width: 52px; height: 52px;
+  border: 5px solid rgba(255,255,255,.15);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loadScreen p { font-size: 15px; color: #bbb; }
+
+/* ── scanCodeV2 模式：等待畫面（LINE 接管相機） ─────── */
+#waitScreen {
+  position: fixed; inset: 0;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px;
+  background: linear-gradient(160deg, #1a1a2e 0%, #0d0d1a 100%);
+  padding: 32px 24px;
+}
+#waitScreen .icon { font-size: 80px; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+#waitScreen h1 {
+  font-size: 22px; font-weight: 700; text-align: center;
+  color: #fff;
+}
+#waitScreen p { font-size: 14px; color: #aaa; text-align: center; line-height: 1.7; }
+.btn-primary {
+  width: 100%; max-width: 280px;
+  padding: 15px;
+  font: 700 17px/1 inherit;
+  color: #fff;
+  background: var(--orange);
+  border: 0; border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(245,128,18,.4);
+  transition: opacity .15s;
+}
+.btn-primary:active { opacity: .82; }
+.btn-secondary {
+  width: 100%; max-width: 280px;
+  padding: 12px;
+  font: 500 14px/1 inherit;
+  color: #aaa;
+  background: transparent;
+  border: 1px solid #444; border-radius: 12px;
+  cursor: pointer;
+}
+
+/* ── Fallback：在頁面內顯示相機 ─────────────────────── */
+#camScreen {
+  position: fixed; inset: 0;
+  display: none;
+  background: #000;
+}
+#video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+/* 暗色遮罩 + 鏤空取景框 */
+.cam-mask {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.55);
+  /* 用 clip-path 挖空中央正方形 */
+  --vf: min(72vw, 300px);
+  --vx: calc((100% - var(--vf)) / 2);
+  --vy: calc((100% - var(--vf)) / 2 - 40px);
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% 100%, 0% 100%,          /* 外框 */
+    0% var(--vy),                                  /* 切入左上 */
+    var(--vx) var(--vy),                           /* 上左角 */
+    var(--vx) calc(var(--vy) + var(--vf)),         /* 下左角 */
+    calc(var(--vx) + var(--vf)) calc(var(--vy) + var(--vf)), /* 下右角 */
+    calc(var(--vx) + var(--vf)) var(--vy),         /* 上右角 */
+    0% var(--vy)
+  );
+}
+/* 取景框邊框（角落 L 形） */
+.viewfinder {
+  position: absolute;
+  width: min(72vw, 300px);
+  height: min(72vw, 300px);
+  left: 50%; top: 50%;
+  transform: translate(-50%, calc(-50% - 40px));
+}
+.vf-corner {
+  position: absolute;
+  width: 28px; height: 28px;
+  border-color: var(--orange);
+  border-style: solid;
+}
+.vf-corner.tl { top: 0; left: 0;  border-width: 4px 0 0 4px; border-radius: 6px 0 0 0; }
+.vf-corner.tr { top: 0; right: 0; border-width: 4px 4px 0 0; border-radius: 0 6px 0 0; }
+.vf-corner.bl { bottom: 0; left: 0;  border-width: 0 0 4px 4px; border-radius: 0 0 0 6px; }
+.vf-corner.br { bottom: 0; right: 0; border-width: 0 4px 4px 0; border-radius: 0 0 6px 0; }
+/* 掃描線 */
+.scan-line {
+  position: absolute;
+  left: 8px; right: 8px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  border-radius: 2px;
+  animation: scanMove 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--orange);
+}
+@keyframes scanMove {
+  0%   { top: 8px; }
+  50%  { top: calc(100% - 11px); }
+  100% { top: 8px; }
+}
+/* 提示文字 & 取消鈕 */
+.cam-hint {
+  position: absolute;
+  bottom: calc(50% - min(36vw, 150px) - 20px - 52px);
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 14px; color: #ccc;
+  pointer-events: none;
+}
+.cam-hint-top {
+  position: absolute;
+  top: calc(50% - min(36vw, 150px) - 20px - 44px);
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 15px; font-weight: 600; color: #fff;
+  pointer-events: none;
+}
+.btn-cam-cancel {
+  position: absolute;
+  bottom: 48px; left: 50%;
+  transform: translateX(-50%);
+  padding: 11px 36px;
+  font: 600 15px/1 inherit;
+  color: #fff;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 30px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+/* QR 偵測成功閃光 */
+#successFlash {
+  position: absolute; inset: 0;
+  background: rgba(6,199,85,.35);
+  display: none;
+  animation: flash .3s ease-out;
+}
+@keyframes flash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* 頁面右上 torch 按鈕（補光）*/
+.btn-torch {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 44px; height: 44px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+}
+canvas#scanCanvas { display: none; }
+
+/* ── 錯誤 / 引導畫面 ────────────────────────────────── */
+#errScreen {
+  position: fixed; inset: 0;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px; padding: 32px 24px;
+  background: #111;
+}
+#errScreen .err-icon { font-size: 56px; }
+#errScreen h2 { font-size: 18px; font-weight: 700; text-align: center; }
+#errScreen p  { font-size: 13px; color: #aaa; text-align: center; line-height: 1.7; }
+.guide-steps {
+  width: 100%; max-width: 320px;
+  background: #1e1e1e;
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+.guide-steps li {
+  font-size: 14px; color: #ccc;
+  padding: 6px 0;
+  list-style: none;
+  border-bottom: 1px solid #2a2a2a;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.guide-steps li:last-child { border-bottom: 0; }
+.guide-steps .step-no {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  background: var(--orange);
+  border-radius: 50%;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; margin-top: 1px;
+}
+</style>
+</head>
+<body>
+
+<!-- ① 初始載入 -->
+<div id="loadScreen">
+  <div class="spinner"></div>
+  <p>正在啟動相機…</p>
+</div>
+
+<!-- ② scanCodeV2 等待（LINE 接管相機後此畫面在背後） -->
+<div id="waitScreen">
+  <div class="icon">📷</div>
+  <h1>現場用餐掃碼點餐</h1>
+  <p>相機已準備好<br>請將鏡頭對準桌上的 QR Code</p>
+  <button class="btn-primary" id="btnOpenScan">再次開啟相機掃描</button>
+  <button class="btn-secondary" id="btnSkipScan">直接點餐（不掃碼）</button>
+</div>
+
+<!-- ③ 相機 fallback（getUserMedia + jsQR） -->
+<div id="camScreen">
+  <video id="video" autoplay playsinline muted></video>
+  <div class="cam-mask"></div>
+  <div class="viewfinder">
+    <div class="vf-corner tl"></div>
+    <div class="vf-corner tr"></div>
+    <div class="vf-corner bl"></div>
+    <div class="vf-corner br"></div>
+    <div class="scan-line"></div>
+  </div>
+  <canvas id="scanCanvas"></canvas>
+  <div class="cam-hint-top">現場用餐掃碼點餐</div>
+  <div class="cam-hint">將鏡頭對準桌上的 QR Code</div>
+  <div id="successFlash"></div>
+  <button class="btn-torch" id="btnTorch" title="補光燈">🔦</button>
+  <button class="btn-cam-cancel" id="btnCamCancel">取消</button>
+</div>
+
+<!-- ④ 錯誤 / 手動引導 -->
+<div id="errScreen">
+  <div class="err-icon">⚠️</div>
+  <h2 id="errTitle">無法開啟相機</h2>
+  <p id="errDesc">請依下列步驟手動開啟相機掃描桌上的 QR Code</p>
+  <ol class="guide-steps" id="guideList">
+    <li><span class="step-no">1</span>
+        <span>關閉此頁面，回到 LINE 主畫面</span></li>
+    <li><span class="step-no">2</span>
+        <span>點右上角的「＋」或搜尋框旁的掃描圖示</span></li>
+    <li><span class="step-no">3</span>
+        <span>對準桌上的 QR Code 掃描</span></li>
+  </ol>
+  <button class="btn-primary" id="btnRetry">重試開啟相機</button>
+  <button class="btn-secondary" id="btnErrSkip">直接點餐（不掃碼）</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   ★ 請在此修改您的設定
+   ═══════════════════════════════════════════════ */
+const SCAN_LIFF_ID = '@@SCAN_LIFF_ID@@';   // 本頁 LIFF App 的 ID（需開啟 Scan QR 權限）
+const ORDER_URL    = '@@ORDER_LIFF_URL@@';  // order.html 的完整 LIFF URL
+/* ═══════════════════════════════════════════════ */
+
+// ── DOM ──────────────────────────────────────────────────────
+const $load      = document.getElementById('loadScreen');
+const $wait      = document.getElementById('waitScreen');
+const $cam       = document.getElementById('camScreen');
+const $err       = document.getElementById('errScreen');
+const $errTitle  = document.getElementById('errTitle');
+const $errDesc   = document.getElementById('errDesc');
+const $video     = document.getElementById('video');
+const $canvas    = document.getElementById('scanCanvas');
+const $flash     = document.getElementById('successFlash');
+const btnOpenScan  = document.getElementById('btnOpenScan');
+const btnSkipScan  = document.getElementById('btnSkipScan');
+const btnCamCancel = document.getElementById('btnCamCancel');
+const btnTorch     = document.getElementById('btnTorch');
+const btnRetry     = document.getElementById('btnRetry');
+const btnErrSkip   = document.getElementById('btnErrSkip');
+
+let camStream    = null;
+let rafId        = null;
+let torchOn      = false;
+let scanDone     = false;
+
+// ── 畫面切換 ─────────────────────────────────────────────────
+function show(el) {
+  [$load, $wait, $cam, $err].forEach(e => {
+    e.style.display = (e === el) ? 'flex' : 'none';
+  });
+}
+
+// ── 目的地處理 ───────────────────────────────────────────────
+function buildDest(raw) {
+  try {
+    new URL(raw);
+    return raw;                          // 已是完整 URL
+  } catch {
+    // 純文字（桌號）→ 組合 ORDER_URL
+    const sep = ORDER_URL.includes('?') ? '&' : '?';
+    return `${ORDER_URL}${sep}walkin=true&table=${encodeURIComponent(raw)}`;
+  }
+}
+
+function navigate(dest) {
+  if (!dest) dest = `${ORDER_URL}${ORDER_URL.includes('?') ? '&' : '?'}walkin=true`;
+  if (typeof liff !== 'undefined' && liff.openWindow) {
+    liff.openWindow({ url: dest, external: false });
+  } else {
+    location.href = dest;
+  }
+}
+
+// ── 策略 A：liff.scanCodeV2()（LINE 接管相機）────────────────
+async function tryScanCodeV2() {
+  scanDone = false;
+  try {
+    const result = await liff.scanCodeV2();
+    if (scanDone) return;   // fallback 已先完成
+    const raw = result && result.value ? result.value.trim() : '';
+    if (!raw) {
+      // 使用者取消 → 回到等待畫面讓他重試
+      show($wait);
+      return;
+    }
+    scanDone = true;
+    navigate(buildDest(raw));
+  } catch (err) {
+    if (scanDone) return;
+    const code = err && (err.code || err.message || String(err));
+    // 使用者主動取消（CANCEL / USER_CANCEL）
+    if (/cancel/i.test(code)) {
+      show($wait);
+      return;
+    }
+    // LIFF_NOT_SUPPORT_FEATURE → 裝置/版本不支援 → 啟動 fallback
+    if (/not.*support|unsupport|LIFF_NOT_SUPPORT/i.test(code)) {
+      startCamFallback();
+      return;
+    }
+    // 其他錯誤 → 嘗試 fallback；若也失敗則顯示引導
+    startCamFallback();
+  }
+}
+
+// ── 策略 B：getUserMedia + jsQR（頁面內相機）────────────────
+async function startCamFallback() {
+  show($cam);
+  scanDone = false;
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+      audio: false,
+    });
+    $video.srcObject = camStream;
+    await $video.play();
+    requestAnimationFrame(scanFrame);
+  } catch (err) {
+    // 相機被拒絕或不支援 → 顯示手動引導
+    stopCam();
+    const denied = /denied|disallow|permission/i.test(String(err));
+    showGuide(
+      denied ? '相機權限已被拒絕' : '此裝置不支援相機存取',
+      denied
+        ? '請至手機「設定 → 隱私權 → 相機」開放 LINE 的相機存取權限，再重新嘗試。'
+        : '請手動開啟 LINE 相機（右上角掃描圖示）掃描桌上的 QR Code。'
+    );
+  }
+}
+
+// ── jsQR 逐幀掃描 ────────────────────────────────────────────
+function scanFrame() {
+  if (scanDone || $video.readyState < 2) {
+    if (!scanDone) rafId = requestAnimationFrame(scanFrame);
+    return;
+  }
+  const vw = $video.videoWidth;
+  const vh = $video.videoHeight;
+  if (!vw || !vh) { rafId = requestAnimationFrame(scanFrame); return; }
+
+  $canvas.width  = vw;
+  $canvas.height = vh;
+  const ctx = $canvas.getContext('2d');
+  ctx.drawImage($video, 0, 0, vw, vh);
+  const imgData = ctx.getImageData(0, 0, vw, vh);
+
+  const code = window.jsQR && window.jsQR(imgData.data, vw, vh, {
+    inversionAttempts: 'dontInvert',
+  });
+
+  if (code && code.data) {
+    scanDone = true;
+    stopCam();
+    // 成功閃光
+    $flash.style.display = 'block';
+    setTimeout(() => navigate(buildDest(code.data.trim())), 350);
+    return;
+  }
+  rafId = requestAnimationFrame(scanFrame);
+}
+
+// ── 停止相機 ─────────────────────────────────────────────────
+function stopCam() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  $video.srcObject = null;
+}
+
+// ── 補光燈（torch）───────────────────────────────────────────
+async function toggleTorch() {
+  if (!camStream) return;
+  const track = camStream.getVideoTracks()[0];
+  if (!track || !track.getCapabilities) return;
+  const caps = track.getCapabilities();
+  if (!caps.torch) { btnTorch.style.opacity = '.3'; return; }
+  torchOn = !torchOn;
+  await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+  btnTorch.textContent = torchOn ? '💡' : '🔦';
+}
+
+// ── 引導畫面 ─────────────────────────────────────────────────
+function showGuide(title, desc) {
+  $errTitle.textContent = title || '無法開啟相機';
+  $errDesc.textContent  = desc  || '';
+  show($err);
+}
+
+// ── 事件 ─────────────────────────────────────────────────────
+btnOpenScan.addEventListener('click', tryScanCodeV2);
+btnSkipScan.addEventListener('click', () => navigate());
+btnCamCancel.addEventListener('click', () => { stopCam(); show($wait); });
+btnTorch.addEventListener('click', toggleTorch);
+btnRetry.addEventListener('click', () => startCamFallback());
+btnErrSkip.addEventListener('click', () => navigate());
+
+// 離開頁面時釋放相機
+window.addEventListener('pagehide', stopCam);
+window.addEventListener('beforeunload', stopCam);
+
+// ── LIFF 初始化 ─ 啟動後立即自動掃描 ──────────────────────
+(async () => {
+  show($load);
+  try {
+    const params   = new URLSearchParams(location.search);
+    const liffId   = (SCAN_LIFF_ID && !SCAN_LIFF_ID.startsWith('@@'))
+                       ? SCAN_LIFF_ID
+                       : params.get('liffId') || '';
+    if (!liffId) {
+      showGuide('設定尚未完成', '請聯絡管理員，LIFF ID 尚未填入 scan.html。');
+      return;
+    }
+    await liff.init({ liffId });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+
+    // 直接嘗試 scanCodeV2；若不支援則 catch 自動切 fallback
+    await tryScanCodeV2();
+
+    // scanCodeV2 呼叫後 LINE 接管畫面；若 LINE 版本舊不接管，顯示等待畫面
+    if (!scanDone) show($wait);
+
+  } catch (err) {
+    showGuide('啟動失敗', 'LIFF 初始化錯誤：' + (err && err.message ? err.message : err));
+  }
+})();
+</script>
+</body>
+</html>
