@@ -230,7 +230,7 @@ function render() {
     $list.innerHTML = `
       <div class="empty-state">
         <div class="ei">${curTab === 'survey' ? '✅' : '📭'}</div>
-        <p>${curTab === 'survey' ? '目前沒有待填的問卷，感謝您！' : '尚無訂單紀錄'}</p>
+        <p>${curTab === 'survey' ? '查無待填問卷' : '查無訂單'}</p>
       </div>`;
     return;
   }
@@ -284,8 +284,8 @@ async function loadOrders() {
     }
     render();
   } catch (e) {
-    $list.innerHTML = '';
-    showMsg('載入失敗：' + e.message);
+    allOrders = [];
+    render();
   }
 }
 
