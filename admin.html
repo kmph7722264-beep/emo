@@ -239,6 +239,7 @@ async function init() {
   await loadStats({ silent: true });
   loadMenuHistory(); // 背景載入歷史菜單供 datalist 下拉用，不 await
 
+  startWalkinPolling();
   document.getElementById('statsBtn').addEventListener('click', () => loadStats());
   document.getElementById('menuLoadBtn').addEventListener('click', () => {
     const d = document.getElementById('menuDate').value;
@@ -326,6 +327,21 @@ function prefillPickupNo() {
 function normalizePickupNo(raw) {
   const s = String(raw || '').trim();
   if (!s) return '';
+  // 0. URL 格式（手機相機掃描含 LIFF URL 的 QR Code）→ 提取 order= 參數
+  if (s.indexOf('://') >= 0 || s.indexOf('order=') >= 0) {
+    try {
+      const u = s.indexOf('://') >= 0 ? new URL(s) : new URL('https://x?' + s.split('?').slice(1).join('?'));
+      const o = u.searchParams.get('order');
+      if (o) {
+        const tail2 = o.match(/(\d{8}-\d{1,3})$/);
+        if (tail2) {
+          const parts2 = tail2[1].split('-');
+          return parts2[0] + '-' + parts2[1].padStart(3, '0');
+        }
+        return o;
+      }
+    } catch (_) {}
+  }
   // 1. 字串末尾出現完整 YYYYMMDD-NNN（含被預填前綴重複夾擊的情境）
   const tail = s.match(/(\d{8}-\d{1,3})\s*$/);
   if (tail) {
@@ -532,10 +548,12 @@ async function markPickup(orderNo, meal, picked) {
         orderNo,
         meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
         lines: [
-          o ? `${o.unit || ''}　${o.name || ''}` : '',
+          o ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
           `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
+          (o && o.byob)   ? '🥢 自備餐具' : '',
+          (o && o.dineIn) ? '🍽️ 現場用餐' : '',
           `領餐時間：${shortTime(new Date().toISOString())}`,
-        ],
+        ].filter(Boolean),
       });
     }
     if (lastStats) {
@@ -728,6 +746,8 @@ async function scanPickup(rawOrderNo) {
           (o.unit || o.name) ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
           o.phone ? `警用電話：${o.phone}` : '',
           `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
+          o.byob   ? '🥢 自備餐具' : '',
+          o.dineIn ? '🍽️ 現場用餐' : '',
           `領餐時間：${shortTime(data.pickedAt)}`,
         ].filter(Boolean),
       });
@@ -1010,17 +1030,63 @@ function showMsg(text, mode) {
 
 let pickupToastTimer = null;
 
+/* ============================================================
+ * 現場點餐新訂單輪詢（每 5 秒）
+ * 有新訂單時顯示大通知（停留 5 秒）供出餐口管理者確認
+ * ============================================================ */
+let walkinPollTime = new Date().toISOString();
+let walkinPollTimer = null;
+
+function startWalkinPolling() {
+  if (walkinPollTimer) return;
+  walkinPollTimer = setInterval(pollWalkinOrders, 5000);
+}
+
+async function pollWalkinOrders() {
+  try {
+    const data = await postJson({ action: 'getRecentWalkinOrders', idToken, since: walkinPollTime });
+    if (data.serverTime) walkinPollTime = data.serverTime;
+    if (data.ok && data.orders && data.orders.length > 0) {
+      data.orders.forEach(o => showNewWalkinToast(o));
+    }
+  } catch (_) { /* 輪詢失敗靜默，下次繼續 */ }
+}
+
+function showNewWalkinToast(o) {
+  const byobLine  = o.byob   ? '🥢 自備餐具' : '店家提供餐具';
+  const dineInLine = o.dineIn ? '🍽️ 現場用餐' : '打包帶走';
+  const meals = [
+    o.breakfast ? `早：${o.breakfast}` : '',
+    o.lunch     ? `中：${o.lunch}`     : '',
+    o.dinner    ? `晚：${o.dinner}`    : '',
+  ].filter(Boolean);
+  showPickupToast({
+    status: 'info',
+    title: '🟠 新現場訂單',
+    orderNo: o.orderNo,
+    lines: [
+      `${o.unit || ''}　${o.name || ''}`.trim(),
+      byobLine,
+      dineInLine,
+      ...meals,
+    ].filter(Boolean),
+    beep: true,
+    forceDuration: 5000,
+  });
+}
+
 /**
  * @param {object} opts
- *   status:   'ok' | 'err' | 'warn' | 'info'
- *   title:    上方標題（例：✓ 領取完成）
- *   orderNo:  訂單編號（大字）
- *   lines:    細項陣列（每項一行：訂購人、餐別、時間…）
- *   beep:     true=成功音 / 'err'=失敗音
- *   meal:     成功標領的餐別（'breakfast'|'lunch'|'dinner'）— 有值時顯示「自備餐具」按鈕
+ *   status:      'ok' | 'err' | 'warn' | 'info'
+ *   title:       上方標題
+ *   orderNo:     訂單編號（大字）
+ *   lines:       細項陣列
+ *   beep:        true=成功音 / 'err'=失敗音
+ *   meal:        成功標領的餐別 — 有值時顯示「自備餐具」按鈕
+ *   forceDuration: 覆寫停留毫秒數（預設依 status/meal 自動決定）
  */
 function showPickupToast(opts) {
-  const { status = 'ok', title = '', orderNo = '', lines = [], beep = true, meal = '' } = opts || {};
+  const { status = 'ok', title = '', orderNo = '', lines = [], beep = true, meal = '', forceDuration } = opts || {};
   const box  = document.getElementById('pickupToast');
   const card = document.getElementById('pickupToastCard');
   card.className = 'pickup-toast-card ' + status;
@@ -1056,8 +1122,10 @@ function showPickupToast(opts) {
   if (beep) playBeep(status === 'ok' ? 'ok' : 'err');
 
   if (pickupToastTimer) clearTimeout(pickupToastTimer);
-  // 有自備餐具按鈕時延長到 10 秒，方便管理員按；失敗或無 meal 維持 5 秒
-  pickupToastTimer = setTimeout(hidePickupToast, (status === 'ok' && meal) ? 10000 : 5000);
+  // forceDuration → 覆寫；有自備餐具按鈕延長 10 秒；其他 5 秒
+  const dur = forceDuration != null ? forceDuration
+    : (status === 'ok' && meal) ? 10000 : 5000;
+  pickupToastTimer = setTimeout(hidePickupToast, dur);
 }
 
 function hidePickupToast() {

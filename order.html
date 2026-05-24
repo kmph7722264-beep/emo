@@ -14,13 +14,9 @@
   <form id="orderForm">
     <fieldset>
       <legend>訂購人資訊</legend>
-      <div class="btn-row">
-        <button type="button" id="scanPrefillBtn" class="secondary">📷 掃描 QR 自動帶入（現場點餐）</button>
-        <button type="button" id="walkinExitBtn" class="secondary" hidden>離開現場模式</button>
-      </div>
-      <small class="field-hint">現場點餐可掃舊訂單 QR：自動帶入第一次下單的單位/姓名，並依當下時段自動選好餐點。</small>
       <div id="walkinBanner" class="msg" hidden style="margin-top:8px">
         🟠 現場點餐模式：中餐不分 A/B/C、不受上限限制、<strong>不發送 LINE 通知與問卷</strong>。
+        <div id="walkinWindowInfo" style="font-size:13px;margin-top:4px;color:#7a4400"></div>
       </div>
       <label>單位 <span class="req">*</span>
         <input name="unit" required autocomplete="organization">
@@ -64,6 +60,18 @@
     <fieldset>
       <legend>備註</legend>
       <textarea name="note" rows="3" placeholder="特殊需求、過敏、辣度…"></textarea>
+    </fieldset>
+
+    <fieldset id="walkinOptionsFieldset">
+      <legend>現場用餐選項</legend>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px">
+        🥢 自備餐具（帶自己的餐盒 / 環保餐具）
+      </label>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" name="dineIn" id="dineInCheck" style="width:20px;height:20px">
+        🍽️ 現場用餐
+      </label>
     </fieldset>
 
     <button type="submit" id="submitBtn">送出訂單</button>
@@ -117,10 +125,10 @@
 
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
-const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
 
 let idToken = '';
-let walkinMode = false; // 現場點餐：掃 QR 後啟用，送出帶 body.walkin=true
+let walkinMode = false; // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
 
 async function init() {
   try {
@@ -138,8 +146,6 @@ async function init() {
   await loadMenu();
   dateInput.addEventListener('change', loadMenu);
   document.getElementById('orderForm').addEventListener('submit', onSubmit);
-  document.getElementById('scanPrefillBtn').addEventListener('click', onScanPrefill);
-  document.getElementById('walkinExitBtn').addEventListener('click', () => setWalkinMode(false));
 
   const adminLink = document.getElementById('adminEntry');
   if (adminLink) {
@@ -152,6 +158,14 @@ async function init() {
         window.location.href = url;
       }
     });
+  }
+
+  // 偵測 URL 參數：手機相機掃描訂單 QR Code 後開啟頁面
+  // QR Code 內容為 https://liff.line.me/xxx?order=YYYYMMDD-NNN
+  const params = new URLSearchParams(window.location.search);
+  const orderParam = params.get('order');
+  if (orderParam) {
+    await activateWalkinFromOrder(orderParam);
   }
 }
 
@@ -227,6 +241,8 @@ async function onSubmit(ev) {
   btn.disabled = true;
   const fd = new FormData(ev.target);
   const order = Object.fromEntries(fd.entries());
+  const byob   = !!fd.get('byob');
+  const dineIn = !!fd.get('dineIn');
 
   // 至少選一項餐點（一般下單必填；現場點餐可全空，由現場決定後再補）
   if (!walkinMode) {
@@ -241,7 +257,7 @@ async function onSubmit(ev) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
-      body: JSON.stringify({ action: 'order', idToken, order, walkin: walkinMode }),
+      body: JSON.stringify({ action: 'order', idToken, order, walkin: walkinMode, byob, dineIn }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
@@ -251,7 +267,7 @@ async function onSubmit(ev) {
 
     // 現場點餐 → 跳大通知顯示訂單編號（因不發 LINE，需此畫面讓客人記下）
     if (data.walkin && data.orderNo) {
-      showWalkinToast(data.orderNo, order);
+      showWalkinToast(data.orderNo, order, byob, dineIn);
     }
 
     ev.target.reset();
@@ -272,11 +288,13 @@ function showMsg(text, isErr) {
   el.hidden = false;
 }
 
+let walkinToastTimer = null;
+
 /**
- * 現場點餐成功大通知：顯示訂單編號 + 訂餐內容，讓客人拍照/抄下作為領餐憑證。
- * 因為現場點餐不發任何 LINE 通知（無 Flex / 無 QR 圖），此畫面是唯一憑證來源。
+ * 現場點餐成功大通知：顯示訂單編號 + 訂餐內容 + 自備餐具狀態。
+ * 30 秒後自動消失，或點一下消失（此畫面是唯一憑證來源）。
  */
-function showWalkinToast(orderNo, order) {
+function showWalkinToast(orderNo, order, byob, dineIn) {
   document.getElementById('wtOrder').textContent = orderNo;
   const lines = [
     order.unit && `單位：${order.unit}`,
@@ -284,15 +302,21 @@ function showWalkinToast(orderNo, order) {
     order.breakfast && `早餐：${order.breakfast}`,
     order.lunch     && `中餐：${order.lunch}`,
     order.dinner    && `晚餐：${order.dinner}`,
+    byob   ? '🥢 自備餐具' : '店家提供餐具',
+    dineIn ? '🍽️ 現場用餐' : '打包帶走',
   ].filter(Boolean);
   document.getElementById('wtLines').innerHTML =
     lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
   document.getElementById('walkinToast').hidden = false;
+  // 30 秒後自動消失
+  if (walkinToastTimer) clearTimeout(walkinToastTimer);
+  walkinToastTimer = setTimeout(hideWalkinToast, 30000);
 }
 
 function hideWalkinToast() {
   const box = document.getElementById('walkinToast');
   if (box) box.hidden = true;
+  if (walkinToastTimer) { clearTimeout(walkinToastTimer); walkinToastTimer = null; }
 }
 
 function escapeHtml(s) {
@@ -311,55 +335,38 @@ document.addEventListener('keydown', e => {
 });
 
 /**
- * 切換現場點餐模式。
- * 開啟：掃 QR 帶入成功後自動啟用（顯示橘色 banner，送出帶 walkin=true）
- * 關閉：使用者按「離開現場模式」或訂單送出後自動歸位
+ * 切換現場點餐模式（由 URL 參數 ?order= 觸發）。
+ * 開啟：顯示橘色 banner + 時段提示，送出帶 walkin=true
+ * 關閉：訂單送出後自動歸位
  */
-function setWalkinMode(on) {
+function setWalkinMode(on, windowLabel) {
   walkinMode = !!on;
-  document.getElementById('walkinBanner').hidden  = !walkinMode;
-  document.getElementById('walkinExitBtn').hidden = !walkinMode;
+  document.getElementById('walkinBanner').hidden = !walkinMode;
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = walkinMode ? '現場點餐' : '送出訂單';
+  if (walkinMode && windowLabel) {
+    document.getElementById('walkinWindowInfo').textContent = `可送出時段：${windowLabel}`;
+  }
 }
 
 /**
- * 掃描 QR 自動帶入：
- *   1. liff.scanCodeV2 取得 QR 內容（通常是訂單編號 YYYYMMDD-NNN）
- *   2. 後端 lookupOrderProfile → 拿到第一次訂單的單位/姓名/電話 + 當時段建議餐點
- *   3. 套到表單欄位上；user 仍可手動覆寫；啟用現場點餐模式
+ * 手機相機掃描訂單 QR Code 後開啟此頁：
+ *   URL 帶有 ?order=YYYYMMDD-NNN 參數，自動帶入第一次下單的單位/姓名，
+ *   並依當下時段自動選好餐點，啟用現場點餐模式。
  */
-async function onScanPrefill() {
-  if (!window.liff) { alert('LIFF SDK 未載入，請重新整理'); return; }
-  if (typeof liff.isInClient === 'function' && !liff.isInClient()) {
-    alert('QR 掃描功能僅能在 LINE App 內使用。請改從 LINE 開啟此頁。');
-    return;
-  }
-  if (typeof liff.scanCodeV2 !== 'function') {
-    alert('此 LINE 版本不支援 QR 掃描，請更新 LINE App。');
-    return;
-  }
-  let value = '';
-  try {
-    const res = await liff.scanCodeV2();
-    value = res && res.value ? String(res.value).trim() : '';
-    if (!value) return;
-  } catch (e) {
-    const m = String((e && e.message) || e || '');
-    if (/cancel/i.test(m)) return;
-    alert('掃描失敗：' + m);
-    return;
-  }
-  // 訂單日期預設今天，避免帶到歷史日期
+async function activateWalkinFromOrder(orderNo) {
+  // 訂單日期預設今天
   document.querySelector('input[name="date"]').valueAsDate = new Date();
   await loadMenu();
 
   let data;
   try {
-    data = await postJson({ action: 'lookupOrderProfile', idToken, query: value });
+    data = await postJson({ action: 'lookupOrderProfile', idToken, query: orderNo });
   } catch (e) {
-    showMsg('反查失敗：' + e.message, true);
+    showMsg('帶入資料失敗：' + e.message, true);
     return;
   }
-  if (!data.ok) { showMsg(data.error || '帶入失敗', true); return; }
+  if (!data.ok) { showMsg(data.error || '無法帶入資料', true); return; }
 
   const p = data.profile || {};
   if (p.unit)  document.querySelector('input[name="unit"]').value  = p.unit;
@@ -376,10 +383,17 @@ async function onScanPrefill() {
     }
   }
 
-  setWalkinMode(true);
+  // 組出可用時段說明
+  let windowLabel = '';
+  if (meal.walkinWindow) {
+    windowLabel = Object.entries(meal.walkinWindow)
+      .map(([k, w]) => `${({ breakfast:'早', lunch:'中', dinner:'晚' })[k] || k} ${w.start}–${w.stop}`)
+      .join('、');
+  }
+  setWalkinMode(true, windowLabel);
 
   const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
-  showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，並預選${mealLabel}：${meal.suggest}` : ''}（現場模式）`);
+  showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，預選${mealLabel}` : ''}（現場點餐模式）`);
 }
 
 async function postJson(payload) {
