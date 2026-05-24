@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>興園 EMO 電子點餐</title>
+<link rel="stylesheet" href="style.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<main class="card">
+    <h1>興園 EMO 電子點餐</h1>
+
+  <form id="orderForm">
+    <fieldset>
+      <legend>訂購人資訊</legend>
+      <div id="walkinBanner" class="msg" hidden style="margin-top:8px">
+        🟠 現場點餐模式：中餐不分 A/B/C、不受上限限制、<strong>不發送 LINE 通知與問卷</strong>。
+        <div id="walkinWindowInfo" style="font-size:13px;margin-top:4px;color:#7a4400"></div>
+      </div>
+      <label>單位 <span class="req">*</span>
+        <input name="unit" required autocomplete="organization">
+      </label>
+      <label>訂購人 <span class="req">*</span>
+        <input name="name" required autocomplete="name">
+      </label>
+      <label>警用電話 <span class="req">*</span>
+        <input name="phone" type="tel" required autocomplete="tel" inputmode="tel">
+      </label>
+      <label>訂購日期 <span class="req">*</span>
+        <input name="date" type="date" required>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>訂購餐點</legend>
+      <label>早餐
+        <select name="breakfast">
+          <option value="">不訂購</option>
+          <option data-menu="早餐" hidden></option>
+        </select>
+      </label>
+      <label>中餐
+        <select name="lunch">
+          <option value="">不訂購</option>
+          <option data-menu="中餐A" data-prefix="A 餐：" data-lunch="A" hidden></option>
+          <option data-menu="中餐B" data-prefix="B 餐：" data-lunch="B" hidden></option>
+          <option data-menu="中餐C" data-prefix="C 餐：" data-lunch="C" hidden></option>
+        </select>
+        <small class="field-hint" id="lunchRemaining">每日上限 40 份，剩餘量載入中…</small>
+      </label>
+      <label>晚餐
+        <select name="dinner">
+          <option value="">不訂購</option>
+          <option data-menu="晚餐" hidden></option>
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>備註</legend>
+      <textarea name="note" rows="3" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
+        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px">
+        🥢 自備餐具（帶自己的餐盒 / 環保餐具）
+      </label>
+    </fieldset>
+
+    <fieldset id="walkinOptionsFieldset" hidden>
+      <legend>現場訂餐選項</legend>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" name="dineIn" id="dineInCheck" style="width:20px;height:20px">
+        🍽️ 現場訂餐
+      </label>
+    </fieldset>
+
+    <button type="submit" id="submitBtn">送出訂單</button>
+  </form>
+
+  <p id="msg" class="msg" hidden></p>
+  <p class="footer"><a href="#" id="adminEntry">管理者入口</a></p>
+</main>
+
+<!-- 現場下單成功大通知（不發 LINE 通知，需用此畫面顯示訂單編號供領餐） -->
+<div id="walkinToast" class="walkin-toast" hidden>
+  <div class="walkin-toast-card" id="walkinToastCard">
+    <div class="walkin-toast-icon">🟠</div>
+    <div class="walkin-toast-title">現場訂單成立</div>
+    <div class="walkin-toast-order" id="wtOrder">—</div>
+    <div class="walkin-toast-lines" id="wtLines"></div>
+    <div class="walkin-toast-hint">⚠ 請拍照 / 抄下訂單編號，領餐時須出示</div>
+    <button type="button" id="walkinToastClose" class="walkin-toast-close">我知道了</button>
+  </div>
+</div>
+
+<style>
+  .walkin-toast[hidden] { display: none !important; }
+  .walkin-toast {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .walkin-toast-card {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; min-width: 320px; max-width: 92vw;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border-top: 8px solid #f59f00;
+  }
+  .walkin-toast-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+  .walkin-toast-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 14px; }
+  .walkin-toast-order {
+    font-size: 44px; font-weight: 800; letter-spacing: 1px; color: #b76e00;
+    margin-bottom: 12px; font-family: ui-monospace, "Menlo", "Consolas", monospace;
+    background: #fff8e1; border-radius: 10px; padding: 10px 6px;
+  }
+  .walkin-toast-lines { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 10px; }
+  .walkin-toast-lines div { margin: 2px 0; }
+  .walkin-toast-hint  { font-size: 13px; color: #b3261e; margin: 10px 0 16px; font-weight: bold; }
+  .walkin-toast-close {
+    margin: 0; padding: 12px 24px; border: 0; border-radius: 8px;
+    background: #06c755; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
+  }
+</style>
+
+<script>
+const LIFF_ID = '2010095803-Neg2TBst';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+
+let idToken = '';
+let walkinMode = false; // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    idToken = liff.getIDToken() || '';
+  } catch (e) {
+    console.warn('LIFF init failed, fallback to anonymous:', e);
+  }
+
+  // 預設日期為今天
+  const dateInput = document.querySelector('input[name="date"]');
+  dateInput.valueAsDate = new Date();
+
+  await loadMenu();
+  dateInput.addEventListener('change', loadMenu);
+  document.getElementById('orderForm').addEventListener('submit', onSubmit);
+
+  const adminLink = document.getElementById('adminEntry');
+  if (adminLink) {
+    adminLink.addEventListener('click', e => {
+      e.preventDefault();
+      const url = 'https://liff.line.me/2010095803-1ayMPRJ6';
+      if (window.liff && typeof liff.openWindow === 'function') {
+        liff.openWindow({ url, external: false });
+      } else {
+        window.location.href = url;
+      }
+    });
+  }
+
+  // 偵測 URL 參數：手機相機掃描訂單 QR Code 後開啟頁面
+  // QR Code 內容為 https://liff.line.me/xxx?order=YYYYMMDD-NNN
+  const params = new URLSearchParams(window.location.search);
+  const orderParam = params.get('order');
+  if (orderParam) {
+    await activateWalkinFromOrder(orderParam);
+  }
+}
+
+async function loadMenu() {
+  try {
+    const date = document.querySelector('input[name="date"]').value || '';
+    const url = API_URL + '?action=menu' + (date ? '&date=' + encodeURIComponent(date) : '');
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    // 各餐所屬下拉是哪個 select.name
+    const mealOfMenuKey = { '早餐': 'breakfast', '中餐A': 'lunch', '中餐B': 'lunch', '中餐C': 'lunch', '晚餐': 'dinner' };
+    const orderable = data.orderable || { breakfast: true, lunch: true, dinner: true };
+
+    document.querySelectorAll('option[data-menu]').forEach(opt => {
+      const key = opt.dataset.menu;
+      const prefix = opt.dataset.prefix || '';
+      const name = data.menu[key] || '';
+      if (!name) {
+        opt.remove();
+        return;
+      }
+      const baseLabel = prefix + name;
+      opt.value = baseLabel;
+      const meal = mealOfMenuKey[key];
+      const closed = meal && orderable[meal] === false;
+
+      const lunchKey = opt.dataset.lunch;
+      let suffix = '';
+      let disabled = false;
+      if (closed) {
+        suffix = '（已截止）';
+        disabled = true;
+      } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
+        const left = data.remaining[lunchKey];
+        suffix = `（剩 ${left}）`;
+        disabled = left <= 0;
+      }
+      opt.textContent = baseLabel + suffix;
+      opt.hidden = false;
+      opt.disabled = disabled;
+    });
+
+    // 中餐剩餘量小字（截止時改顯示截止提示）
+    const hint = document.getElementById('lunchRemaining');
+    if (hint) {
+      if (orderable.lunch === false) {
+        const t = (data.orderCutoff && data.orderCutoff.lunch) || '10:30';
+        hint.textContent = `午餐進單已於 ${t} 結束`;
+      } else if (data.remaining) {
+        const r = data.remaining;
+        const limit = data.limit || 40;
+        hint.textContent = `每日上限 ${limit} 份｜A 剩 ${r.A} ／ B 剩 ${r.B} ／ C 剩 ${r.C}`;
+      } else {
+        hint.textContent = '';
+      }
+    }
+
+    // 若目前已選的選項被 disable（售完或已截止），清掉它
+    ['breakfast', 'lunch', 'dinner'].forEach(name => {
+      const sel = document.querySelector(`select[name="${name}"]`);
+      if (sel && sel.selectedOptions[0] && sel.selectedOptions[0].disabled) {
+        sel.value = '';
+      }
+    });
+  } catch (e) {
+    showMsg('載入菜單失敗：' + e.message, true);
+  }
+}
+
+async function onSubmit(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  const fd = new FormData(ev.target);
+  const order = Object.fromEntries(fd.entries());
+  const byob   = !!fd.get('byob');
+  const dineIn = !!fd.get('dineIn');
+
+  // 至少選一項餐點（一般下單必填；現場點餐可全空，由現場決定後再補）
+  if (!walkinMode) {
+    if (!order.breakfast && !order.lunch && !order.dinner) {
+      showMsg('請至少選擇一項餐點（早餐 / 中餐 / 晚餐）', true);
+      btn.disabled = false;
+      return;
+    }
+  }
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
+      body: JSON.stringify({ action: 'order', idToken, order, walkin: walkinMode, byob, dineIn }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '送出失敗');
+    const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
+    const walkinNote = data.walkin ? '（現場點餐，未發送通知）' : '（請於領餐時出示訂單編號）';
+    showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
+
+    // 現場點餐 → 跳大通知顯示訂單編號（因不發 LINE，需此畫面讓客人記下）
+    if (data.walkin && data.orderNo) {
+      showWalkinToast(data.orderNo, order, byob, dineIn);
+    }
+
+    ev.target.reset();
+    document.querySelector('input[name="date"]').valueAsDate = new Date();
+    setWalkinMode(false);
+    await loadMenu();
+  } catch (e) {
+    showMsg('送出失敗：' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showMsg(text, isErr) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.hidden = false;
+}
+
+let walkinToastTimer = null;
+
+/**
+ * 現場點餐成功大通知：顯示訂單編號 + 訂餐內容 + 自備餐具狀態。
+ * 30 秒後自動消失，或點一下消失（此畫面是唯一憑證來源）。
+ */
+function showWalkinToast(orderNo, order, byob, dineIn) {
+  document.getElementById('wtOrder').textContent = orderNo;
+  const lines = [
+    order.unit && `單位：${order.unit}`,
+    order.name && `訂購人：${order.name}`,
+    order.breakfast && `早餐：${order.breakfast}`,
+    order.lunch     && `中餐：${order.lunch}`,
+    order.dinner    && `晚餐：${order.dinner}`,
+    byob   ? '🥢 自備餐具' : '自購餐具',
+    dineIn ? '🍽️ 現場訂餐' : '自購餐具，打包帶走',
+  ].filter(Boolean);
+  document.getElementById('wtLines').innerHTML =
+    lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
+  document.getElementById('walkinToast').hidden = false;
+  // 30 秒後自動消失
+  if (walkinToastTimer) clearTimeout(walkinToastTimer);
+  walkinToastTimer = setTimeout(hideWalkinToast, 30000);
+}
+
+function hideWalkinToast() {
+  const box = document.getElementById('walkinToast');
+  if (box) box.hidden = true;
+  if (walkinToastTimer) { clearTimeout(walkinToastTimer); walkinToastTimer = null; }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+document.addEventListener('click', e => {
+  if (e.target && (e.target.id === 'walkinToast' || e.target.id === 'walkinToastClose')) {
+    hideWalkinToast();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideWalkinToast();
+});
+
+/**
+ * 切換現場點餐模式（由 URL 參數 ?order= 觸發）。
+ * 開啟：顯示橘色 banner + 時段提示，送出帶 walkin=true
+ * 關閉：訂單送出後自動歸位
+ */
+function setWalkinMode(on, windowLabel) {
+  walkinMode = !!on;
+  document.getElementById('walkinBanner').hidden = !walkinMode;
+  const fs = document.getElementById('walkinOptionsFieldset');
+  fs.hidden = !walkinMode;
+  document.getElementById('byobCheck').checked  = false;
+  document.getElementById('dineInCheck').checked = walkinMode; // 用餐時段進入時預設勾選
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = walkinMode ? '現場點餐' : '送出訂單';
+  if (walkinMode && windowLabel) {
+    document.getElementById('walkinWindowInfo').textContent = `可送出時段：${windowLabel}`;
+  }
+}
+
+/**
+ * 手機相機掃描訂單 QR Code 後開啟此頁：
+ *   URL 帶有 ?order=YYYYMMDD-NNN 參數，自動帶入第一次下單的單位/姓名，
+ *   並依當下時段自動選好餐點，啟用現場點餐模式。
+ */
+async function activateWalkinFromOrder(orderNo) {
+  // 訂單日期預設今天
+  document.querySelector('input[name="date"]').valueAsDate = new Date();
+  await loadMenu();
+
+  let data;
+  try {
+    data = await postJson({ action: 'lookupOrderProfile', idToken, query: orderNo });
+  } catch (e) {
+    showMsg('帶入資料失敗：' + e.message, true);
+    return;
+  }
+  if (!data.ok) { showMsg(data.error || '無法帶入資料', true); return; }
+
+  const p = data.profile || {};
+  if (p.unit)  document.querySelector('input[name="unit"]').value  = p.unit;
+  if (p.name)  document.querySelector('input[name="name"]').value  = p.name;
+  if (p.phone) document.querySelector('input[name="phone"]').value = p.phone;
+
+  // 依後端時段建議自動選餐點下拉
+  const meal = data.meal || {};
+  if (meal.key && meal.suggest) {
+    const sel = document.querySelector(`select[name="${meal.key}"]`);
+    if (sel) {
+      const opt = Array.from(sel.options).find(o => o.value === meal.suggest);
+      if (opt && !opt.disabled) sel.value = meal.suggest;
+    }
+  }
+
+  // 組出可用時段說明
+  let windowLabel = '';
+  if (meal.walkinWindow) {
+    windowLabel = Object.entries(meal.walkinWindow)
+      .map(([k, w]) => `${({ breakfast:'早', lunch:'中', dinner:'晚' })[k] || k} ${w.start}–${w.stop}`)
+      .join('、');
+  }
+  setWalkinMode(true, windowLabel);
+
+  const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
+  showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，預選${mealLabel}` : ''}（現場點餐模式）`);
+}
+
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+init();
+</script>
+</body>
+</html>

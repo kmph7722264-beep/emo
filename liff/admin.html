@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMO 點餐 - 管理員</title>
+<link rel="stylesheet" href="style.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+<main class="card">
+  <h1>管理員後台</h1>
+  <p class="hint">僅限白名單管理員。</p>
+
+  <div id="denied" class="msg err" hidden>
+    <strong>無管理員權限</strong>
+    <div style="margin-top:6px">此頁僅限白名單管理員使用。如需開通請聯絡系統管理員，將您的 LINE userId 加入 <code>Admins</code> 工作表。</div>
+    <div class="btn-row" style="margin-top:10px">
+      <button type="button" id="backToOrderBtn" class="secondary">回訂餐頁</button>
+    </div>
+  </div>
+
+  <div id="adminContent">
+  <fieldset>
+    <legend>當日訂單統計</legend>
+    <label>日期
+      <input type="date" id="statsDate">
+    </label>
+    <button type="button" id="statsBtn" class="secondary">查詢</button>
+
+    <div id="statsResult" hidden>
+      <div class="stats-grid">
+        <div class="stat"><span class="stat-num" id="cTotal">0</span><span>總筆數</span></div>
+        <div class="stat"><span class="stat-num" id="cBreakfast">0</span><span>早餐</span></div>
+        <div class="stat"><span class="stat-num" id="cDinner">0</span><span>晚餐</span></div>
+        <div class="stat"><span class="stat-num" id="cLunchA">0</span><span>中餐 A</span></div>
+        <div class="stat"><span class="stat-num" id="cLunchB">0</span><span>中餐 B</span></div>
+        <div class="stat"><span class="stat-num" id="cLunchC">0</span><span>中餐 C</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cBreakfastPicked">0/0</span><span>早餐已領</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cLunchPicked">0/0</span><span>中餐已領</span></div>
+        <div class="stat stat-picked"><span class="stat-num" id="cDinnerPicked">0/0</span><span>晚餐已領</span></div>
+      </div>
+
+      <p class="stat-extra" id="cCancelledHint" hidden>⛔ 其中已取消：<span id="cCancelled">0</span> 筆（不計入上方領取與棄單）</p>
+
+      <details class="order-list" open>
+        <summary>訂單明細 (<span id="cListTotal">0</span> 筆)</summary>
+        <label class="filter-row">
+          <input type="checkbox" id="filterUnpicked"> 只看未領餐
+        </label>
+        <div id="orderList"></div>
+      </details>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>領餐快速查詢</legend>
+    <label>訂單編號
+      <input type="text" id="pickupNo" placeholder="輸入末 3 碼（例 001）即可，或按右側「掃描 QR」" autocomplete="off" inputmode="text">
+      <small class="field-hint">已自動帶入今日前 8 碼，輸入後 3 碼即可。掃描 QR 會直接覆寫整碼。</small>
+    </label>
+    <div class="btn-row">
+      <button type="button" id="pickupScanBtn" class="secondary">📷 掃描 QR</button>
+      <button type="button" id="pickupFindBtn" class="secondary">查詢</button>
+    </div>
+    <div id="pickupResult" hidden></div>
+  </fieldset>
+
+  <h2>每日餐點維護</h2>
+  <p class="hint">可指定特定日期；新日期可直接儲存（系統先帶入最近一日的菜單作為基底）。輸入欄可從歷史菜單下拉選或直接打新名稱。</p>
+  <form id="menuForm">
+    <label>適用日期
+      <input type="date" id="menuDate">
+    </label>
+    <div class="btn-row">
+      <button type="button" id="menuLoadBtn" class="secondary">載入該日菜單</button>
+    </div>
+    <small class="field-hint" id="menuOrdered">當日已訂數量載入中…</small>
+
+    <label>早餐
+      <input name="早餐" list="hist-早餐" placeholder="例：燒餅油條 / 飯糰 / 三明治">
+      <datalist id="hist-早餐"></datalist>
+    </label>
+    <label>中餐 A
+      <input name="中餐A" list="hist-中餐A" placeholder="例：滷雞腿便當">
+      <datalist id="hist-中餐A"></datalist>
+    </label>
+    <label>中餐 B
+      <input name="中餐B" list="hist-中餐B" placeholder="例：排骨便當">
+      <datalist id="hist-中餐B"></datalist>
+    </label>
+    <label>中餐 C
+      <input name="中餐C" list="hist-中餐C" placeholder="例：素食便當">
+      <datalist id="hist-中餐C"></datalist>
+    </label>
+    <label>晚餐
+      <input name="晚餐" list="hist-晚餐" placeholder="例：紅燒牛肉麵">
+      <datalist id="hist-晚餐"></datalist>
+    </label>
+
+    <button type="submit" id="submitBtn">儲存當日菜單</button>
+  </form>
+
+  <fieldset>
+    <legend>📜 管理員操作紀錄</legend>
+    <p class="hint">記錄所有管理員的標領、掃 QR、取消訂單、修改菜單等操作（含成敗）。</p>
+    <div class="btn-row">
+      <label style="flex:1; min-width:120px">日期
+        <input type="date" id="auditDate">
+      </label>
+      <label style="flex:1; min-width:120px">動作
+        <select id="auditAction">
+          <option value="all">全部</option>
+          <option value="markPickup">手動標領</option>
+          <option value="scanPickup">掃 QR 標領</option>
+          <option value="cancelOrder">取消訂單</option>
+          <option value="updateMenu">修改菜單</option>
+        </select>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button type="button" id="auditLoadBtn" class="secondary">載入</button>
+      <button type="button" id="auditClearDateBtn" class="secondary">不限日期</button>
+    </div>
+    <div id="auditResult" hidden>
+      <div class="audit-meta hint" id="auditMeta"></div>
+      <div class="audit-list" id="auditList"></div>
+    </div>
+  </fieldset>
+
+  <p id="msg" class="msg" hidden></p>
+  <p class="footer"><a href="#" id="orderEntry">回訂餐頁</a></p>
+  </div>
+</main>
+
+<!-- 領餐大通知（手機 + 筆電皆顯示） -->
+<div id="pickupToast" class="pickup-toast" hidden>
+  <div class="pickup-toast-card" id="pickupToastCard">
+    <div class="pickup-toast-icon" id="ptIcon">✅</div>
+    <div class="pickup-toast-title" id="ptTitle">領取完成</div>
+    <div class="pickup-toast-order" id="ptOrder">—</div>
+    <div class="pickup-toast-lines" id="ptLines"></div>
+    <div class="pickup-toast-actions" id="ptActions">
+      <button type="button" id="byobBtn" class="byob-btn">🥢 自備餐具</button>
+    </div>
+    <div class="pickup-toast-hint">點背景 / 按 Esc 關閉（10 秒後自動關閉）</div>
+  </div>
+</div>
+
+<style>
+  .empty-field { color: #b3261e; font-style: italic; }
+  .pickup-toast[hidden] { display: none !important; }
+  .pickup-toast {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    animation: pt-fade 0.15s ease-out;
+  }
+  .pickup-toast-card {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; min-width: 320px; max-width: 92vw;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border-top: 8px solid #06c755;
+    animation: pt-pop 0.18s ease-out;
+  }
+  .pickup-toast-card.err  { border-top-color: #d23f3f; }
+  .pickup-toast-card.warn { border-top-color: #d49a00; }
+  .pickup-toast-card.info { border-top-color: #0d3b66; }
+  .pickup-toast-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+  .pickup-toast-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
+  .pickup-toast-order {
+    font-size: 40px; font-weight: 800; letter-spacing: 1px;
+    color: #047a3a; margin-bottom: 10px; font-family: ui-monospace, "Menlo", "Consolas", monospace;
+  }
+  .pickup-toast-card.err  .pickup-toast-order { color: #b3261e; }
+  .pickup-toast-card.warn .pickup-toast-order { color: #8a6500; }
+  .pickup-toast-card.info .pickup-toast-order { color: #0d3b66; }
+  .pickup-toast-lines  { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 12px; }
+  .pickup-toast-lines div { margin: 2px 0; }
+  .pickup-toast-actions { margin: 12px 0 8px; display: flex; justify-content: center; }
+  .pickup-toast-actions[hidden] { display: none !important; }
+  .byob-btn {
+    padding: 14px 24px; border: 2px solid #d49a00; border-radius: 10px;
+    background: #fff8e1; color: #8a6500; font-size: 18px; font-weight: bold;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .byob-btn:hover  { background: #ffe082; }
+  .byob-btn.done   { background: #06c755; color: #fff; border-color: #047a3a; cursor: default; }
+  .byob-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+  .pickup-toast-hint   { font-size: 12px; color: #6b7280; margin-top: 8px; line-height: 1.6; }
+  @keyframes pt-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pt-pop  { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+
+<script>
+const LIFF_ID = '2010095803-1ayMPRJ6';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+
+let idToken = '';
+let lastStats = null;
+// 筆電 / 外部瀏覽器（非 LINE App 內）登入時啟用領餐大通知；手機 LINE App 內維持原 toast 不擋畫面
+let useBigToast = false;
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    idToken = liff.getIDToken() || '';
+    // 領餐大通知一律啟用（手機 LINE + 筆電瀏覽器 + 行動瀏覽器）
+    // 讓現場管理員不論用哪個裝置都能看到大通知 + 自備餐具按鈕
+    useBigToast = true;
+  } catch (e) {
+    showMsg('LIFF 初始化失敗：' + e.message, true);
+    return;
+  }
+
+  // 守門：非管理員直接顯示拒絕畫面，不載入任何資料
+  try {
+    const chk = await postJson({ action: 'checkAdmin', idToken });
+    if (!chk.ok || !chk.isAdmin) {
+      showDenied();
+      return;
+    }
+  } catch (e) {
+    showDenied('權限驗證失敗：' + e.message);
+    return;
+  }
+
+  const today = new Date();
+  document.getElementById('statsDate').valueAsDate = today;
+  document.getElementById('menuDate').valueAsDate  = today;
+  document.getElementById('auditDate').valueAsDate = today;
+
+  // 快速查詢自動帶入「YYYYMMDD-」前綴，管理員只需打末 3 碼
+  prefillPickupNo();
+
+  await loadMenuForDate(toDateStr(today));
+  await loadStats({ silent: true });
+  loadMenuHistory(); // 背景載入歷史菜單供 datalist 下拉用，不 await
+
+  startWalkinPolling();
+  document.getElementById('statsBtn').addEventListener('click', () => loadStats());
+  document.getElementById('menuLoadBtn').addEventListener('click', () => {
+    const d = document.getElementById('menuDate').value;
+    if (!d) { showMsg('請選擇日期', true); return; }
+    loadMenuForDate(d);
+  });
+  document.getElementById('menuForm').addEventListener('submit', onSubmitMenu);
+  document.getElementById('pickupFindBtn').addEventListener('click', onFindOrder);
+  document.getElementById('pickupScanBtn').addEventListener('click', onScanCode);
+  document.getElementById('pickupNo').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    // 筆電 / 外部瀏覽器（USB QR 掃描器情境）：Enter = 直接掃 QR 標領 + 跳大通知
+    // 手機 LINE App 內：Enter = 維持原本查單，避免誤觸自動標領
+    if (useBigToast) {
+      scanPickup(document.getElementById('pickupNo').value);
+    } else {
+      onFindOrder();
+    }
+  });
+  document.getElementById('filterUnpicked').addEventListener('change', renderOrderList);
+  document.getElementById('auditLoadBtn').addEventListener('click', loadAuditLog);
+  document.getElementById('auditClearDateBtn').addEventListener('click', () => {
+    document.getElementById('auditDate').value = '';
+    loadAuditLog();
+  });
+
+  const orderLink = document.getElementById('orderEntry');
+  if (orderLink) {
+    orderLink.addEventListener('click', e => {
+      e.preventDefault();
+      const url = 'https://liff.line.me/2010095803-Neg2TBst';
+      if (window.liff && typeof liff.openWindow === 'function') {
+        liff.openWindow({ url, external: false });
+      } else {
+        window.location.href = url;
+      }
+    });
+  }
+}
+
+function toDateStr(d) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function todayOrderPrefix() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-`;
+}
+
+/**
+ * 預填快速查詢欄位為「YYYYMMDD-」，並把游標移到 - 之後。
+ * 對應的查詢函式 onFindOrder 會在送出前再正規化：
+ *   - 純末 3 碼 → 補當日前綴 + zero-pad
+ *   - 已含「-」 → 直接送
+ *   - 完整 11 碼 → 直接送
+ */
+function prefillPickupNo() {
+  const el = document.getElementById('pickupNo');
+  if (!el) return;
+  const prefix = todayOrderPrefix();
+  el.value = prefix;
+  // 點擊時若僅剩前綴或為空，將游標移到尾端方便接著輸入末 3 碼
+  el.addEventListener('focus', () => {
+    if (!el.value) el.value = prefix;
+    setTimeout(() => {
+      const len = el.value.length;
+      try { el.setSelectionRange(len, len); } catch (_) {}
+    }, 0);
+  });
+}
+
+/**
+ * 取得使用者輸入後實際要查詢的訂單編號。
+ * 規則（由強到弱，命中即回傳）：
+ *   1. 字串末尾存在完整「YYYYMMDD-NNN」 → 取末尾那一段
+ *      涵蓋情境：USB QR 掃描器把整碼接在預填的 YYYYMMDD- 之後（避免變成 YYYYMMDD-YYYYMMDD-NNN）；
+ *               貼上整碼、手機 QR 整碼；正常打整碼亦適用
+ *   2. 純數字 1~3 碼 → 補當日前綴 + zero-pad
+ *   3. 「-NNN」格式 → 補當日前綴
+ *   4. 其他 → 原樣回傳（讓後端決定怎麼處理）
+ */
+function normalizePickupNo(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  // 0. URL 格式（手機相機掃描含 LIFF URL 的 QR Code）→ 提取 order= 參數
+  if (s.indexOf('://') >= 0 || s.indexOf('order=') >= 0) {
+    try {
+      const u = s.indexOf('://') >= 0 ? new URL(s) : new URL('https://x?' + s.split('?').slice(1).join('?'));
+      const o = u.searchParams.get('order');
+      if (o) {
+        const tail2 = o.match(/(\d{8}-\d{1,3})$/);
+        if (tail2) {
+          const parts2 = tail2[1].split('-');
+          return parts2[0] + '-' + parts2[1].padStart(3, '0');
+        }
+        return o;
+      }
+    } catch (_) {}
+  }
+  // 1. 字串末尾出現完整 YYYYMMDD-NNN（含被預填前綴重複夾擊的情境）
+  const tail = s.match(/(\d{8}-\d{1,3})\s*$/);
+  if (tail) {
+    const parts = tail[1].split('-');
+    return parts[0] + '-' + parts[1].padStart(3, '0');
+  }
+  // 2. 純末 3 碼
+  if (/^\d{1,3}$/.test(s)) {
+    return todayOrderPrefix() + s.padStart(3, '0');
+  }
+  // 3. 「-NNN」格式
+  const m = s.match(/^-?(\d{1,3})$/);
+  if (m) return todayOrderPrefix() + m[1].padStart(3, '0');
+  return s;
+}
+
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+async function loadStats(opts) {
+  const silent = !!(opts && opts.silent);
+  const date = document.getElementById('statsDate').value;
+  if (!date) { if (!silent) showMsg('請選擇日期', true); return; }
+  try {
+    const data = await postJson({ action: 'stats', idToken, date });
+    if (!data.ok) throw new Error(data.error || '查詢失敗');
+    lastStats = data;
+    renderStats();
+  } catch (e) {
+    if (!silent) showMsg('統計查詢失敗：' + e.message, true);
+  }
+}
+
+function renderStats() {
+  if (!lastStats) return;
+  const c = lastStats.counts;
+  const lunchTotal = (c.lunchA || 0) + (c.lunchB || 0) + (c.lunchC || 0) + (c.lunchOther || 0);
+  const cancelled  = c.cancelled || 0;
+  document.getElementById('cTotal').textContent     = lastStats.total;
+  document.getElementById('cBreakfast').textContent = c.breakfast;
+  document.getElementById('cDinner').textContent    = c.dinner;
+  document.getElementById('cLunchA').textContent    = c.lunchA;
+  document.getElementById('cLunchB').textContent    = c.lunchB;
+  document.getElementById('cLunchC').textContent    = c.lunchC;
+  document.getElementById('cBreakfastPicked').textContent = `${c.breakfastPicked}/${c.breakfast}`;
+  document.getElementById('cLunchPicked').textContent     = `${c.lunchPicked}/${lunchTotal}`;
+  document.getElementById('cDinnerPicked').textContent    = `${c.dinnerPicked}/${c.dinner}`;
+  document.getElementById('cCancelled').textContent = cancelled;
+  document.getElementById('cCancelledHint').hidden  = cancelled === 0;
+  document.getElementById('cListTotal').textContent = lastStats.total;
+  document.getElementById('statsResult').hidden = false;
+  renderOrderList();
+}
+
+function renderOrderList() {
+  if (!lastStats) return;
+  const onlyUnpicked = document.getElementById('filterUnpicked').checked;
+  const list = document.getElementById('orderList');
+  list.innerHTML = '';
+  const filtered = lastStats.orders.filter(o => !onlyUnpicked || hasUnpickedMeal(o));
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-hint">無符合條件的訂單</div>';
+    return;
+  }
+
+  filtered.forEach(o => list.appendChild(buildOrderCard(o)));
+}
+
+function hasUnpickedMeal(o) {
+  if (o.cancelled) return false;
+  return (o.breakfast && !o.breakfastPicked) ||
+         (o.lunch     && !o.lunchPicked) ||
+         (o.dinner    && !o.dinnerPicked);
+}
+
+function buildCancelInfoHtml(o) {
+  if (!o.cancelled) return '';
+  const at = o.cancelledAt ? formatLocal(o.cancelledAt) : '—';
+  const by = o.cancelledBy ? escapeHtml(o.cancelledBy) : '—';
+  const reason = o.cancelReason ? `　原因：${escapeHtml(o.cancelReason)}` : '';
+  return `<div class="cancel-info">⛔ 已取消　${escapeHtml(at)}　操作者：${by}${reason}</div>`;
+}
+
+function mealLabel(meal) {
+  return ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal] || meal;
+}
+
+function buildMealRowsHtml(o) {
+  const meals = [
+    { key: 'breakfast', label: '早', name: o.breakfast, picked: o.breakfastPicked },
+    { key: 'lunch',     label: '午', name: o.lunch,     picked: o.lunchPicked },
+    { key: 'dinner',    label: '晚', name: o.dinner,    picked: o.dinnerPicked },
+  ];
+  const orderAttr = escapeHtml(o.orderNo || '');
+  return meals.filter(m => m.name).map(m => {
+    const badge = m.picked
+      ? `<span class="badge picked">已領 ✓</span>`
+      : `<span class="badge unpicked">未領</span>`;
+    const btn = m.picked
+      ? `<button type="button" class="btn-mini btn-undo" data-meal="${m.key}" data-action="unpick" data-order="${orderAttr}">取消已領</button>`
+      : `<button type="button" class="btn-mini btn-pick" data-meal="${m.key}" data-action="pick"   data-order="${orderAttr}">標記已領</button>`;
+    return `
+      <div class="meal-row ${m.picked ? 'picked' : 'unpicked'}">
+        <span class="meal-label">${m.label}</span>
+        <span class="meal-name">${escapeHtml(m.name)}</span>
+        ${badge}
+        ${btn}
+      </div>`;
+  }).join('');
+}
+
+function buildOrderCard(o) {
+  const div = document.createElement('div');
+  const hasAny = !!(o.breakfast || o.lunch || o.dinner);
+  const allPicked = hasAny && !hasUnpickedMeal(o);
+  if (o.cancelled) {
+    div.className = 'order-row cancelled';
+  } else {
+    div.className = 'order-row' + (allPicked ? ' picked' : ' unpicked');
+  }
+
+  // 空欄位用「—」佔位，避免後續欄位前移（單位空白時看起來欄位錯位）
+  const headLeft = [
+    `<span class="${o.unit ? '' : 'empty-field'}">${o.unit ? escapeHtml(o.unit) : '— 未填單位'}</span>`,
+    `<strong>${escapeHtml(o.name || '—')}</strong>`,
+    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(o.phone) : '—'}</span>`,
+  ].join('｜');
+
+  const orderNoHtml = o.orderNo
+    ? `<span class="order-no">${escapeHtml(o.orderNo)}</span>` : '';
+
+  // 已取消的卡片：不顯示領餐按鈕、改顯示取消資訊；未取消的：底部加「取消訂單」按鈕
+  const mealsHtml = o.cancelled
+    ? `<div class="meal-list">${buildMealsReadonlyHtml(o)}</div>`
+    : `<div class="meal-list">${buildMealRowsHtml(o)}</div>`;
+
+  const cancelBtnHtml = o.cancelled
+    ? ''
+    : `<button type="button" class="danger btn-cancel-order" data-order="${escapeHtml(o.orderNo || '')}">⛔ 取消訂單</button>`;
+
+  div.innerHTML = `
+    <div class="order-head">
+      ${orderNoHtml}
+      <div class="order-meta">${headLeft}</div>
+    </div>
+    ${mealsHtml}
+    ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
+    ${buildCancelInfoHtml(o)}
+    ${cancelBtnHtml}
+  `;
+
+  div.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      const meal    = ev.currentTarget.dataset.meal;
+      const picked  = ev.currentTarget.dataset.action === 'pick';
+      await markPickup(orderNo, meal, picked);
+    });
+  });
+  div.querySelectorAll('button.btn-cancel-order').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      onCancelOrder(orderNo);
+    });
+  });
+  return div;
+}
+
+/** 已取消單的三餐唯讀顯示（無按鈕、無徽章變化） */
+function buildMealsReadonlyHtml(o) {
+  const meals = [
+    { label: '早', name: o.breakfast },
+    { label: '午', name: o.lunch },
+    { label: '晚', name: o.dinner },
+  ];
+  return meals.filter(m => m.name).map(m => `
+    <div class="meal-row">
+      <span class="meal-label">${m.label}</span>
+      <span class="meal-name">${escapeHtml(m.name)}</span>
+    </div>`).join('');
+}
+
+async function markPickup(orderNo, meal, picked) {
+  if (!orderNo) { showMsg('此筆訂單無編號，無法標記', true); return; }
+  if (!meal)    { showMsg('缺少餐別參數', true); return; }
+  try {
+    const data = await postJson({ action: 'markPickup', idToken, orderNo, meal, picked });
+    if (!data.ok) throw new Error(data.error || '更新失敗');
+    showMsg(`${orderNo} ${mealLabel(meal)}${picked ? '已標記為已領' : '已取消已領'}`);
+    if (useBigToast && picked) {
+      // 取消已領（picked=false）不跳大通知，避免誤觸；只有確實標領才跳
+      const o = lookupOrderForToast(orderNo);
+      const item = o ? (meal === 'breakfast' ? o.breakfast : meal === 'lunch' ? o.lunch : o.dinner) : '';
+      showPickupToast({
+        status: 'ok',
+        title: '✓ 領取完成',
+        orderNo,
+        meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
+        lines: [
+          o ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
+          `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
+          (o && o.byob)   ? '🥢 自備餐具' : '',
+          (o && o.dineIn) ? '🍽️ 現場用餐' : '',
+          `領餐時間：${shortTime(new Date().toISOString())}`,
+        ].filter(Boolean),
+      });
+    }
+    if (lastStats) {
+      const o = lastStats.orders.find(x => x.orderNo === orderNo);
+      if (o) {
+        const pickKey = meal + 'Picked';
+        const atKey   = meal + 'PickedAt';
+        const wasPicked = !!o[pickKey];
+        o[pickKey] = picked;
+        o[atKey]   = picked ? new Date().toISOString() : '';
+        if (wasPicked !== picked) {
+          lastStats.counts[pickKey] = (lastStats.counts[pickKey] || 0) + (picked ? 1 : -1);
+        }
+        renderStats();
+      }
+    }
+    // 若是從快速查單觸發的，更新該卡片
+    refreshPickupCard(orderNo);
+  } catch (e) {
+    showMsg('標記失敗：' + e.message, true);
+  }
+}
+
+/**
+ * 取消訂單（軟刪除）— 二次確認 + 收集原因。
+ * 取消後資料仍保留於試算表，可從統計卡片「已取消 X 筆」追蹤。
+ */
+async function onCancelOrder(orderNo) {
+  if (!orderNo) { showMsg('此筆訂單無編號，無法取消', true); return; }
+  if (!confirm(`確定要取消訂單 ${orderNo}？\n\n資料會保留在試算表，並記錄操作者、時間與原因。\n已寄出的 LINE 通知無法撤回。`)) return;
+  const reason = (prompt(`請輸入取消原因（可留白，例如：訂購人通知不能來、餐點供應問題…）`, '') || '').trim();
+  let data;
+  try {
+    data = await postJson({ action: 'cancelOrder', idToken, orderNo, reason });
+  } catch (e) {
+    showMsg('連線失敗：' + e.message, true);
+    return;
+  }
+  if (!data.ok) {
+    showMsg(data.error || '取消失敗', true);
+    return;
+  }
+  showMsg(`✅ ${orderNo} 已取消（操作者：${data.cancelledBy || '—'}）`);
+  // 重新拉統計 → 自動 re-render 列表（取消後該卡片變灰、總筆數計入 cancelled）
+  await loadStats({ silent: true });
+  refreshPickupCard(orderNo);
+}
+
+const AUDIT_ACTION_LABELS = {
+  markPickup:  '手動標領',
+  scanPickup:  '掃 QR 標領',
+  cancelOrder: '取消訂單',
+  updateMenu:  '修改菜單',
+};
+
+async function loadAuditLog() {
+  const date   = document.getElementById('auditDate').value || '';
+  const action = document.getElementById('auditAction').value || 'all';
+  const box    = document.getElementById('auditResult');
+  const meta   = document.getElementById('auditMeta');
+  const list   = document.getElementById('auditList');
+  box.hidden = false;
+  list.innerHTML = '<div class="audit-empty">載入中…</div>';
+  meta.textContent = '';
+  let data;
+  try {
+    data = await postJson({ action: 'listAuditLog', idToken, date, action, limit: 200 });
+  } catch (e) {
+    list.innerHTML = `<div class="audit-empty">連線失敗：${escapeHtml(e.message)}</div>`;
+    return;
+  }
+  if (!data.ok) {
+    list.innerHTML = `<div class="audit-empty">${escapeHtml(data.error || '載入失敗')}</div>`;
+    return;
+  }
+  renderAuditList(data, date, action);
+}
+
+function renderAuditList(data, date, actionFilter) {
+  const meta = document.getElementById('auditMeta');
+  const list = document.getElementById('auditList');
+  const parts = [];
+  if (date) parts.push(date);
+  else parts.push('不限日期');
+  if (actionFilter && actionFilter !== 'all') {
+    parts.push(AUDIT_ACTION_LABELS[actionFilter] || actionFilter);
+  }
+  meta.textContent = `${parts.join('｜')}　共 ${data.total} 筆${data.total > data.logs.length ? `（顯示最近 ${data.logs.length}）` : ''}`;
+
+  if (data.logs.length === 0) {
+    list.innerHTML = '<div class="audit-empty">沒有符合條件的紀錄</div>';
+    return;
+  }
+
+  list.innerHTML = data.logs.map(r => {
+    const failed = r.result && r.result !== 'ok';
+    const actionLabel = AUDIT_ACTION_LABELS[r.action] || r.action || '?';
+    const resultHtml = failed
+      ? `<span class="audit-result err">${escapeHtml(r.result)}</span>`
+      : `<span class="audit-result">ok</span>`;
+    return `
+      <div class="audit-row ${failed ? 'failed' : ''}">
+        <div class="audit-head">
+          <span class="audit-time">${escapeHtml(formatLocal(r.time))}</span>
+          <span class="audit-action ${escapeHtml(r.action)}">${escapeHtml(actionLabel)}</span>
+          <span class="audit-operator">${escapeHtml(r.operatorName || r.userId || '—')}</span>
+        </div>
+        ${r.target ? `<div class="audit-target">目標：${escapeHtml(r.target)}</div>` : ''}
+        ${r.details ? `<div class="audit-details">${escapeHtml(r.details)}</div>` : ''}
+        <div>${resultHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+async function onScanCode() {
+  if (!window.liff) {
+    alert('LIFF SDK 未載入，請重新整理頁面');
+    return;
+  }
+  if (typeof liff.isInClient === 'function' && !liff.isInClient()) {
+    alert('QR 掃描功能僅能在 LINE 內使用。\n請改從 LINE 開啟管理 LIFF 短網址，或手動輸入訂單編號。');
+    return;
+  }
+  if (typeof liff.scanCodeV2 !== 'function') {
+    alert('此 LINE 版本不支援 QR 掃描，請更新 LINE App 至最新版');
+    return;
+  }
+  let orderNo = '';
+  try {
+    const result = await liff.scanCodeV2();
+    orderNo = result && result.value ? String(result.value).trim() : '';
+    if (!orderNo) return;
+  } catch (e) {
+    const msg = String((e && e.message) || e || '');
+    if (/cancel/i.test(msg) || /user.*cancel/i.test(msg)) return;
+    alert('掃描失敗：' + msg + '\n\n請確認 LINE Developers Console → 管理 LIFF → Scan QR 已設為 ON。');
+    return;
+  }
+  document.getElementById('pickupNo').value = orderNo;
+  await scanPickup(orderNo);
+}
+
+/**
+ * QR 掃描後自動依時段標領。
+ * 後端回應：
+ *   ok: true                        → 綠 toast「✓ 已領取」
+ *   reason: 'out_of_window'         → 紅 toast，並把訂單卡片載出來方便手動標
+ *   reason: 'not_ordered'           → 紅 toast「沒訂該餐」
+ *   reason: 'already_picked'        → 黃 toast「已於 HH:mm 領取」
+ *   reason: 'cancelled'             → 紅 toast「訂單已取消，無法標領」
+ *   其他 ok:false（例：訂單編號錯）→ 紅 toast 顯示 error
+ *
+ * 筆電 / 外部瀏覽器（useBigToast=true）→ 跳全屏大通知 + 音效
+ */
+async function scanPickup(rawOrderNo) {
+  // USB QR 掃描器可能把整碼接在預填 YYYYMMDD- 之後，先正規化
+  const orderNo = normalizePickupNo(rawOrderNo);
+  if (!orderNo || orderNo === todayOrderPrefix()) {
+    showMsg('缺少訂單編號', true);
+    return;
+  }
+  // 把正規化後的值回填欄位，方便確認
+  const inputEl = document.getElementById('pickupNo');
+  if (inputEl) inputEl.value = orderNo;
+
+  let data;
+  try {
+    data = await postJson({ action: 'scanPickup', idToken, orderNo });
+  } catch (e) {
+    showMsg('連線失敗：' + e.message, true);
+    if (useBigToast) showPickupToast({ status: 'err', title: '連線失敗', orderNo, lines: [e.message || ''] });
+    return;
+  }
+
+  if (data.ok) {
+    showMsg(`✅ ${orderNo} ${mealLabel(data.meal)} 領取完成`);
+    if (useBigToast) {
+      // 撈該訂單完整資料（單位 / 訂購人 / 警用電話 / 餐項）丟到大通知
+      const o = await fetchOrderDetail(orderNo) || lookupOrderForToast(orderNo) || {};
+      const meal = data.meal;
+      const item = meal === 'breakfast' ? (o.breakfast || '')
+                 : meal === 'lunch'     ? (o.lunch || '')
+                 : meal === 'dinner'    ? (o.dinner || '') : '';
+      showPickupToast({
+        status: 'ok',
+        title: '✓ 領取完成',
+        orderNo,
+        meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
+        lines: [
+          (o.unit || o.name) ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
+          o.phone ? `警用電話：${o.phone}` : '',
+          `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
+          o.byob   ? '🥢 自備餐具' : '',
+          o.dineIn ? '🍽️ 現場用餐' : '',
+          `領餐時間：${shortTime(data.pickedAt)}`,
+        ].filter(Boolean),
+      });
+    }
+    await onFindOrder();      // 卡片同步更新
+    if (lastStats) await loadStats({ silent: true }); // 統計即時更新
+    // 重置查詢欄位回預填前綴，準備下一張 QR
+    if (inputEl) inputEl.value = todayOrderPrefix();
+    return;
+  }
+
+  // 以下都是失敗情境：先撈一次訂單詳細丟到大通知，並在最後重置欄位
+  const orderForToast = useBigToast ? (await fetchOrderDetail(orderNo) || {}) : {};
+  const headerLine = (orderForToast.unit || orderForToast.name)
+    ? `${orderForToast.unit || ''}　${orderForToast.name || ''}`.trim()
+    : '';
+
+  if (data.reason === 'cancelled') {
+    showMsg(data.error || `${orderNo} 已取消，無法標領`, true);
+    if (useBigToast) showPickupToast({
+      status: 'err', title: '訂單已取消', orderNo,
+      lines: [headerLine, '此單已被管理員取消，無法領餐'].filter(Boolean),
+    });
+    await onFindOrder();
+    if (inputEl) inputEl.value = todayOrderPrefix();
+    return;
+  }
+
+  if (data.reason === 'already_picked') {
+    showMsg(`⚠️ ${orderNo} ${mealLabel(data.meal)}已於 ${shortTime(data.pickedAt)} 領取`, 'warn');
+    if (useBigToast) {
+      showPickupToast({
+        status: 'warn',
+        title: '⚠ 已領過餐',
+        orderNo,
+        lines: [
+          headerLine,
+          `${MEAL_LABEL_FULL[data.meal] || data.meal}已於 ${shortTime(data.pickedAt)} 領取`,
+        ].filter(Boolean),
+      });
+    }
+    await onFindOrder();
+    if (inputEl) inputEl.value = todayOrderPrefix();
+    return;
+  }
+
+  if (data.reason === 'out_of_window') {
+    // 時段外：載出該單卡片，讓管理員手動標領
+    showMsg(data.error || '現在不是取餐時段', true);
+    if (useBigToast) {
+      showPickupToast({
+        status: 'warn',
+        title: '不在取餐時段',
+        orderNo,
+        lines: [headerLine, '請使用卡片上的「標記已領」按鈕'].filter(Boolean),
+      });
+    }
+    await onFindOrder();
+    if (inputEl) inputEl.value = todayOrderPrefix();
+    return;
+  }
+
+  // not_ordered 或其他錯誤
+  showMsg(data.error || '掃描失敗', true);
+  if (useBigToast) {
+    showPickupToast({
+      status: 'err',
+      title: data.reason === 'not_ordered' ? '沒訂該餐' : '無法領取',
+      orderNo,
+      lines: [headerLine, data.error || ''].filter(Boolean),
+    });
+  }
+  await onFindOrder();
+  if (inputEl) inputEl.value = todayOrderPrefix();
+}
+
+function shortTime(v) {
+  if (!v) return '—';
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return String(v);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function onFindOrder() {
+  const input = document.getElementById('pickupNo');
+  const orderNo = normalizePickupNo(input.value);
+  if (!orderNo || orderNo === todayOrderPrefix()) {
+    showMsg('請輸入訂單編號末 3 碼', true);
+    return;
+  }
+  // 把正規化後的完整編號回填欄位，方便管理員確認
+  input.value = orderNo;
+  try {
+    const data = await postJson({ action: 'findOrder', idToken, orderNo });
+    if (!data.ok) throw new Error(data.error || '查無此單');
+    renderPickupResult(data.order);
+  } catch (e) {
+    renderPickupError(e.message);
+  }
+}
+
+function renderPickupResult(o) {
+  const box = document.getElementById('pickupResult');
+  const headLeft = [
+    `<span class="${o.unit ? '' : 'empty-field'}">${o.unit ? escapeHtml(o.unit) : '— 未填單位'}</span>`,
+    `<strong>${escapeHtml(o.name || '—')}</strong>`,
+    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(o.phone) : '—'}</span>`,
+  ].join('｜');
+
+  const hasAny = !!(o.breakfast || o.lunch || o.dinner);
+  const allPicked = hasAny && !hasUnpickedMeal(o);
+
+  const pickTimes = o.cancelled ? '' : [
+    { label: '早餐', at: o.breakfastPickedAt, has: !!o.breakfast },
+    { label: '中餐', at: o.lunchPickedAt,     has: !!o.lunch },
+    { label: '晚餐', at: o.dinnerPickedAt,    has: !!o.dinner },
+  ].filter(r => r.has && r.at)
+   .map(r => `<div class="order-note">${r.label}領餐時間：${escapeHtml(formatLocal(r.at))}</div>`)
+   .join('');
+
+  const mealsHtml = o.cancelled
+    ? `<div class="meal-list">${buildMealsReadonlyHtml(o)}</div>`
+    : `<div class="meal-list">${buildMealRowsHtml(o)}</div>`;
+  const cancelBtnHtml = o.cancelled
+    ? ''
+    : `<button type="button" class="danger btn-cancel-order" data-order="${escapeHtml(o.orderNo || '')}">⛔ 取消訂單</button>`;
+
+  box.hidden = false;
+  box.className = 'pickup-card ' + (o.cancelled ? 'cancelled' : (allPicked ? 'picked' : 'unpicked'));
+  box.innerHTML = `
+    <div class="order-head">
+      <span class="order-no">${escapeHtml(o.orderNo)}</span>
+      <div class="order-meta">${headLeft}</div>
+    </div>
+    <div class="order-meals">日期 ${escapeHtml(o.date)}</div>
+    ${mealsHtml}
+    ${o.note ? `<div class="order-note">備註：${escapeHtml(o.note)}</div>` : ''}
+    ${pickTimes}
+    ${buildCancelInfoHtml(o)}
+    ${cancelBtnHtml}
+  `;
+  box.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      const meal    = ev.currentTarget.dataset.meal;
+      const picked  = ev.currentTarget.dataset.action === 'pick';
+      await markPickup(orderNo, meal, picked);
+    });
+  });
+  box.querySelectorAll('button.btn-cancel-order').forEach(btn => {
+    btn.addEventListener('click', ev => {
+      const orderNo = ev.currentTarget.dataset.order;
+      onCancelOrder(orderNo);
+    });
+  });
+}
+
+function refreshPickupCard(orderNo) {
+  const box = document.getElementById('pickupResult');
+  if (box.hidden) return;
+  const cur = box.querySelector('.order-no');
+  if (!cur || cur.textContent !== orderNo) return;
+  // 重新查單以反映最新狀態
+  onFindOrder();
+}
+
+function renderPickupError(msg) {
+  const box = document.getElementById('pickupResult');
+  box.hidden = false;
+  box.className = 'pickup-card err';
+  box.innerHTML = `<div class="order-note err">${escapeHtml(msg)}</div>`;
+}
+
+function formatLocal(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+async function loadMenuForDate(date) {
+  const hint = document.getElementById('menuOrdered');
+  try {
+    const url = API_URL + '?action=menu' + (date ? '&date=' + encodeURIComponent(date) : '');
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    Object.entries(data.menu).forEach(([k, v]) => {
+      const el = document.querySelector(`input[name="${k}"]`);
+      if (el) el.value = v;
+    });
+    if (hint) {
+      if (data.remaining && typeof data.limit === 'number') {
+        const r = data.remaining, lim = data.limit;
+        hint.textContent =
+          `${data.date || date} 中餐已訂｜A ${lim - r.A}／B ${lim - r.B}／C ${lim - r.C}（上限 ${lim}）`;
+      } else {
+        hint.textContent = '';
+      }
+    }
+  } catch (e) {
+    if (hint) hint.textContent = '';
+    showMsg('載入菜單失敗：' + e.message, true);
+  }
+}
+
+async function onSubmitMenu(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+
+  const date = document.getElementById('menuDate').value;
+  if (!date) { showMsg('請選擇日期', true); btn.disabled = false; return; }
+
+  const fd = new FormData(ev.target);
+  const menu = Object.fromEntries(fd.entries());
+
+  try {
+    const data = await postJson({ action: 'updateMenu', idToken, date, menu });
+    if (!data.ok) throw new Error(data.error || '儲存失敗');
+    showMsg(`已更新 ${date} 的菜單`);
+    // 儲存後重新拉歷史菜單，讓新增的選項立刻能在下拉裡選到
+    loadMenuHistory();
+  } catch (e) {
+    showMsg('儲存失敗：' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * 載入每個餐別的歷史菜單名稱，填入對應 <datalist>。
+ * input 的 list 屬性指向同名 datalist → 瀏覽器自動顯示下拉 + 過濾。
+ * 排序：最近使用的在最前面。
+ */
+async function loadMenuHistory() {
+  let data;
+  try {
+    data = await postJson({ action: 'menuHistory', idToken });
+  } catch (e) {
+    console.warn('loadMenuHistory failed:', e);
+    return;
+  }
+  if (!data.ok || !data.history) return;
+  Object.entries(data.history).forEach(([item, names]) => {
+    const dl = document.getElementById(`hist-${item}`);
+    if (!dl) return;
+    dl.innerHTML = (names || [])
+      .map(n => `<option value="${escapeHtml(n)}"></option>`)
+      .join('');
+  });
+}
+
+function showMsg(text, mode) {
+  // mode: undefined / false → 'ok'（綠）
+  //       true              → 'err'（紅，保留舊呼叫相容）
+  //       'warn'            → 'warn'（黃，警告但非錯誤）
+  const cls = mode === 'warn' ? 'warn' : mode ? 'err' : 'ok';
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + cls;
+  el.hidden = false;
+}
+
+/* =========================================================
+ * 領餐大通知（筆電 / 外部瀏覽器使用）
+ *   - 全屏覆蓋、大字訂單編號、餐別資訊
+ *   - 成功綠 / 已領過黃 / 取消或錯誤紅
+ *   - 5 秒後自動關閉，或點任意處 / 按 Esc 立刻關閉
+ *   - 連續掃多張：下次呼叫直接覆寫內容
+ * ========================================================= */
+
+let pickupToastTimer = null;
+
+/* ============================================================
+ * 現場點餐新訂單輪詢（每 5 秒）
+ * 有新訂單時顯示大通知（停留 5 秒）供出餐口管理者確認
+ * ============================================================ */
+let walkinPollTime = new Date().toISOString();
+let walkinPollTimer = null;
+
+function startWalkinPolling() {
+  if (walkinPollTimer) return;
+  walkinPollTimer = setInterval(pollWalkinOrders, 5000);
+}
+
+async function pollWalkinOrders() {
+  try {
+    const data = await postJson({ action: 'getRecentWalkinOrders', idToken, since: walkinPollTime });
+    if (data.serverTime) walkinPollTime = data.serverTime;
+    if (data.ok && data.orders && data.orders.length > 0) {
+      data.orders.forEach(o => showNewWalkinToast(o));
+    }
+  } catch (_) { /* 輪詢失敗靜默，下次繼續 */ }
+}
+
+function showNewWalkinToast(o) {
+  const byobLine  = o.byob   ? '🥢 自備餐具' : '自購餐具';
+  const dineInLine = o.dineIn ? '🍽️ 現場用餐' : '自購餐具，打包帶走';
+  const meals = [
+    o.breakfast ? `早：${o.breakfast}` : '',
+    o.lunch     ? `中：${o.lunch}`     : '',
+    o.dinner    ? `晚：${o.dinner}`    : '',
+  ].filter(Boolean);
+  showPickupToast({
+    status: 'info',
+    title: '🟠 新現場訂單',
+    orderNo: o.orderNo,
+    lines: [
+      `${o.unit || ''}　${o.name || ''}`.trim(),
+      byobLine,
+      dineInLine,
+      ...meals,
+    ].filter(Boolean),
+    beep: true,
+    forceDuration: 5000,
+  });
+}
+
+/**
+ * @param {object} opts
+ *   status:      'ok' | 'err' | 'warn' | 'info'
+ *   title:       上方標題
+ *   orderNo:     訂單編號（大字）
+ *   lines:       細項陣列
+ *   beep:        true=成功音 / 'err'=失敗音
+ *   meal:        成功標領的餐別 — 有值時顯示「自備餐具」按鈕
+ *   forceDuration: 覆寫停留毫秒數（預設依 status/meal 自動決定）
+ */
+function showPickupToast(opts) {
+  const { status = 'ok', title = '', orderNo = '', lines = [], beep = true, meal = '', forceDuration } = opts || {};
+  const box  = document.getElementById('pickupToast');
+  const card = document.getElementById('pickupToastCard');
+  card.className = 'pickup-toast-card ' + status;
+  document.getElementById('ptIcon').textContent  =
+    status === 'ok'   ? '✅' :
+    status === 'warn' ? '⚠️' :
+    status === 'info' ? 'ℹ️' : '⛔';
+  document.getElementById('ptTitle').textContent = title || (
+    status === 'ok' ? '領取完成' :
+    status === 'warn' ? '注意' :
+    status === 'info' ? '提示' : '無法領取'
+  );
+  document.getElementById('ptOrder').textContent = orderNo || '—';
+  document.getElementById('ptLines').innerHTML =
+    (lines || []).filter(Boolean).map(l => `<div>${escapeHtml(l)}</div>`).join('');
+
+  // 自備餐具按鈕：只有「標領成功」(status=ok 且有 meal) 才顯示
+  const actions = document.getElementById('ptActions');
+  const byobBtn = document.getElementById('byobBtn');
+  if (status === 'ok' && meal && orderNo) {
+    actions.hidden = false;
+    byobBtn.disabled = false;
+    byobBtn.classList.remove('done');
+    byobBtn.textContent = '🥢 自備餐具';
+    byobBtn.dataset.orderNo = orderNo;
+    byobBtn.dataset.meal = meal;
+  } else {
+    actions.hidden = true;
+  }
+
+  box.hidden = false;
+
+  if (beep) playBeep(status === 'ok' ? 'ok' : 'err');
+
+  if (pickupToastTimer) clearTimeout(pickupToastTimer);
+  // forceDuration → 覆寫；有自備餐具按鈕延長 10 秒；其他 5 秒
+  const dur = forceDuration != null ? forceDuration
+    : (status === 'ok' && meal) ? 10000 : 5000;
+  pickupToastTimer = setTimeout(hidePickupToast, dur);
+}
+
+function hidePickupToast() {
+  const box = document.getElementById('pickupToast');
+  if (box) box.hidden = true;
+  if (pickupToastTimer) { clearTimeout(pickupToastTimer); pickupToastTimer = null; }
+}
+
+/**
+ * 按下「自備餐具」按鈕 → 呼叫後端 setByob 寫 AuditLog 標記。
+ * 成功後按鈕變綠色「✓ 已記錄自備餐具」並 disable，10 秒後通知自動關閉。
+ */
+async function onByobClick() {
+  const btn = document.getElementById('byobBtn');
+  const orderNo = btn.dataset.orderNo;
+  const meal    = btn.dataset.meal;
+  if (!orderNo || !meal) return;
+  btn.disabled = true;
+  btn.textContent = '送出中…';
+  try {
+    const data = await postJson({ action: 'setByob', idToken, orderNo, meal, byob: true });
+    if (!data.ok) throw new Error(data.error || '標記失敗');
+    btn.classList.add('done');
+    btn.textContent = '✓ 已記錄自備餐具';
+    // 標記成功後延長關閉時間讓使用者看清楚
+    if (pickupToastTimer) clearTimeout(pickupToastTimer);
+    pickupToastTimer = setTimeout(hidePickupToast, 4000);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '🥢 自備餐具';
+    alert('標記自備餐具失敗：' + e.message);
+  }
+}
+
+// 點背景或按 Esc 關閉；按按鈕觸發 byob
+document.addEventListener('click', e => {
+  if (!e.target) return;
+  if (e.target.id === 'byobBtn') { onByobClick(); return; }
+  if (e.target.id === 'pickupToast') hidePickupToast();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hidePickupToast();
+});
+
+/**
+ * 簡短「叮」音效（成功）或「嗶嗶」音效（失敗），用 Web Audio API 生成不需音檔。
+ * 筆電瀏覽器有效；手機 LINE App 內可能被 mute。
+ */
+function playBeep(kind) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (kind === 'ok') {
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      osc.start(); osc.stop(ctx.currentTime + 0.18);
+    } else {
+      osc.frequency.value = 220;
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      osc.start(); osc.stop(ctx.currentTime + 0.30);
+    }
+    setTimeout(() => ctx.close(), 500);
+  } catch (_) { /* 音效失敗無關緊要 */ }
+}
+
+const MEAL_LABEL_FULL = { breakfast: '早餐', lunch: '中餐', dinner: '晚餐' };
+
+/**
+ * 從 lastStats 找該訂單，組出大通知細項（訂購人、單位、餐項）
+ */
+function lookupOrderForToast(orderNo) {
+  if (!lastStats || !lastStats.orders) return null;
+  return lastStats.orders.find(o => o.orderNo === orderNo) || null;
+}
+
+/**
+ * 撈單筆訂單完整資料（供大通知顯示領用人資訊用）。
+ * 失敗回 null，呼叫端可 fallback 到 lookupOrderForToast 或空物件。
+ */
+async function fetchOrderDetail(orderNo) {
+  try {
+    const data = await postJson({ action: 'findOrder', idToken, orderNo });
+    if (data && data.ok && data.order) return data.order;
+  } catch (_) {}
+  return null;
+}
+
+function gotoOrderPage() {
+  const url = 'https://liff.line.me/2010095803-Neg2TBst';
+  if (window.liff && typeof liff.openWindow === 'function') {
+    liff.openWindow({ url, external: false });
+  } else {
+    window.location.href = url;
+  }
+}
+
+function showDenied(extraMsg) {
+  const content = document.getElementById('adminContent');
+  if (content) content.hidden = true;
+  const box = document.getElementById('denied');
+  if (box) {
+    box.hidden = false;
+    if (extraMsg) {
+      const extra = document.createElement('div');
+      extra.style.marginTop = '6px';
+      extra.textContent = extraMsg;
+      box.appendChild(extra);
+    }
+  }
+  const backBtn = document.getElementById('backToOrderBtn');
+  if (backBtn) backBtn.addEventListener('click', e => { e.preventDefault(); gotoOrderPage(); });
+}
+
+init();
+</script>
+</body>
+</html>
