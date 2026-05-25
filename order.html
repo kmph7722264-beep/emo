@@ -35,20 +35,14 @@
     <fieldset>
       <legend>訂購餐點</legend>
       <label>早餐
-        <select name="breakfast">
-          <option value="">不訂購</option>
-        </select>
+        <div id="sel-breakfast"><select name="breakfast"><option value="">不訂購</option></select></div>
       </label>
       <label>中餐
-        <select name="lunch">
-          <option value="">不訂購</option>
-        </select>
+        <div id="sel-lunch"><select name="lunch"><option value="">不訂購</option></select></div>
         <small class="field-hint" id="lunchRemaining">每日上限 40 份，剩餘量載入中…</small>
       </label>
       <label>晚餐
-        <select name="dinner">
-          <option value="">不訂購</option>
-        </select>
+        <div id="sel-dinner"><select name="dinner"><option value="">不訂購</option></select></div>
       </label>
     </fieldset>
 
@@ -151,9 +145,9 @@ async function init() {
   function scheduleMenuReload() {
     clearTimeout(menuReloadTimer);
     ['breakfast', 'lunch', 'dinner'].forEach(sName => {
-      const sel = document.querySelector(`select[name="${sName}"]`);
-      if (!sel) return;
-      sel.innerHTML = '<option value="">（菜單載入中…）</option>';
+      const wrap = document.getElementById(`sel-${sName}`);
+      if (!wrap) return;
+      wrap.innerHTML = `<select name="${sName}"><option value="">（菜單載入中…）</option></select>`;
     });
     menuReloadTimer = setTimeout(loadMenu, 0);
   }
@@ -194,8 +188,8 @@ async function loadMenu() {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
     function rebuildSelect(selectName, items) {
-      const oldSel = document.querySelector(`select[name="${selectName}"]`);
-      if (!oldSel) return;
+      const wrap = document.getElementById(`sel-${selectName}`);
+      if (!wrap) return;
       const closed = orderable[selectName] === false;
       const parts = ['<option value="">不訂購</option>'];
       for (const { key, prefix, lunchKey } of items) {
@@ -213,12 +207,7 @@ async function loadMenu() {
           parts.push(`<option value="${val}">${val}</option>`);
         }
       }
-      // Replace the entire <select> element so iOS UIPickerView is fully re-initialized
-      const newSel = document.createElement('select');
-      newSel.name = oldSel.name;
-      newSel.className = oldSel.className;
-      newSel.innerHTML = parts.join('');
-      oldSel.parentNode.replaceChild(newSel, oldSel);
+      wrap.innerHTML = `<select name="${selectName}">${parts.join('')}</select>`;
     }
 
     rebuildSelect('breakfast', [{ key: '早餐', prefix: '' }]);
