@@ -34,16 +34,13 @@
 
     <fieldset>
       <legend>訂購餐點</legend>
-      <label>早餐
-        <div id="sel-breakfast"><select name="breakfast"><option value="">不訂購</option></select></div>
-      </label>
-      <label>中餐
-        <div id="sel-lunch"><select name="lunch"><option value="">不訂購</option></select></div>
-        <small class="field-hint" id="lunchRemaining">每日上限 40 份，剩餘量載入中…</small>
-      </label>
-      <label>晚餐
-        <div id="sel-dinner"><select name="dinner"><option value="">不訂購</option></select></div>
-      </label>
+      <div class="form-meal-label">早餐</div>
+      <div id="sel-breakfast" class="order-check-group"></div>
+      <div class="form-meal-label">中餐</div>
+      <div id="sel-lunch" class="order-check-group"></div>
+      <small class="field-hint" id="lunchRemaining"></small>
+      <div class="form-meal-label">晚餐</div>
+      <div id="sel-dinner" class="order-check-group"></div>
     </fieldset>
 
     <fieldset>
@@ -146,8 +143,7 @@ async function init() {
     clearTimeout(menuReloadTimer);
     ['breakfast', 'lunch', 'dinner'].forEach(sName => {
       const wrap = document.getElementById(`sel-${sName}`);
-      if (!wrap) return;
-      wrap.innerHTML = `<select name="${sName}"><option value="">（菜單載入中…）</option></select>`;
+      if (wrap) wrap.innerHTML = '<span class="no-menu-text">載入中…</span>';
     });
     menuReloadTimer = setTimeout(loadMenu, 0);
   }
@@ -187,63 +183,58 @@ async function loadMenu() {
     function htmlEsc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-    function rebuildSelect(selectName, items) {
-      const wrap = document.getElementById(`sel-${selectName}`);
+    function rebuildMeal(mealName, items) {
+      const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
-      const closed = orderable[selectName] === false;
-      const parts = ['<option value="">不訂購</option>'];
+      const closed = orderable[mealName] === false;
+      const isLunch = mealName === 'lunch';
+      const inputType = isLunch ? 'radio' : 'checkbox';
+      const parts = [];
       for (const { key, prefix, lunchKey } of items) {
         const menuName = data.menu[key] || '';
         if (!menuName) continue;
         const baseLabel = (prefix || '') + menuName;
         const val = htmlEsc(baseLabel);
+        let displayText = val;
+        let isDisabled = false;
         if (closed) {
-          parts.push(`<option value="${val}" disabled>${val}（已截止）</option>`);
+          displayText += '（已截止）';
+          isDisabled = true;
         } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
           const left = data.remaining[lunchKey];
-          const dis = left <= 0 ? ' disabled' : '';
-          parts.push(`<option value="${val}"${dis}>${val}（剩 ${left}）</option>`);
-        } else {
-          parts.push(`<option value="${val}">${val}</option>`);
+          displayText += `（剩 ${left}）`;
+          if (left <= 0) isDisabled = true;
         }
+        const dis = isDisabled ? ' disabled' : '';
+        const cls = isDisabled ? ' item-closed' : '';
+        parts.push(
+          `<label class="order-check-item${cls}">` +
+          `<input type="${inputType}" name="${mealName}" value="${val}"${dis}>` +
+          `<span>${displayText}</span></label>`
+        );
       }
-      wrap.innerHTML = `<select name="${selectName}">${parts.join('')}</select>`;
+      wrap.innerHTML = parts.length
+        ? parts.join('')
+        : '<span class="no-menu-text">今日無此餐</span>';
     }
 
-    rebuildSelect('breakfast', [{ key: '早餐', prefix: '' }]);
-    rebuildSelect('lunch', [
+    rebuildMeal('breakfast', [{ key: '早餐', prefix: '' }]);
+    rebuildMeal('lunch', [
       { key: '中餐A', prefix: 'A 餐：', lunchKey: 'A' },
       { key: '中餐B', prefix: 'B 餐：', lunchKey: 'B' },
       { key: '中餐C', prefix: 'C 餐：', lunchKey: 'C' },
     ]);
-    rebuildSelect('dinner', [{ key: '晚餐', prefix: '' }]);
+    rebuildMeal('dinner', [{ key: '晚餐', prefix: '' }]);
 
-    // 中餐剩餘量小字（截止時改顯示截止提示）
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
       if (orderable.lunch === false) {
         const t = (data.orderCutoff && data.orderCutoff.lunch) || '10:30';
         hint.textContent = `午餐進單已於 ${t} 結束`;
-      } else if (data.remaining) {
-        const r = data.remaining;
-        const limit = data.limit || 40;
-        const remParts = [];
-        if (data.menu['中餐A']) remParts.push(`A 剩 ${r.A}`);
-        if (data.menu['中餐B']) remParts.push(`B 剩 ${r.B}`);
-        if (data.menu['中餐C']) remParts.push(`C 剩 ${r.C}`);
-        hint.textContent = `每日上限 ${limit} 份｜` + remParts.join(' ／ ');
       } else {
-        hint.textContent = '';
+        hint.textContent = data.limit ? `每日上限 ${data.limit} 份` : '';
       }
     }
-
-    // 若目前已選的選項被 disable（售完或已截止），清掉它
-    ['breakfast', 'lunch', 'dinner'].forEach(name => {
-      const sel = document.querySelector(`select[name="${name}"]`);
-      if (sel && sel.selectedOptions[0] && sel.selectedOptions[0].disabled) {
-        sel.value = '';
-      }
-    });
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
   }
@@ -390,13 +381,15 @@ async function activateWalkinFromOrder(orderNo) {
   if (p.name)  document.querySelector('input[name="name"]').value  = p.name;
   if (p.phone) document.querySelector('input[name="phone"]').value = p.phone;
 
-  // 依後端時段建議自動選餐點下拉
+  // 依後端時段建議自動勾選餐點
   const meal = data.meal || {};
   if (meal.key && meal.suggest) {
-    const sel = document.querySelector(`select[name="${meal.key}"]`);
-    if (sel) {
-      const opt = Array.from(sel.options).find(o => o.value === meal.suggest);
-      if (opt && !opt.disabled) sel.value = meal.suggest;
+    const inputs = document.querySelectorAll(`input[name="${meal.key}"]`);
+    for (const inp of inputs) {
+      if (inp.value === meal.suggest && !inp.disabled) {
+        inp.checked = true;
+        break;
+      }
     }
   }
 

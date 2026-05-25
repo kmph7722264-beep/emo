@@ -410,3 +410,61 @@ button.danger:hover:not(:disabled) {
 }
 .meal-row .badge { margin-left: auto; }
 .meal-row .btn-mini { flex-shrink: 0; }
+
+/* 訂餐表單 — 勾選式餐點 */
+.form-meal-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 14px 0 6px;
+  color: var(--text);
+}
+.order-check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.order-check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: normal;
+  margin: 0;
+  transition: border-color .15s, background .15s;
+}
+.order-check-item:has(input:checked) {
+  border-color: var(--line-green);
+  background: #f0fdf4;
+}
+.order-check-item.item-closed {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.order-check-item input[type="checkbox"],
+.order-check-item input[type="radio"] {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--line-green);
+}
+.order-check-item.item-closed input {
+  cursor: not-allowed;
+}
+.no-menu-text {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 6px 2px;
+}
