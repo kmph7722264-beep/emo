@@ -233,7 +233,11 @@ async function loadMenu() {
       } else if (data.remaining) {
         const r = data.remaining;
         const limit = data.limit || 40;
-        hint.textContent = `每日上限 ${limit} 份｜A 剩 ${r.A} ／ B 剩 ${r.B} ／ C 剩 ${r.C}`;
+        const remParts = [];
+        if (data.menu['中餐A']) remParts.push(`A 剩 ${r.A}`);
+        if (data.menu['中餐B']) remParts.push(`B 剩 ${r.B}`);
+        if (data.menu['中餐C']) remParts.push(`C 剩 ${r.C}`);
+        hint.textContent = `每日上限 ${limit} 份｜` + remParts.join(' ／ ');
       } else {
         hint.textContent = '';
       }
