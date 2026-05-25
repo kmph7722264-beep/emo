@@ -150,7 +150,17 @@ async function init() {
   let menuReloadTimer = null;
   function scheduleMenuReload() {
     clearTimeout(menuReloadTimer);
-    menuReloadTimer = setTimeout(loadMenu, 80);
+    ['breakfast', 'lunch', 'dinner'].forEach(sName => {
+      const sel = document.querySelector(`select[name="${sName}"]`);
+      if (!sel) return;
+      while (sel.options.length > 1) sel.remove(1);
+      sel.disabled = true;
+      const ph = document.createElement('option');
+      ph.textContent = '載入中…';
+      ph.disabled = true;
+      sel.appendChild(ph);
+    });
+    menuReloadTimer = setTimeout(loadMenu, 0);
   }
   dateInput.addEventListener('change', scheduleMenuReload);
   dateInput.addEventListener('input',  scheduleMenuReload);
@@ -243,6 +253,11 @@ async function loadMenu() {
     });
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
+  } finally {
+    ['breakfast', 'lunch', 'dinner'].forEach(name => {
+      const sel = document.querySelector(`select[name="${name}"]`);
+      if (sel) sel.disabled = false;
+    });
   }
 }
 
