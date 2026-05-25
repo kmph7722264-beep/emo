@@ -199,8 +199,8 @@ async function loadMenu() {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
     function rebuildSelect(selectName, items) {
-      const sel = document.querySelector(`select[name="${selectName}"]`);
-      if (!sel) return;
+      const oldSel = document.querySelector(`select[name="${selectName}"]`);
+      if (!oldSel) return;
       const closed = orderable[selectName] === false;
       const parts = ['<option value="">不訂購</option>'];
       for (const { key, prefix, lunchKey } of items) {
@@ -218,7 +218,12 @@ async function loadMenu() {
           parts.push(`<option value="${val}">${val}</option>`);
         }
       }
-      sel.innerHTML = parts.join('');
+      // Replace the entire <select> element so iOS UIPickerView is fully re-initialized
+      const newSel = document.createElement('select');
+      newSel.name = oldSel.name;
+      newSel.className = oldSel.className;
+      newSel.innerHTML = parts.join('');
+      oldSel.parentNode.replaceChild(newSel, oldSel);
     }
 
     rebuildSelect('breakfast', [{ key: '早餐', prefix: '' }]);
