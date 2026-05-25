@@ -185,7 +185,10 @@ async function loadMenu() {
       const prefix = opt.dataset.prefix || '';
       const name = data.menu[key] || '';
       if (!name) {
-        opt.remove();
+        opt.hidden = true;
+        opt.disabled = false;
+        opt.value = '';
+        opt.textContent = '';
         return;
       }
       const baseLabel = prefix + name;
