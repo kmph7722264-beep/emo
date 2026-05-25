@@ -37,22 +37,17 @@
       <label>早餐
         <select name="breakfast">
           <option value="">不訂購</option>
-          <option data-menu="早餐" hidden></option>
         </select>
       </label>
       <label>中餐
         <select name="lunch">
           <option value="">不訂購</option>
-          <option data-menu="中餐A" data-prefix="A 餐：" data-lunch="A" hidden></option>
-          <option data-menu="中餐B" data-prefix="B 餐：" data-lunch="B" hidden></option>
-          <option data-menu="中餐C" data-prefix="C 餐：" data-lunch="C" hidden></option>
         </select>
         <small class="field-hint" id="lunchRemaining">每日上限 40 份，剩餘量載入中…</small>
       </label>
       <label>晚餐
         <select name="dinner">
           <option value="">不訂購</option>
-          <option data-menu="晚餐" hidden></option>
         </select>
       </label>
     </fieldset>
@@ -176,41 +171,41 @@ async function loadMenu() {
     const res = await fetch(url);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    // 各餐所屬下拉是哪個 select.name
-    const mealOfMenuKey = { '早餐': 'breakfast', '中餐A': 'lunch', '中餐B': 'lunch', '中餐C': 'lunch', '晚餐': 'dinner' };
     const orderable = data.orderable || { breakfast: true, lunch: true, dinner: true };
 
-    document.querySelectorAll('option[data-menu]').forEach(opt => {
-      const key = opt.dataset.menu;
-      const prefix = opt.dataset.prefix || '';
-      const name = data.menu[key] || '';
-      if (!name) {
-        opt.hidden = true;
-        opt.disabled = false;
-        opt.value = '';
-        opt.textContent = '';
-        return;
+    function rebuildSelect(selectName, items) {
+      const sel = document.querySelector(`select[name="${selectName}"]`);
+      if (!sel) return;
+      while (sel.options.length > 1) sel.remove(1);
+      const closed = orderable[selectName] === false;
+      for (const { key, prefix, lunchKey } of items) {
+        const menuName = data.menu[key] || '';
+        if (!menuName) continue;
+        const baseLabel = (prefix || '') + menuName;
+        const opt = document.createElement('option');
+        opt.value = baseLabel;
+        if (closed) {
+          opt.textContent = baseLabel + '（已截止）';
+          opt.disabled = true;
+        } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
+          const left = data.remaining[lunchKey];
+          opt.textContent = baseLabel + `（剩 ${left}）`;
+          opt.disabled = left <= 0;
+        } else {
+          opt.textContent = baseLabel;
+          opt.disabled = false;
+        }
+        sel.appendChild(opt);
       }
-      const baseLabel = prefix + name;
-      opt.value = baseLabel;
-      const meal = mealOfMenuKey[key];
-      const closed = meal && orderable[meal] === false;
+    }
 
-      const lunchKey = opt.dataset.lunch;
-      let suffix = '';
-      let disabled = false;
-      if (closed) {
-        suffix = '（已截止）';
-        disabled = true;
-      } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
-        const left = data.remaining[lunchKey];
-        suffix = `（剩 ${left}）`;
-        disabled = left <= 0;
-      }
-      opt.textContent = baseLabel + suffix;
-      opt.hidden = false;
-      opt.disabled = disabled;
-    });
+    rebuildSelect('breakfast', [{ key: '早餐', prefix: '' }]);
+    rebuildSelect('lunch', [
+      { key: '中餐A', prefix: 'A 餐：', lunchKey: 'A' },
+      { key: '中餐B', prefix: 'B 餐：', lunchKey: 'B' },
+      { key: '中餐C', prefix: 'C 餐：', lunchKey: 'C' },
+    ]);
+    rebuildSelect('dinner', [{ key: '晚餐', prefix: '' }]);
 
     // 中餐剩餘量小字（截止時改顯示截止提示）
     const hint = document.getElementById('lunchRemaining');
