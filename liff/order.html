@@ -125,6 +125,12 @@ const LIFF_ID = '2010095803-Neg2TBst';
 let idToken = '';
 let walkinMode = false; // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
 
+function localDateStr() {
+  // 用本地時間產生 YYYY-MM-DD，避免 UTC 時區偏移造成日期跑掉
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 async function init() {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -134,12 +140,24 @@ async function init() {
     console.warn('LIFF init failed, fallback to anonymous:', e);
   }
 
-  // 預設日期為今天
+  const params = new URLSearchParams(window.location.search);
   const dateInput = document.querySelector('input[name="date"]');
-  dateInput.valueAsDate = new Date();
+
+  // 優先使用 URL 帶入的日期（從菜單頁「前往訂餐」跳轉時），否則預設今天
+  const dateParam = params.get('date');
+  dateInput.value = (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) ? dateParam : localDateStr();
 
   await loadMenu();
-  dateInput.addEventListener('change', loadMenu);
+
+  // 同時監聽 change 和 input，確保行動瀏覽器（LINE 內建/iOS）也能觸發菜單重載
+  let menuReloadTimer = null;
+  function scheduleMenuReload() {
+    clearTimeout(menuReloadTimer);
+    menuReloadTimer = setTimeout(loadMenu, 80);
+  }
+  dateInput.addEventListener('change', scheduleMenuReload);
+  dateInput.addEventListener('input',  scheduleMenuReload);
+
   document.getElementById('orderForm').addEventListener('submit', onSubmit);
 
   const adminLink = document.getElementById('adminEntry');
@@ -157,7 +175,6 @@ async function init() {
 
   // 偵測 URL 參數：手機相機掃描訂單 QR Code 後開啟頁面
   // QR Code 內容為 https://liff.line.me/xxx?order=YYYYMMDD-NNN
-  const params = new URLSearchParams(window.location.search);
   const orderParam = params.get('order');
   if (orderParam) {
     await activateWalkinFromOrder(orderParam);
@@ -270,7 +287,7 @@ async function onSubmit(ev) {
     }
 
     ev.target.reset();
-    document.querySelector('input[name="date"]').valueAsDate = new Date();
+    document.querySelector('input[name="date"]').value = localDateStr();
     setWalkinMode(false);
     await loadMenu();
   } catch (e) {
@@ -358,8 +375,7 @@ function setWalkinMode(on, windowLabel) {
  *   並依當下時段自動選好餐點，啟用現場點餐模式。
  */
 async function activateWalkinFromOrder(orderNo) {
-  // 訂單日期預設今天
-  document.querySelector('input[name="date"]').valueAsDate = new Date();
+  document.querySelector('input[name="date"]').value = localDateStr();
   await loadMenu();
 
   let data;
