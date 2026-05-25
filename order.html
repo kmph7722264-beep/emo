@@ -6,6 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<meta name="referrer" content="no-referrer">
 <title>興園 EMO 電子點餐</title>
 <link rel="stylesheet" href="style.css">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -48,7 +49,7 @@
 
     <fieldset>
       <legend>備註</legend>
-      <textarea name="note" rows="3" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
+      <textarea name="note" rows="3" maxlength="200" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
         <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px">
         🥢 自備餐具（帶自己的餐盒 / 環保餐具）
@@ -60,6 +61,22 @@
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px">
         <input type="checkbox" name="dineIn" id="dineInCheck" style="width:20px;height:20px">
         🍽️ 現場訂餐
+      </label>
+    </fieldset>
+
+    <fieldset id="privacyFieldset">
+      <legend>個人資料告知 <span class="req">*</span></legend>
+      <details style="font-size:13px;color:#374151;margin-bottom:8px">
+        <summary style="cursor:pointer;color:var(--muted);margin-bottom:4px">查看個人資料保護告知事項</summary>
+        <div style="margin-top:8px;padding:10px 12px;background:#f9fafb;border-radius:8px;line-height:1.7">
+          依個人資料保護法，本系統蒐集您的姓名、警用電話及 LINE 帳號，
+          目的為提供興園食堂訂餐服務，保存期限為 1 年，不對外提供或移轉。
+          如有疑問請洽系統管理員。
+        </div>
+      </details>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" name="privacyConsent" id="privacyCheck" required style="width:20px;height:20px;accent-color:var(--line-green)">
+        我已閱讀並同意上述個人資料告知事項 <span class="req">*</span>
       </label>
     </fieldset>
 
@@ -117,9 +134,12 @@ const LIFF_ID = '2010095803-Neg2TBst';
     const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
 
 let idToken = '';
-let walkinMode = false; // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
+let walkinMode = false;   // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
+let walkinWindows = null; // { breakfast:{start:'HH:MM',stop:'HH:MM'}, ... }
+let submitting = false;   // 防止重複送出
 
 function localDateStr() {
+  // 用本地時間產生 YYYY-MM-DD，避免 UTC 時區偏移造成日期跑掉
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -136,6 +156,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const dateInput = document.querySelector('input[name="date"]');
 
+  // 優先使用 URL 帶入的日期（從菜單頁「前往訂餐」跳轉時），否則預設今天
   const dateParam = params.get('date');
   dateInput.value = (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) ? dateParam : localDateStr();
 
@@ -168,6 +189,8 @@ async function init() {
     });
   }
 
+  // 偵測 URL 參數：手機相機掃描訂單 QR Code 後開啟頁面
+  // QR Code 內容為 https://liff.line.me/xxx?order=YYYYMMDD-NNN
   const orderParam = params.get('order');
   if (orderParam) {
     await activateWalkinFromOrder(orderParam);
@@ -186,6 +209,7 @@ async function loadMenu() {
     function htmlEsc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
+    // 早/晚餐用 checkbox（單選開關），中餐用 radio（三選一）
     function rebuildMeal(mealName, items) {
       const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
@@ -245,6 +269,8 @@ async function loadMenu() {
 
 async function onSubmit(ev) {
   ev.preventDefault();
+  if (submitting) return; // 防止重複送出
+  submitting = true;
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   const fd = new FormData(ev.target);
@@ -256,7 +282,26 @@ async function onSubmit(ev) {
   if (!walkinMode) {
     if (!order.breakfast && !order.lunch && !order.dinner) {
       showMsg('請至少選擇一項餐點（早餐 / 中餐 / 晚餐）', true);
-      btn.disabled = false;
+      btn.disabled = false; submitting = false;
+      return;
+    }
+  }
+
+  // 現場點餐時段前端預檢（後端仍為最終驗證關卡）
+  if (walkinMode && walkinWindows) {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const inWindow = Object.values(walkinWindows).some(w => {
+      const [sh, sm] = (w.start || '00:00').split(':').map(Number);
+      const [eh, em] = (w.stop  || '23:59').split(':').map(Number);
+      return nowMin >= sh * 60 + sm && nowMin <= eh * 60 + em;
+    });
+    if (!inWindow) {
+      const winText = Object.entries(walkinWindows)
+        .map(([k, w]) => `${({breakfast:'早',lunch:'中',dinner:'晚'})[k]||k} ${w.start}–${w.stop}`)
+        .join('、');
+      showMsg(`目前不在現場點餐時段（${winText}），送出將被系統拒絕`, true);
+      btn.disabled = false; submitting = false;
       return;
     }
   }
@@ -286,6 +331,7 @@ async function onSubmit(ev) {
     showMsg('送出失敗：' + e.message, true);
   } finally {
     btn.disabled = false;
+    submitting = false;
   }
 }
 
@@ -347,13 +393,17 @@ document.addEventListener('keydown', e => {
  * 開啟：顯示橘色 banner + 時段提示，送出帶 walkin=true
  * 關閉：訂單送出後自動歸位
  */
-function setWalkinMode(on, windowLabel) {
+function setWalkinMode(on, windowLabel, windows) {
   walkinMode = !!on;
+  walkinWindows = on ? (windows || null) : null;
   document.getElementById('walkinBanner').hidden = !walkinMode;
   const fs = document.getElementById('walkinOptionsFieldset');
   fs.hidden = !walkinMode;
   document.getElementById('byobCheck').checked  = false;
-  document.getElementById('dineInCheck').checked = walkinMode; // 用餐時段進入時預設勾選
+  document.getElementById('dineInCheck').checked = walkinMode;
+  // walkin 模式：使用者已透過線上訂單完成過個資同意，自動勾選
+  const privacyCheck = document.getElementById('privacyCheck');
+  if (privacyCheck && on) privacyCheck.checked = true;
   const btn = document.getElementById('submitBtn');
   btn.textContent = walkinMode ? '現場點餐' : '送出訂單';
   if (walkinMode && windowLabel) {
@@ -403,7 +453,7 @@ async function activateWalkinFromOrder(orderNo) {
       .map(([k, w]) => `${({ breakfast:'早', lunch:'中', dinner:'晚' })[k] || k} ${w.start}–${w.stop}`)
       .join('、');
   }
-  setWalkinMode(true, windowLabel);
+  setWalkinMode(true, windowLabel, meal.walkinWindow || null);
 
   const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
   showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，預選${mealLabel}` : ''}（現場點餐模式）`);
@@ -418,7 +468,25 @@ async function postJson(payload) {
   return res.json();
 }
 
-init();
+// LINE ID Token 到期前 5 分鐘顯示提示，請使用者重新整理
+function scheduleTokenExpiryWarning(token) {
+  if (!token) return;
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(b64));
+    if (!payload.exp) return;
+    const warnAt = payload.exp * 1000 - Date.now() - 5 * 60 * 1000;
+    if (warnAt <= 0) return; // 已快到期
+    setTimeout(() => {
+      const el = document.getElementById('msg');
+      el.textContent = '⚠️ 登入憑證即將到期，請重新整理頁面以繼續操作';
+      el.className = 'msg warn';
+      el.hidden = false;
+    }, warnAt);
+  } catch (_) {}
+}
+
+init().then(() => scheduleTokenExpiryWarning(idToken));
 </script>
 </body>
 </html>

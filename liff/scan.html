@@ -5,9 +5,10 @@
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>現場用餐 掃碼點餐</title>
+<meta name="referrer" content="no-referrer">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<!-- jsQR：純 JS QR 辨識，用於 fallback 相機模式 -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<!-- jsQR：純 JS QR 辨識，自行托管以移除 CDN 依賴 -->
+<script src="lib/jsqr.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

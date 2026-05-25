@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>EMO 點餐 - 管理員</title>
 <link rel="stylesheet" href="style.css">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -199,8 +200,35 @@ const LIFF_ID = '2010095803-1ayMPRJ6';
 
 let idToken = '';
 let lastStats = null;
-// 筆電 / 外部瀏覽器（非 LINE App 內）登入時啟用領餐大通知；手機 LINE App 內維持原 toast 不擋畫面
 let useBigToast = false;
+let scanBusy = false; // 防止連續快速掃描觸發重複請求
+
+// 電話號碼隱碼顯示（保留首 3 碼與末 2 碼，中間以 * 遮蔽）
+function maskPhone(phone) {
+  const s = String(phone || '').replace(/\s/g, '');
+  if (!s) return '—';
+  if (s.length <= 5) return s; // 短分機號直接顯示
+  return s.slice(0, 3) + '*'.repeat(Math.min(s.length - 5, 4)) + s.slice(-2);
+}
+
+// LINE ID Token 到期前 5 分鐘顯示警告橫幅
+function scheduleTokenExpiryWarning(token) {
+  if (!token) return;
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(b64));
+    if (!payload.exp) return;
+    const warnAt = payload.exp * 1000 - Date.now() - 5 * 60 * 1000;
+    if (warnAt <= 0) return;
+    setTimeout(() => {
+      const banner = document.createElement('div');
+      banner.className = 'msg warn';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;border-radius:0;margin:0;text-align:center;font-weight:600';
+      banner.textContent = '⚠️ 管理員登入憑證即將到期，請重新整理頁面以繼續操作';
+      document.body.prepend(banner);
+    }, warnAt);
+  } catch (_) {}
+}
 
 async function init() {
   try {
@@ -239,6 +267,7 @@ async function init() {
   await loadStats({ silent: true });
   loadMenuHistory(); // 背景載入歷史菜單供 datalist 下拉用，不 await
 
+  scheduleTokenExpiryWarning(idToken);
   startWalkinPolling();
   document.getElementById('statsBtn').addEventListener('click', () => loadStats());
   document.getElementById('menuLoadBtn').addEventListener('click', () => {
@@ -470,11 +499,10 @@ function buildOrderCard(o) {
     div.className = 'order-row' + (allPicked ? ' picked' : ' unpicked');
   }
 
-  // 空欄位用「—」佔位，避免後續欄位前移（單位空白時看起來欄位錯位）
   const headLeft = [
     `<span class="${o.unit ? '' : 'empty-field'}">${o.unit ? escapeHtml(o.unit) : '— 未填單位'}</span>`,
     `<strong>${escapeHtml(o.name || '—')}</strong>`,
-    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(o.phone) : '—'}</span>`,
+    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(maskPhone(o.phone)) : '—'}</span>`,
   ].join('｜');
 
   const orderNoHtml = o.orderNo
@@ -709,7 +737,16 @@ async function onScanCode() {
  * 筆電 / 外部瀏覽器（useBigToast=true）→ 跳全屏大通知 + 音效
  */
 async function scanPickup(rawOrderNo) {
-  // USB QR 掃描器可能把整碼接在預填 YYYYMMDD- 之後，先正規化
+  if (scanBusy) return; // 防止連續快速掃描觸發重複請求
+  scanBusy = true;
+  try {
+    await _doScanPickup(rawOrderNo);
+  } finally {
+    scanBusy = false;
+  }
+}
+
+async function _doScanPickup(rawOrderNo) {
   const orderNo = normalizePickupNo(rawOrderNo);
   if (!orderNo || orderNo === todayOrderPrefix()) {
     showMsg('缺少訂單編號', true);
@@ -744,7 +781,7 @@ async function scanPickup(rawOrderNo) {
         meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
         lines: [
           (o.unit || o.name) ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
-          o.phone ? `警用電話：${o.phone}` : '',
+          o.phone ? `警用電話：${maskPhone(o.phone)}` : '',
           `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
           o.byob   ? '🥢 自備餐具' : '',
           o.dineIn ? '🍽️ 現場用餐' : '',
@@ -855,7 +892,7 @@ function renderPickupResult(o) {
   const headLeft = [
     `<span class="${o.unit ? '' : 'empty-field'}">${o.unit ? escapeHtml(o.unit) : '— 未填單位'}</span>`,
     `<strong>${escapeHtml(o.name || '—')}</strong>`,
-    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(o.phone) : '—'}</span>`,
+    `<span class="${o.phone ? '' : 'empty-field'}">${o.phone ? escapeHtml(maskPhone(o.phone)) : '—'}</span>`,
   ].join('｜');
 
   const hasAny = !!(o.breakfast || o.lunch || o.dinner);
