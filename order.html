@@ -153,12 +153,7 @@ async function init() {
     ['breakfast', 'lunch', 'dinner'].forEach(sName => {
       const sel = document.querySelector(`select[name="${sName}"]`);
       if (!sel) return;
-      while (sel.options.length > 1) sel.remove(1);
-      sel.disabled = true;
-      const ph = document.createElement('option');
-      ph.textContent = '載入中…';
-      ph.disabled = true;
-      sel.appendChild(ph);
+      sel.innerHTML = '<option value="">（菜單載入中…）</option>';
     });
     menuReloadTimer = setTimeout(loadMenu, 0);
   }
@@ -195,30 +190,30 @@ async function loadMenu() {
     if (!data.ok) throw new Error(data.error);
     const orderable = data.orderable || { breakfast: true, lunch: true, dinner: true };
 
+    function htmlEsc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
     function rebuildSelect(selectName, items) {
       const sel = document.querySelector(`select[name="${selectName}"]`);
       if (!sel) return;
-      while (sel.options.length > 1) sel.remove(1);
       const closed = orderable[selectName] === false;
+      const parts = ['<option value="">不訂購</option>'];
       for (const { key, prefix, lunchKey } of items) {
         const menuName = data.menu[key] || '';
         if (!menuName) continue;
         const baseLabel = (prefix || '') + menuName;
-        const opt = document.createElement('option');
-        opt.value = baseLabel;
+        const val = htmlEsc(baseLabel);
         if (closed) {
-          opt.textContent = baseLabel + '（已截止）';
-          opt.disabled = true;
+          parts.push(`<option value="${val}" disabled>${val}（已截止）</option>`);
         } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
           const left = data.remaining[lunchKey];
-          opt.textContent = baseLabel + `（剩 ${left}）`;
-          opt.disabled = left <= 0;
+          const dis = left <= 0 ? ' disabled' : '';
+          parts.push(`<option value="${val}"${dis}>${val}（剩 ${left}）</option>`);
         } else {
-          opt.textContent = baseLabel;
-          opt.disabled = false;
+          parts.push(`<option value="${val}">${val}</option>`);
         }
-        sel.appendChild(opt);
       }
+      sel.innerHTML = parts.join('');
     }
 
     rebuildSelect('breakfast', [{ key: '早餐', prefix: '' }]);
@@ -253,11 +248,6 @@ async function loadMenu() {
     });
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
-  } finally {
-    ['breakfast', 'lunch', 'dinner'].forEach(name => {
-      const sel = document.querySelector(`select[name="${name}"]`);
-      if (sel) sel.disabled = false;
-    });
   }
 }
 
