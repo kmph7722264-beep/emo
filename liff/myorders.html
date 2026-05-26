@@ -305,7 +305,11 @@ async function loadOrders() {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
     idToken = liff.getIDToken() || '';
-    if (!idToken) { liff.login(); return; }
+    if (!idToken) {
+      $list.innerHTML = '';
+      showMsg('無法取得身份 token，請關閉此頁面後重新開啟；若持續發生請至 LINE 設定 → 應用程式 → 清除快取。', 'err');
+      return;
+    }
   } catch (e) {
     showMsg('LIFF 初始化失敗：' + e);
     return;
