@@ -279,6 +279,11 @@ async function loadOrders() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '伺服器回傳錯誤');
     allOrders = data.orders || [];
+    // 診斷：顯示目前 LINE userId 前 8 碼（確認身份是否正確）
+    const shortId = idToken
+      ? (() => { try { return JSON.parse(atob(idToken.split('.')[1])).sub?.slice(0,8) + '…'; } catch(_){ return '無法解析'; } })()
+      : '（未登入）';
+    showMsg(`✅ 查詢完成｜本帳號 userId 前 8 碼：${shortId}｜共 ${allOrders.length} 筆`, 'ok');
     // URL 帶 survey=1 → 預設開啟「待填問卷」Tab
     if (new URLSearchParams(location.search).get('survey') === '1') {
       document.querySelectorAll('.tab-btn').forEach(b => {
