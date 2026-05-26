@@ -40,11 +40,32 @@
       <legend>訂購餐點</legend>
       <div class="form-meal-label">早餐</div>
       <div id="sel-breakfast" class="order-check-group"></div>
+      <div class="qty-stepper" id="qty-breakfast" hidden>
+        <span class="qty-label">份數</span>
+        <button type="button" class="qty-dec">−</button>
+        <span class="qty-val">1</span>
+        <button type="button" class="qty-inc">+</button>
+        <span class="qty-unit">份（最多 3）</span>
+      </div>
       <div class="form-meal-label">中餐</div>
       <div id="sel-lunch" class="order-check-group"></div>
       <small class="field-hint" id="lunchRemaining"></small>
+      <div class="qty-stepper" id="qty-lunch" hidden>
+        <span class="qty-label">份數</span>
+        <button type="button" class="qty-dec">−</button>
+        <span class="qty-val">1</span>
+        <button type="button" class="qty-inc">+</button>
+        <span class="qty-unit">份（最多 3）</span>
+      </div>
       <div class="form-meal-label">晚餐</div>
       <div id="sel-dinner" class="order-check-group"></div>
+      <div class="qty-stepper" id="qty-dinner" hidden>
+        <span class="qty-label">份數</span>
+        <button type="button" class="qty-dec">−</button>
+        <span class="qty-val">1</span>
+        <button type="button" class="qty-inc">+</button>
+        <span class="qty-unit">份（最多 3）</span>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -100,6 +121,32 @@
 </div>
 
 <style>
+/* ── 份數步進器 ── */
+  .qty-stepper {
+    display: flex; align-items: center; gap: 10px;
+    margin: 6px 0 10px;
+    padding: 8px 14px;
+    background: #f0fdf4; border: 1px solid var(--line-green);
+    border-radius: 10px; font-size: 14px;
+  }
+  .qty-label { color: var(--line-green-dark); font-weight: 700; min-width: 28px; }
+  .qty-dec, .qty-inc {
+    width: 34px; height: 34px;
+    border: 2px solid var(--line-green); border-radius: 50%;
+    background: #fff; color: var(--line-green-dark);
+    font-size: 20px; font-weight: 800; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .qty-dec:active, .qty-inc:active { background: #dcfce7; }
+  .qty-val {
+    font-size: 22px; font-weight: 900;
+    min-width: 30px; text-align: center;
+    color: var(--line-green-dark);
+  }
+  .qty-unit { color: #666; font-size: 12px; }
+
   .walkin-toast[hidden] { display: none !important; }
   .walkin-toast {
     position: fixed; inset: 0; z-index: 9999;
@@ -175,6 +222,30 @@ async function init() {
   dateInput.addEventListener('input',  scheduleMenuReload);
 
   document.getElementById('orderForm').addEventListener('submit', onSubmit);
+
+  // ── 份數步進器：綁定 +/− 按鈕（一次性，元素本身不被 innerHTML 取代）
+  document.querySelectorAll('.qty-stepper').forEach(st => {
+    const valEl = st.querySelector('.qty-val');
+    st.querySelector('.qty-dec').addEventListener('click', () => {
+      const v = parseInt(valEl.textContent); if (v > 1) valEl.textContent = v - 1;
+    });
+    st.querySelector('.qty-inc').addEventListener('click', () => {
+      const v = parseInt(valEl.textContent); if (v < 3) valEl.textContent = v + 1;
+    });
+  });
+
+  // ── 份數步進器：事件委派 — 任何餐點 input 選/取消時顯示或隱藏對應步進器
+  document.getElementById('orderForm').addEventListener('change', e => {
+    const inp = e.target;
+    const meal = inp.name;
+    if (!['breakfast', 'lunch', 'dinner'].includes(meal)) return;
+    const wrap   = document.getElementById(`sel-${meal}`);
+    const stepper = document.getElementById(`qty-${meal}`);
+    if (!stepper) return;
+    const anyChecked = wrap && wrap.querySelector('input:checked');
+    stepper.hidden = !anyChecked;
+    if (!anyChecked) stepper.querySelector('.qty-val').textContent = '1';
+  });
 
   const adminLink = document.getElementById('adminEntry');
   if (adminLink) {
@@ -262,6 +333,12 @@ async function loadMenu() {
         hint.textContent = data.limit ? `每日上限 ${data.limit} 份` : '';
       }
     }
+
+    // 菜單重載時重置所有步進器（避免切換日期後份數殘留）
+    ['breakfast', 'lunch', 'dinner'].forEach(m => {
+      const st = document.getElementById(`qty-${m}`);
+      if (st) { st.hidden = true; st.querySelector('.qty-val').textContent = '1'; }
+    });
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
   }
@@ -277,6 +354,14 @@ async function onSubmit(ev) {
   const order = Object.fromEntries(fd.entries());
   const byob   = !!fd.get('byob');
   const dineIn = !!fd.get('dineIn');
+
+  // 份數步進器：若份數 > 1，在餐點字串後附加「 ×N」後綴
+  ['breakfast', 'lunch', 'dinner'].forEach(meal => {
+    if (!order[meal]) return;
+    const st  = document.getElementById(`qty-${meal}`);
+    const qty = st ? parseInt(st.querySelector('.qty-val').textContent || '1', 10) : 1;
+    if (qty >= 2 && qty <= 3) order[meal] += ` ×${qty}`;
+  });
 
   // 至少選一項餐點（一般下單必填；現場點餐可全空，由現場決定後再補）
   if (!walkinMode) {

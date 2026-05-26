@@ -27,7 +27,16 @@
     <label>日期
       <input type="date" id="statsDate">
     </label>
-    <button type="button" id="statsBtn" class="secondary">查詢</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <button type="button" id="statsBtn" class="secondary">查詢</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin:0">
+        <span>🔒 個資解鎖 PIN</span>
+        <input type="password" id="adminRevealPin" maxlength="8" inputmode="numeric"
+          style="width:80px;font-size:14px;padding:6px 8px;border:1px solid var(--border);border-radius:6px"
+          placeholder="（選填）">
+      </label>
+      <span id="pinStatus" style="font-size:12px;color:var(--muted)"></span>
+    </div>
 
     <div id="statsResult" hidden>
       <div class="stats-grid">
@@ -400,10 +409,28 @@ async function loadStats(opts) {
   const silent = !!(opts && opts.silent);
   const date = document.getElementById('statsDate').value;
   if (!date) { if (!silent) showMsg('請選擇日期', true); return; }
+  const adminPin = (document.getElementById('adminRevealPin')?.value || '').trim();
   try {
-    const data = await postJson({ action: 'stats', idToken, date });
+    const payload = { action: 'stats', idToken, date };
+    if (adminPin) payload.adminPin = adminPin;
+    const data = await postJson(payload);
     if (!data.ok) throw new Error(data.error || '查詢失敗');
     lastStats = data;
+    // 更新 PIN 狀態提示
+    const pinStatus = document.getElementById('pinStatus');
+    if (pinStatus) {
+      const sample = data.orders && data.orders[0];
+      if (sample && sample.phoneMasked === false) {
+        pinStatus.textContent = '🔓 電話已解鎖';
+        pinStatus.style.color = '#166534';
+      } else if (adminPin) {
+        pinStatus.textContent = '❌ PIN 錯誤';
+        pinStatus.style.color = '#b3261e';
+      } else {
+        pinStatus.textContent = '🔒 電話遮罩中';
+        pinStatus.style.color = 'var(--muted)';
+      }
+    }
     renderStats();
   } catch (e) {
     if (!silent) showMsg('統計查詢失敗：' + e.message, true);
