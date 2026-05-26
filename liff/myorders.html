@@ -305,6 +305,7 @@ async function loadOrders() {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
     idToken = liff.getIDToken() || '';
+    if (!idToken) { liff.login(); return; }
   } catch (e) {
     showMsg('LIFF 初始化失敗：' + e);
     return;
