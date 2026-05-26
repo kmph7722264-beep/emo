@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>興園EMO電子點餐系統個人資料保護聲明</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 20mm 22mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "標楷體", "DFKai-SB", "BiauKai", serif;
+    font-size: 12pt;
+    line-height: 1.85;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 30px 40px;
+    max-width: 210mm;
+    margin: 0 auto;
+  }
+
+  /* 浮水印 */
+  body::before {
+    content: "高雄市政府警察局";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 80pt;
+    color: rgba(0,0,0,0.04);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 0;
+    letter-spacing: 8px;
+  }
+
+  .doc-wrapper { position: relative; z-index: 1; }
+
+  /* 機關名稱區 */
+  .header-block {
+    text-align: center;
+    border-bottom: 3px double #1a1a6b;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+  .header-unit {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1a1a6b;
+    letter-spacing: 3px;
+  }
+  .header-sub {
+    font-size: 11pt;
+    color: #444;
+    margin-top: 2px;
+    letter-spacing: 2px;
+  }
+  .doc-title {
+    font-size: 18pt;
+    font-weight: bold;
+    letter-spacing: 6px;
+    color: #0d0d4d;
+    margin: 10px 0 6px;
+  }
+  .doc-no-row {
+    font-size: 10pt;
+    color: #555;
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  /* 章節標題 */
+  .section {
+    margin-top: 22px;
+    page-break-inside: avoid;
+  }
+  .section-title {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #0d0d4d;
+    border-left: 5px solid #1a1a6b;
+    padding-left: 10px;
+    margin-bottom: 8px;
+    background: #f0f0f8;
+    padding: 5px 10px;
+    border-radius: 0 4px 4px 0;
+  }
+  .section-body {
+    padding: 0 6px;
+  }
+
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11pt;
+    margin-top: 8px;
+  }
+  th {
+    background: #1a1a6b;
+    color: #fff;
+    padding: 7px 10px;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  td {
+    border: 1px solid #aab;
+    padding: 6px 10px;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f5f5fc; }
+  .td-head {
+    background: #e8e8f4;
+    font-weight: bold;
+    width: 28%;
+    text-align: center;
+    color: #0d0d4d;
+  }
+
+  /* 條文列表 */
+  ol.article {
+    padding-left: 22px;
+    margin-top: 6px;
+  }
+  ol.article > li {
+    margin-bottom: 6px;
+  }
+  ol.article > li > ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin-top: 4px;
+  }
+  ol.article > li > ul > li {
+    margin-bottom: 3px;
+    font-size: 11pt;
+  }
+
+  /* 法條引用 */
+  .law-ref {
+    font-size: 10pt;
+    color: #555;
+    border-left: 3px solid #aab;
+    padding: 4px 10px;
+    margin: 8px 0;
+    background: #f8f8fc;
+  }
+
+  /* 簽署區 */
+  .sign-block {
+    margin-top: 36px;
+    page-break-inside: avoid;
+  }
+  .sign-title {
+    text-align: center;
+    font-size: 13pt;
+    font-weight: bold;
+    color: #0d0d4d;
+    margin-bottom: 20px;
+    border-top: 2px solid #1a1a6b;
+    border-bottom: 2px solid #1a1a6b;
+    padding: 8px 0;
+    letter-spacing: 4px;
+  }
+  .sign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .sign-box {
+    border: 1px solid #aab;
+    border-radius: 6px;
+    padding: 10px 12px;
+    min-height: 80px;
+  }
+  .sign-label {
+    font-size: 10pt;
+    color: #555;
+    border-bottom: 1px solid #ccd;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .sign-name {
+    font-size: 12pt;
+    text-align: center;
+    padding-top: 4px;
+    color: #1a1a1a;
+  }
+  .sign-stamp {
+    height: 50px;
+    text-align: center;
+    color: #bbb;
+    font-size: 10pt;
+    padding-top: 14px;
+  }
+  .sign-date-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    font-size: 11pt;
+    gap: 30px;
+  }
+  .sign-date-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sign-date-line {
+    display: inline-block;
+    border-bottom: 1px solid #555;
+    width: 60px;
+    text-align: center;
+  }
+
+  /* 附件標記 */
+  .attachment-mark {
+    font-size: 10pt;
+    color: #666;
+    text-align: right;
+    margin-top: 6px;
+  }
+
+  /* 頁碼 */
+  .page-footer {
+    text-align: center;
+    font-size: 9pt;
+    color: #888;
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 8px;
+  }
+
+  /* 印刷最佳化 */
+  @media print {
+    body { padding: 0; }
+    .no-print { display: none; }
+  }
+
+  .highlight-box {
+    background: #fff8e1;
+    border: 1px solid #f0c040;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 11pt;
+  }
+  .highlight-box strong { color: #8a5a00; }
+
+  .rights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .rights-item {
+    border: 1px solid #c8c8e8;
+    border-radius: 6px;
+    padding: 8px 12px;
+    background: #f8f8fc;
+    font-size: 11pt;
+  }
+  .rights-item-title {
+    font-weight: bold;
+    color: #0d0d4d;
+    margin-bottom: 2px;
+  }
+
+  .print-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1a1a6b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 22px;
+    font-size: 14pt;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 999;
+  }
+  .print-btn:hover { background: #2a2a8b; }
+</style>
+</head>
+<body>
+<button class="print-btn no-print" onclick="window.print()">列印 / 儲存 PDF</button>
+
+<div class="doc-wrapper">
+
+  <!-- 文件標頭 -->
+  <div class="header-block">
+    <div class="header-unit">高雄市政府警察局</div>
+    <div class="header-sub">資訊室 作業管理股</div>
+    <div class="doc-title">個人資料保護聲明書</div>
+    <div class="doc-no-row">
+      <span>系統名稱：興園 EMO 電子點餐系統</span>
+      <span>版本：1.0</span>
+      <span>中華民國 114 年 5 月</span>
+    </div>
+  </div>
+
+  <!-- 一、蒐集機關 -->
+  <div class="section">
+    <div class="section-title">一、個人資料管理機關</div>
+    <div class="section-body">
+      <table>
+        <tr><td class="td-head">機關名稱</td><td>高雄市政府警察局</td></tr>
+        <tr><td class="td-head">主辦單位</td><td>資訊室 作業管理股</td></tr>
+        <tr><td class="td-head">聯絡窗口</td><td>作業管理股股長　曾銘忠</td></tr>
+        <tr><td class="td-head">系統名稱</td><td>興園 EMO 電子點餐系統（Electronic Meal Ordering）</td></tr>
+        <tr><td class="td-head">系統版本</td><td>v10（114年5月上線）</td></tr>
+        <tr><td class="td-head">適用對象</td><td>本局全體員警及文職人員（使用本系統訂餐者）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 二、法律依據 -->
+  <div class="section">
+    <div class="section-title">二、法律依據</div>
+    <div class="section-body">
+      <div class="law-ref">
+        本聲明依據下列法規訂定：<br>
+        ・《個人資料保護法》第 8 條（直接蒐集個人資料之告知義務）<br>
+        ・《個人資料保護法》第 27 條（公務機關安全維護義務）<br>
+        ・《政府機關資通安全管理法》相關規定<br>
+        ・《資通安全管理法》第 6 條（核心資通系統安全維護計畫）
+      </div>
+      <p style="margin-top:8px; font-size:11pt;">本系統屬輔助行政作業之內部資訊系統（非核心業務系統），依個資法規定，於蒐集個人資料前，應明確告知當事人下列事項，並取得書面同意。</p>
+    </div>
+  </div>
+
+  <!-- 三、蒐集項目 -->
+  <div class="section">
+    <div class="section-title">三、個人資料蒐集項目與目的</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>資料項目</th>
+            <th>蒐集目的</th>
+            <th>必填／選填</th>
+            <th>個資法特定目的代號</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>姓名</td>
+            <td>識別訂購人身份、製作餐點名單</td>
+            <td style="text-align:center">必填</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+          <tr>
+            <td>警用內線電話</td>
+            <td>取餐異常時聯絡通知（僅限單位內部通訊）</td>
+            <td style="text-align:center">必填</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+          <tr>
+            <td>所屬單位</td>
+            <td>分類統計各單位訂餐數量</td>
+            <td style="text-align:center">必填</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+          <tr>
+            <td>LINE 帳號識別碼（userId）</td>
+            <td>LINE 平台推播取餐通知、驗證訂購人身份</td>
+            <td style="text-align:center">自動取得</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+          <tr>
+            <td>訂餐記錄（日期、餐別、餐點）</td>
+            <td>備餐數量統計、領餐核對、食堂管理</td>
+            <td style="text-align:center">必填</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+          <tr>
+            <td>備註事項</td>
+            <td>特殊取餐需求紀錄（如勤務延誤）</td>
+            <td style="text-align:center">選填</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+          <tr>
+            <td>餐點滿意度調查回覆</td>
+            <td>食堂服務品質改善參考</td>
+            <td style="text-align:center">選填</td>
+            <td style="text-align:center">C001</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="highlight-box" style="margin-top:12px">
+        <strong>重要說明：</strong>本系統蒐集之資料，<strong>不含</strong>勤務班表、偵查資料、武器裝備、個人住址或其他涉密業務資料，資料敏感度相當於一般行政輔助業務層級。
+      </div>
+    </div>
+  </div>
+
+  <!-- 四、利用方式 -->
+  <div class="section">
+    <div class="section-title">四、個人資料利用方式與範圍</div>
+    <div class="section-body">
+      <ol class="article">
+        <li>
+          <strong>利用範圍</strong>：本局興園食堂訂餐業務，限於下列用途使用：
+          <ul>
+            <li>食堂廠商每日備餐數量統計</li>
+            <li>餐點領取核對與 LINE 通知推播</li>
+            <li>管理員後台訂單查詢與取消作業</li>
+            <li>食堂服務滿意度調查統計（去識別化後分析）</li>
+          </ul>
+        </li>
+        <li><strong>不對外提供</strong>：本系統個人資料<strong>不提供、不出售、不移轉</strong>予第三人（食堂廠商、外部機構、個人），但依法令規定應提供者不在此限。</li>
+        <li><strong>跨境傳輸說明</strong>：本系統後端使用 Google Apps Script 平台，資料存放於 Google Workspace（雲端試算表），伺服器位於 Google 美國資料中心，由本局管理員帳號進行存取控管，一般使用者無法直接存取原始資料。</li>
+        <li><strong>LINE 平台</strong>：身份驗證使用 LINE LIFF 技術，LINE 公司（日本）僅提供身份識別服務，本局不主動將個人資料傳輸至 LINE 公司資料庫。</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 五、保存期限與刪除 -->
+  <div class="section">
+    <div class="section-title">五、資料保存期限與刪除機制</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr><th>資料類別</th><th>保存期限</th><th>刪除方式</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>訂餐記錄（姓名、電話、餐別）</td>
+            <td>自訂餐日起 <strong>1 年</strong></td>
+            <td>每年 1 月由管理員手動清除逾期資料</td>
+          </tr>
+          <tr>
+            <td>管理員操作稽核日誌</td>
+            <td>自記錄日起 <strong>1 年</strong></td>
+            <td>同上，隨訂單資料一併清除</td>
+          </tr>
+          <tr>
+            <td>滿意度調查回覆</td>
+            <td>統計後 <strong>6 個月</strong></td>
+            <td>統計完成後刪除明細，僅保留匯總數字</td>
+          </tr>
+          <tr>
+            <td>LINE userId</td>
+            <td>員工離職或自行要求刪除時</td>
+            <td>由管理員自管理員後台手動移除</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 六、安全防護措施 -->
+  <div class="section">
+    <div class="section-title">六、安全防護技術措施</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr><th>防護面向</th><th>已實施措施</th><th>狀態</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>身份驗證</td>
+            <td>LINE ID Token（JWT）每次 API 請求均驗證，未登入 LINE 帳號無法使用</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>管理員存取控管</td>
+            <td>Admins 白名單工作表，僅授權人員可進入管理員後台</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>操作稽核日誌</td>
+            <td>記錄所有管理員的標領、取消訂單、修改菜單等操作（含操作人、時間、結果）</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>傳輸加密</td>
+            <td>全程 HTTPS（TLS 1.2+），含 LINE SDK 及 Google API 通訊</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>跨站攻擊防護</td>
+            <td>XSS 防護（escapeHtml 函數處理所有輸出）、CSRF 防護（Token 驗證機制）</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>資訊外洩防護</td>
+            <td>Referrer 資訊遮蔽（no-referrer meta tag）、快取控制（no-cache headers）</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>個資告知同意</td>
+            <td>訂餐前強制勾選同意書，未勾選無法送出訂單</td>
+            <td style="text-align:center;color:#166534;font-weight:bold">✓ 已實施</td>
+          </tr>
+          <tr>
+            <td>後端資料加密（規劃中）</td>
+            <td>Google Sheets 資料欄位加密儲存</td>
+            <td style="text-align:center;color:#92400e;font-weight:bold">◎ 規劃中</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 七、當事人權利 -->
+  <div class="section">
+    <div class="section-title">七、當事人權利行使</div>
+    <div class="section-body">
+      <p style="margin-bottom:10px; font-size:11pt;">依《個人資料保護法》第 3 條，當事人對其個人資料得行使下列權利：</p>
+      <div class="rights-grid">
+        <div class="rights-item">
+          <div class="rights-item-title">查詢或請求閱覽</div>
+          <div>可請管理員查詢本人訂餐記錄</div>
+        </div>
+        <div class="rights-item">
+          <div class="rights-item-title">請求製給複製本</div>
+          <div>可請管理員提供個人訂單資料副本</div>
+        </div>
+        <div class="rights-item">
+          <div class="rights-item-title">請求補充或更正</div>
+          <div>可請管理員更正錯誤的訂單資料</div>
+        </div>
+        <div class="rights-item">
+          <div class="rights-item-title">請求停止蒐集、處理或利用</div>
+          <div>可請管理員停用帳號，日後不再使用本系統</div>
+        </div>
+        <div class="rights-item">
+          <div class="rights-item-title">請求刪除</div>
+          <div>可請管理員刪除個人相關資料記錄</div>
+        </div>
+        <div class="rights-item">
+          <div class="rights-item-title">申訴管道</div>
+          <div>如認本機關違反個資法，得向主管機關（內政部）申訴</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:12px">
+        <strong>行使方式：</strong>請洽資訊室作業管理股股長 曾銘忠，說明請求事項後，本局將於 15 個工作日內回覆處理結果。
+      </div>
+    </div>
+  </div>
+
+  <!-- 八、聲明更新 -->
+  <div class="section">
+    <div class="section-title">八、聲明修訂與版本管理</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr><th>版本</th><th>修訂日期</th><th>修訂重點</th><th>修訂人</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align:center">v1.0</td>
+            <td style="text-align:center">114.05.26</td>
+            <td>初版制定，配合 EMO v10 系統上線</td>
+            <td style="text-align:center">曾銘忠</td>
+          </tr>
+          <tr>
+            <td style="text-align:center">　</td>
+            <td style="text-align:center">　</td>
+            <td>　</td>
+            <td style="text-align:center">　</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:8px; font-size:11pt; color:#555;">本聲明如有修訂，將於本局公告欄或 EMO 系統內提前 7 日公告，修訂後繼續使用本系統者，視為同意修訂後之內容。</p>
+    </div>
+  </div>
+
+  <!-- 簽署區 -->
+  <div class="sign-block">
+    <div class="sign-title">本聲明書核准簽署</div>
+    <div class="sign-grid">
+      <div class="sign-box">
+        <div class="sign-label">承辦人</div>
+        <div class="sign-name">曾銘忠</div>
+        <div class="sign-stamp">（簽章）</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-label">資訊室主任</div>
+        <div class="sign-name">　</div>
+        <div class="sign-stamp">（簽章）</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-label">局長核定</div>
+        <div class="sign-name">　</div>
+        <div class="sign-stamp">（機關印信）</div>
+      </div>
+    </div>
+    <div class="sign-date-row">
+      <div class="sign-date-item">
+        中華民國
+        <span class="sign-date-line">114</span>年
+        <span class="sign-date-line">　5　</span>月
+        <span class="sign-date-line">　　</span>日
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    高雄市政府警察局 資訊室作業管理股｜個人資料保護聲明書 v1.0｜中華民國 114 年 5 月
+  </div>
+
+</div>
+</body>
+</html>
