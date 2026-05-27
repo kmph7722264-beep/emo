@@ -149,7 +149,7 @@ function renderOrderInfo(order) {
     order.unit ? `<div><strong>單位</strong>　${order.unit}</div>` : '',
   ].filter(Boolean);
   if (order.mealsPicked && order.mealsPicked.length) {
-    html.push('<div><strong>已領餐點</strong></div>');
+    html.push('<div><strong>付款領用餐點</strong></div>');
     order.mealsPicked.forEach(m => html.push(`<div>　・${m}</div>`));
   } else {
     html.push('<div style="color:#6b7280;margin-top:4px">尚無已領餐記錄</div>');
