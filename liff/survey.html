@@ -183,8 +183,16 @@ async function init() {
   }
   if (!ctx.ok) {
     const reason = ctx.reason || '';
-    const title = reason === 'expired'   ? '問卷已過期失效'
-                : reason === 'duplicate' ? '已提交過問卷'
+    if (reason === 'expired') {
+      document.getElementById('loading').hidden = true;
+      const box = document.getElementById('invalid');
+      box.className = 'survey-banner info';
+      document.getElementById('invalidTitle').textContent = '無待填問卷';
+      document.getElementById('invalidMsg').textContent = '此訂單的問卷填寫時限已過，感謝您的使用。';
+      box.hidden = false;
+      return;
+    }
+    const title = reason === 'duplicate' ? '已提交過問卷'
                 : reason === 'cancelled' ? '訂單已取消'
                 : reason === 'mismatch'  ? '與您的 LINE 帳號不符'
                 : reason === 'not_found' ? '找不到訂單'
