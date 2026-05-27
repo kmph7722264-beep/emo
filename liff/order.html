@@ -72,6 +72,20 @@
         <button type="button" class="qty-inc">+</button>
         <span class="qty-unit">份（最多 3）</span>
       </div>
+      <div class="form-meal-label" style="color:#b45309">現場點餐</div>
+      <div id="sel-walkinMeal" class="order-check-group">
+        <label class="order-check-item item-closed">
+          <input type="checkbox" name="walkinMeal" disabled>
+          <span style="color:var(--muted)">不適用</span>
+        </label>
+      </div>
+      <div class="qty-stepper" id="qty-walkinMeal" hidden>
+        <span class="qty-label">份數</span>
+        <button type="button" class="qty-dec">−</button>
+        <span class="qty-val">1</span>
+        <button type="button" class="qty-inc">+</button>
+        <span class="qty-unit">份（最多 3）</span>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -190,6 +204,8 @@ let idToken = '';
 let walkinMode = false;   // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
 let walkinWindows = null; // { breakfast:{start:'HH:MM',stop:'HH:MM'}, ... }
 let submitting = false;   // 防止重複送出
+let walkinWindowData = null; // menu API 回傳的現場點餐時段設定
+let walkinMealActive = null; // 目前在哪一餐的現場點餐時段
 
 function isWalkinWindowActive(mealName) {
   if (!walkinMode || !walkinWindows || !walkinWindows[mealName]) return false;
@@ -199,6 +215,18 @@ function isWalkinWindowActive(mealName) {
   const [sh, sm] = (w.start || '00:00').split(':').map(Number);
   const [eh, em] = (w.stop  || '23:59').split(':').map(Number);
   return nowMin >= sh * 60 + sm && nowMin <= eh * 60 + em;
+}
+
+function getCurrentWalkinMeal(ww) {
+  if (!ww) return null;
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  for (const [meal, w] of Object.entries(ww)) {
+    const [sh, sm] = (w.start || '00:00').split(':').map(Number);
+    const [eh, em] = (w.stop  || '23:59').split(':').map(Number);
+    if (nowMin >= sh * 60 + sm && nowMin <= eh * 60 + em) return meal;
+  }
+  return null;
 }
 
 function localDateStr() {
@@ -254,6 +282,15 @@ async function init() {
   document.getElementById('orderForm').addEventListener('change', e => {
     const inp = e.target;
     const meal = inp.name;
+    // 現場點餐步進器顯隱
+    if (meal === 'walkinMeal') {
+      const stWM = document.getElementById('qty-walkinMeal');
+      if (stWM) {
+        stWM.hidden = !inp.checked;
+        if (!inp.checked) stWM.querySelector('.qty-val').textContent = '1';
+      }
+      return;
+    }
     if (!['breakfast', 'lunch', 'dinner'].includes(meal)) return;
     const wrap   = document.getElementById(`sel-${meal}`);
     const stepper = document.getElementById(`qty-${meal}`);
@@ -340,6 +377,28 @@ async function loadMenu() {
     ]);
     rebuildMeal('dinner', [{ key: '晚餐', prefix: '' }]);
 
+    // 現場點餐欄：依當前時段開放或標示「不適用」
+    walkinWindowData = data.walkinWindow || null;
+    const _selDate = document.querySelector('input[name="date"]').value || '';
+    walkinMealActive = (_selDate === localDateStr()) ? getCurrentWalkinMeal(walkinWindowData) : null;
+    const _mL = { breakfast: '早餐', lunch: '中餐', dinner: '晚餐' };
+    const selWM = document.getElementById('sel-walkinMeal');
+    const stWM  = document.getElementById('qty-walkinMeal');
+    if (selWM) {
+      if (walkinMealActive) {
+        selWM.innerHTML =
+          `<label class="order-check-item">` +
+          `<input type="checkbox" name="walkinMeal">` +
+          `<span>現場點餐（${_mL[walkinMealActive] || walkinMealActive}）</span></label>`;
+      } else {
+        selWM.innerHTML =
+          `<label class="order-check-item item-closed">` +
+          `<input type="checkbox" name="walkinMeal" disabled>` +
+          `<span style="color:var(--muted)">不適用</span></label>`;
+        if (stWM) { stWM.hidden = true; stWM.querySelector('.qty-val').textContent = '1'; }
+      }
+    }
+
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
       if (orderable.lunch === false && !isWalkinWindowActive('lunch')) {
@@ -368,8 +427,19 @@ async function onSubmit(ev) {
   btn.disabled = true;
   const fd = new FormData(ev.target);
   const order = Object.fromEntries(fd.entries());
-  const byob   = !!fd.get('byob');
-  const dineIn = !!fd.get('dineIn');
+  const byob            = !!fd.get('byob');
+  const dineIn          = !!fd.get('dineIn');
+  const walkinMealChk   = !!fd.get('walkinMeal');
+  const isWalkin        = walkinMode || walkinMealChk;
+  delete order.walkinMeal; // 不直接傳此欄位，改轉入對應餐別
+
+  // 現場點餐份數處理：填入對應餐別欄位
+  if (walkinMealChk && walkinMealActive) {
+    const stWM = document.getElementById('qty-walkinMeal');
+    const qty  = stWM ? parseInt(stWM.querySelector('.qty-val').textContent || '1', 10) : 1;
+    const mL   = { breakfast: '早餐', lunch: '中餐', dinner: '晚餐' };
+    order[walkinMealActive] = `現場點餐${qty >= 2 && qty <= 3 ? ` ×${qty}` : ''}`;
+  }
 
   // 份數步進器：若份數 > 1，在餐點字串後附加「 ×N」後綴
   ['breakfast', 'lunch', 'dinner'].forEach(meal => {
@@ -380,7 +450,7 @@ async function onSubmit(ev) {
   });
 
   // 至少選一項餐點（一般下單必填；現場點餐可全空，由現場決定後再補）
-  if (!walkinMode) {
+  if (!isWalkin) {
     if (!order.breakfast && !order.lunch && !order.dinner) {
       showMsg('請至少選擇一項餐點（早餐 / 中餐 / 晚餐）', true);
       btn.disabled = false; submitting = false;
@@ -411,7 +481,7 @@ async function onSubmit(ev) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
-      body: JSON.stringify({ action: 'order', idToken, order, walkin: walkinMode, byob, dineIn }),
+      body: JSON.stringify({ action: 'order', idToken, order, walkin: isWalkin, byob, dineIn }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
