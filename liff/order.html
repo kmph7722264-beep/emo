@@ -309,8 +309,7 @@ async function loadMenu() {
       if (selectedDate === localDateStr()) {
         const autoMeal = getAutoWalkinMeal(data.walkinWindow);
         if (autoMeal && orderable[autoMeal] === false) {
-          orderable[autoMeal] = true; // 解除「已截止」鎖定
-          walkinAutoMeal = autoMeal;  // 標記唯一可選的餐別，其餘全凍結
+          walkinAutoMeal = autoMeal;  // 記錄當前時段（過結單時間，勾選凍結）
           const mL = { breakfast: '早', lunch: '中', dinner: '晚' };
           const lbl = Object.entries(data.walkinWindow)
             .map(([k, w]) => `${mL[k] || k} ${w.start}–${w.stop}`).join('、');
@@ -326,7 +325,9 @@ async function loadMenu() {
     function rebuildMeal(mealName, items) {
       const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
-      const closed = orderable[mealName] === false && !isWalkinWindowActive(mealName);
+      // auto-walkin 時不解除已截止的凍結（walkinAutoMeal 已設定），QR-scan walkin 則照舊
+      const closed = orderable[mealName] === false &&
+                     (walkinAutoMeal !== null || !isWalkinWindowActive(mealName));
       const isLunch = mealName === 'lunch';
       const inputType = isLunch ? 'radio' : 'checkbox';
       const parts = [];
@@ -366,25 +367,9 @@ async function loadMenu() {
     ]);
     rebuildMeal('dinner', [{ key: '晚餐', prefix: '' }]);
 
-    // auto-walkin：當前時段餐點不讓選，僅記錄1份（到現場有什麼吃什麼）
-    if (walkinAutoMeal) {
-      const selWrap = document.getElementById(`sel-${walkinAutoMeal}`);
-      if (selWrap) {
-        selWrap.innerHTML =
-          '<div style="font-size:13px;color:#92400e;padding:6px 8px;background:#fff8e1;border-radius:6px;border:1px solid #fcd34d">' +
-          '⚠ 現場點餐，餐點由現場決定（1份）</div>';
-        // 注入 hidden input，使 FormData 取得此餐值
-        const hid = document.createElement('input');
-        hid.type = 'hidden'; hid.name = walkinAutoMeal; hid.value = '現場點餐';
-        selWrap.appendChild(hid);
-      }
-      const st = document.getElementById(`qty-${walkinAutoMeal}`);
-      if (st) st.hidden = true;
-    }
-
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
-      if (orderable.lunch === false && !isWalkinWindowActive('lunch')) {
+      if (orderable.lunch === false && (walkinAutoMeal !== null || !isWalkinWindowActive('lunch'))) {
         const t = (data.orderCutoff && data.orderCutoff.lunch) || '10:30';
         hint.textContent = `午餐進單已於 ${t} 結束`;
       } else {
