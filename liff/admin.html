@@ -46,6 +46,7 @@
         <div class="stat"><span class="stat-num" id="cLunchA">0</span><span>中餐 A</span></div>
         <div class="stat"><span class="stat-num" id="cLunchB">0</span><span>中餐 B</span></div>
         <div class="stat"><span class="stat-num" id="cLunchC">0</span><span>中餐 C</span></div>
+        <div class="stat"><span class="stat-num" id="cWalkin">0</span><span>現場點餐</span></div>
         <div class="stat stat-picked"><span class="stat-num" id="cBreakfastPicked">0/0</span><span>早餐已領</span></div>
         <div class="stat stat-picked"><span class="stat-num" id="cLunchPicked">0/0</span><span>中餐已領</span></div>
         <div class="stat stat-picked"><span class="stat-num" id="cDinnerPicked">0/0</span><span>晚餐已領</span></div>
@@ -284,6 +285,10 @@ async function init() {
     if (!d) { showMsg('請選擇日期', true); return; }
     loadMenuForDate(d);
   });
+  document.getElementById('menuDate').addEventListener('change', () => {
+    const d = document.getElementById('menuDate').value;
+    if (d) loadMenuForDate(d);
+  });
   document.getElementById('menuForm').addEventListener('submit', onSubmitMenu);
   document.getElementById('pickupFindBtn').addEventListener('click', onFindOrder);
   document.getElementById('pickupScanBtn').addEventListener('click', onScanCode);
@@ -448,6 +453,7 @@ function renderStats() {
   document.getElementById('cLunchA').textContent    = c.lunchA;
   document.getElementById('cLunchB').textContent    = c.lunchB;
   document.getElementById('cLunchC').textContent    = c.lunchC;
+  document.getElementById('cWalkin').textContent    = c.walkin || 0;
   document.getElementById('cBreakfastPicked').textContent = `${c.breakfastPicked}/${c.breakfast}`;
   document.getElementById('cLunchPicked').textContent     = `${c.lunchPicked}/${lunchTotal}`;
   document.getElementById('cDinnerPicked').textContent    = `${c.dinnerPicked}/${c.dinner}`;

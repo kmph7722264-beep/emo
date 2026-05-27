@@ -185,6 +185,16 @@ let walkinMode = false;   // 現場點餐模式：從訂單 QR Code URL 開啟�
 let walkinWindows = null; // { breakfast:{start:'HH:MM',stop:'HH:MM'}, ... }
 let submitting = false;   // 防止重複送出
 
+function isWalkinWindowActive(mealName) {
+  if (!walkinMode || !walkinWindows || !walkinWindows[mealName]) return false;
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const w = walkinWindows[mealName];
+  const [sh, sm] = (w.start || '00:00').split(':').map(Number);
+  const [eh, em] = (w.stop  || '23:59').split(':').map(Number);
+  return nowMin >= sh * 60 + sm && nowMin <= eh * 60 + em;
+}
+
 function localDateStr() {
   // 用本地時間產生 YYYY-MM-DD，避免 UTC 時區偏移造成日期跑掉
   const d = new Date();
@@ -284,7 +294,7 @@ async function loadMenu() {
     function rebuildMeal(mealName, items) {
       const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
-      const closed = orderable[mealName] === false;
+      const closed = orderable[mealName] === false && !isWalkinWindowActive(mealName);
       const isLunch = mealName === 'lunch';
       const inputType = isLunch ? 'radio' : 'checkbox';
       const parts = [];
@@ -326,7 +336,7 @@ async function loadMenu() {
 
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
-      if (orderable.lunch === false) {
+      if (orderable.lunch === false && !isWalkinWindowActive('lunch')) {
         const t = (data.orderCutoff && data.orderCutoff.lunch) || '10:30';
         hint.textContent = `午餐進單已於 ${t} 結束`;
       } else {
@@ -539,6 +549,15 @@ async function activateWalkinFromOrder(orderNo) {
       .join('、');
   }
   setWalkinMode(true, windowLabel, meal.walkinWindow || null);
+  await loadMenu(); // walkin 模式啟動後重載，解除結單後的餐點鎖定
+
+  // 重載後重新選好建議餐點
+  if (meal.key && meal.suggest) {
+    const inputs = document.querySelectorAll(`input[name="${meal.key}"]`);
+    for (const inp of inputs) {
+      if (inp.value === meal.suggest && !inp.disabled) { inp.checked = true; break; }
+    }
+  }
 
   const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
   showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，預選${mealLabel}` : ''}（現場點餐模式）`);
