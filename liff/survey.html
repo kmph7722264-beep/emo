@@ -147,7 +147,6 @@ function renderOrderInfo(order) {
     `<div><strong>訂單編號</strong>　${order.orderNo}</div>`,
     `<div><strong>訂購日期</strong>　${order.date}</div>`,
     order.unit ? `<div><strong>單位</strong>　${order.unit}</div>` : '',
-    order.name ? `<div><strong>訂購人</strong>　${order.name}</div>` : '',
   ].filter(Boolean);
   if (order.mealsPicked && order.mealsPicked.length) {
     html.push('<div><strong>已領餐點</strong></div>');

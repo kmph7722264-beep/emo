@@ -184,6 +184,8 @@ let idToken = '';
 let walkinMode = false;   // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
 let walkinWindows = null; // { breakfast:{start:'HH:MM',stop:'HH:MM'}, ... }
 let submitting = false;   // 防止重複送出
+let walkinAutoMeal = null; // 自動觸發現場點餐時，唯一可選的餐別（其餘凍結）
+let walkinAutoMeal = null; // 自動現場點餐時，唯一可選的餐別（其餘凍結）
 
 function isWalkinWindowActive(mealName) {
   if (!walkinMode || !walkinWindows || !walkinWindows[mealName]) return false;
@@ -292,6 +294,7 @@ async function init() {
 }
 
 async function loadMenu() {
+  walkinAutoMeal = null; // 每次載入前重置（auto-walkin 偵測在下方重新判斷）
   try {
     const date = document.querySelector('input[name="date"]').value || '';
     const url = API_URL + '?action=menu' + (date ? '&date=' + encodeURIComponent(date) : '');
@@ -307,6 +310,7 @@ async function loadMenu() {
         const autoMeal = getAutoWalkinMeal(data.walkinWindow);
         if (autoMeal && orderable[autoMeal] === false) {
           orderable[autoMeal] = true; // 解除「已截止」鎖定
+          walkinAutoMeal = autoMeal;  // 標記唯一可選的餐別，其餘全凍結
           const mL = { breakfast: '早', lunch: '中', dinner: '晚' };
           const lbl = Object.entries(data.walkinWindow)
             .map(([k, w]) => `${mL[k] || k} ${w.start}–${w.stop}`).join('、');
@@ -361,6 +365,22 @@ async function loadMenu() {
       { key: '中餐C', prefix: 'C 餐：', lunchKey: 'C' },
     ]);
     rebuildMeal('dinner', [{ key: '晚餐', prefix: '' }]);
+
+    // auto-walkin：當前時段餐點不讓選，僅記錄1份（到現場有什麼吃什麼）
+    if (walkinAutoMeal) {
+      const selWrap = document.getElementById(`sel-${walkinAutoMeal}`);
+      if (selWrap) {
+        selWrap.innerHTML =
+          '<div style="font-size:13px;color:#92400e;padding:6px 8px;background:#fff8e1;border-radius:6px;border:1px solid #fcd34d">' +
+          '⚠ 現場點餐，餐點由現場決定（1份）</div>';
+        // 注入 hidden input，使 FormData 取得此餐值
+        const hid = document.createElement('input');
+        hid.type = 'hidden'; hid.name = walkinAutoMeal; hid.value = '現場點餐';
+        selWrap.appendChild(hid);
+      }
+      const st = document.getElementById(`qty-${walkinAutoMeal}`);
+      if (st) st.hidden = true;
+    }
 
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
@@ -471,11 +491,17 @@ let walkinToastTimer = null;
  * 現場點餐成功大通知：顯示訂單編號 + 訂餐內容 + 自備餐具狀態。
  * 30 秒後自動消失，或點一下消失（此畫面是唯一憑證來源）。
  */
+function maskName(n) {
+  if (!n || n.length <= 1) return n;
+  if (n.length === 2) return n[0] + '*';
+  return n[0] + '*'.repeat(n.length - 2) + n[n.length - 1];
+}
+
 function showWalkinToast(orderNo, order, byob, dineIn) {
   document.getElementById('wtOrder').textContent = orderNo;
   const lines = [
     order.unit && `單位：${order.unit}`,
-    order.name && `訂購人：${order.name}`,
+    order.name && `訂購人：${maskName(order.name)}`,
     order.breakfast && `早餐：${order.breakfast}`,
     order.lunch     && `中餐：${order.lunch}`,
     order.dinner    && `晚餐：${order.dinner}`,
@@ -519,14 +545,15 @@ document.addEventListener('keydown', e => {
 function setWalkinMode(on, windowLabel, windows) {
   walkinMode = !!on;
   walkinWindows = on ? (windows || null) : null;
+  if (!on) walkinAutoMeal = null;
   document.getElementById('walkinBanner').hidden = !walkinMode;
   const fs = document.getElementById('walkinOptionsFieldset');
   fs.hidden = !walkinMode;
   document.getElementById('byobCheck').checked  = false;
   document.getElementById('dineInCheck').checked = walkinMode;
-  // walkin 模式：使用者已透過線上訂單完成過個資同意，自動勾選
+  // QR-scan walkin：使用者已完成個資同意，自動勾選；auto-walkin 則須手動勾選
   const privacyCheck = document.getElementById('privacyCheck');
-  if (privacyCheck && on) privacyCheck.checked = true;
+  if (privacyCheck && on && !walkinAutoMeal) privacyCheck.checked = true;
   const btn = document.getElementById('submitBtn');
   btn.textContent = walkinMode ? '現場點餐' : '送出訂單';
   if (walkinMode && windowLabel) {
