@@ -214,6 +214,12 @@ let useBigToast = false;
 let scanBusy = false; // 防止連續快速掃描觸發重複請求
 
 // 電話號碼隱碼顯示（保留首 3 碼與末 2 碼，中間以 * 遮蔽）
+function maskName(n) {
+  if (!n || n.length <= 1) return n;
+  if (n.length === 2) return n[0] + '*';
+  return n[0] + '*'.repeat(n.length - 2) + n[n.length - 1];
+}
+
 function maskPhone(phone) {
   const s = String(phone || '').replace(/\s/g, '');
   if (!s) return '—';
@@ -813,7 +819,7 @@ async function _doScanPickup(rawOrderNo) {
         orderNo,
         meal,  // ← 帶 meal 才會顯示「自備餐具」按鈕
         lines: [
-          (o.unit || o.name) ? `${o.unit || ''}　${o.name || ''}`.trim() : '',
+          (o.unit || o.name) ? `${o.unit || ''}　${maskName(o.name || '')}`.trim() : '',
           o.phone ? `警用電話：${maskPhone(o.phone)}` : '',
           `${MEAL_LABEL_FULL[meal] || meal}：${item || '—'}`,
           o.byob   ? '🥢 自備餐具' : '',
@@ -832,7 +838,7 @@ async function _doScanPickup(rawOrderNo) {
   // 以下都是失敗情境：先撈一次訂單詳細丟到大通知，並在最後重置欄位
   const orderForToast = useBigToast ? (await fetchOrderDetail(orderNo) || {}) : {};
   const headerLine = (orderForToast.unit || orderForToast.name)
-    ? `${orderForToast.unit || ''}　${orderForToast.name || ''}`.trim()
+    ? `${orderForToast.unit || ''}　${maskName(orderForToast.name || '')}`.trim()
     : '';
 
   if (data.reason === 'cancelled') {
@@ -1135,7 +1141,7 @@ function showNewWalkinToast(o) {
     title: '🟠 新現場訂單',
     orderNo: o.orderNo,
     lines: [
-      `${o.unit || ''}　${o.name || ''}`.trim(),
+      `${o.unit || ''}　${maskName(o.name || '')}`.trim(),
       byobLine,
       dineInLine,
       ...meals,

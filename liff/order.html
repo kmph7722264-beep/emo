@@ -522,8 +522,6 @@ let walkinToastTimer = null;
 function showWalkinToast(orderNo, order, byob, dineIn) {
   document.getElementById('wtOrder').textContent = orderNo;
   const lines = [
-    order.unit && `單位：${order.unit}`,
-    order.name && `訂購人：${order.name}`,
     order.breakfast && `早餐：${order.breakfast}`,
     order.lunch     && `中餐：${order.lunch}`,
     order.dinner    && `晚餐：${order.dinner}`,
