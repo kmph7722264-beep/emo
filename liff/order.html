@@ -66,6 +66,15 @@
         <button type="button" class="qty-inc">+</button>
         <span class="qty-unit">份（最多 3）</span>
       </div>
+      <div id="walkinSiteMealRow" hidden>
+        <div class="form-meal-label" style="color:#92400e">現場選餐</div>
+        <div class="order-check-group">
+          <label class="order-check-item">
+            <input type="checkbox" id="walkinSiteMealCheck" name="walkinSiteMeal">
+            <span>🍱 現場選餐（依現場供應決定）</span>
+          </label>
+        </div>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -263,6 +272,21 @@ async function init() {
   document.getElementById('orderForm').addEventListener('change', e => {
     const inp = e.target;
     const meal = inp.name;
+
+    // 現場選餐 ↔ 早中晚餐 互斥
+    if (inp.id === 'walkinSiteMealCheck' && inp.checked) {
+      ['breakfast', 'lunch', 'dinner'].forEach(m => {
+        document.querySelectorAll(`input[name="${m}"]`).forEach(i => { i.checked = false; });
+        const st = document.getElementById(`qty-${m}`);
+        if (st) { st.hidden = true; st.querySelector('.qty-val').textContent = '1'; }
+      });
+      return;
+    }
+    if (['breakfast', 'lunch', 'dinner'].includes(meal) && inp.checked) {
+      const sc = document.getElementById('walkinSiteMealCheck');
+      if (sc) sc.checked = false;
+    }
+
     if (!['breakfast', 'lunch', 'dinner'].includes(meal)) return;
     const wrap   = document.getElementById(`sel-${meal}`);
     const stepper = document.getElementById(`qty-${meal}`);
@@ -382,6 +406,16 @@ async function loadMenu() {
       const st = document.getElementById(`qty-${m}`);
       if (st) { st.hidden = true; st.querySelector('.qty-val').textContent = '1'; }
     });
+
+    // 現場選餐列：僅 auto-walkin 時段顯示，否則隱藏並清除勾選
+    const siteMealRow = document.getElementById('walkinSiteMealRow');
+    if (siteMealRow) {
+      siteMealRow.hidden = (walkinAutoMeal === null);
+      if (walkinAutoMeal === null) {
+        const sc = document.getElementById('walkinSiteMealCheck');
+        if (sc) sc.checked = false;
+      }
+    }
   } catch (e) {
     showMsg('載入菜單失敗：' + e.message, true);
   }
