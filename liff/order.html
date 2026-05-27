@@ -195,6 +195,19 @@ function isWalkinWindowActive(mealName) {
   return nowMin >= sh * 60 + sm && nowMin <= eh * 60 + em;
 }
 
+/** 偵測現在是否在某餐的現場點餐時段內，回傳餐別 key 或 null */
+function getAutoWalkinMeal(walkinWindow) {
+  if (!walkinWindow) return null;
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  for (const [meal, w] of Object.entries(walkinWindow)) {
+    const [sh, sm] = (w.start || '00:00').split(':').map(Number);
+    const [eh, em] = (w.stop  || '23:59').split(':').map(Number);
+    if (nowMin >= sh * 60 + sm && nowMin <= eh * 60 + em) return meal;
+  }
+  return null;
+}
+
 function localDateStr() {
   // 用本地時間產生 YYYY-MM-DD，避免 UTC 時區偏移造成日期跑掉
   const d = new Date();
@@ -286,6 +299,21 @@ async function loadMenu() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     const orderable = data.orderable || { breakfast: true, lunch: true, dinner: true };
+
+    // 已過當餐結單時間但仍在現場點餐時段內 → 自動啟動現場點餐模式
+    if (!walkinMode && data.walkinWindow) {
+      const selectedDate = document.querySelector('input[name="date"]').value || '';
+      if (selectedDate === localDateStr()) {
+        const autoMeal = getAutoWalkinMeal(data.walkinWindow);
+        if (autoMeal && orderable[autoMeal] === false) {
+          orderable[autoMeal] = true; // 解除「已截止」鎖定
+          const mL = { breakfast: '早', lunch: '中', dinner: '晚' };
+          const lbl = Object.entries(data.walkinWindow)
+            .map(([k, w]) => `${mL[k] || k} ${w.start}–${w.stop}`).join('、');
+          setWalkinMode(true, lbl, data.walkinWindow);
+        }
+      }
+    }
 
     function htmlEsc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
