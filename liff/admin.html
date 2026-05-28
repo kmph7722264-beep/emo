@@ -73,7 +73,9 @@
     <div class="btn-row">
       <button type="button" id="pickupScanBtn" class="secondary">📷 掃描 QR</button>
       <button type="button" id="pickupFindBtn" class="secondary">查詢</button>
+      <button type="button" id="usbModeBtn" class="secondary" title="啟用後，USB 無線掃描器掃描 QR Code 即自動取餐">🔌 USB 掃描器</button>
     </div>
+    <div id="usbModeBar" class="usb-mode-bar" hidden>🔌 USB 無線掃描器模式已啟用 — 掃描 QR Code 後自動取餐</div>
     <div id="pickupResult" hidden></div>
   </fieldset>
 
@@ -202,6 +204,12 @@
   .pickup-toast-hint   { font-size: 12px; color: #6b7280; margin-top: 8px; line-height: 1.6; }
   @keyframes pt-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes pt-pop  { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .usb-mode-bar {
+    margin-top: 8px; padding: 9px 14px;
+    background: #e8f5e9; border: 1.5px solid #06c755; border-radius: 8px;
+    color: #047a3a; font-size: 13px; font-weight: 600; text-align: center;
+  }
+  #usbModeBtn.active { background: #e8f5e9 !important; color: #047a3a !important; border-color: #06c755 !important; }
 </style>
 
 <script>
@@ -211,6 +219,7 @@ const LIFF_ID = '2010095803-1ayMPRJ6';
 let idToken = '';
 let lastStats = null;
 let useBigToast = false;
+let usbScannerMode = false;
 let scanBusy = false; // 防止連續快速掃描觸發重複請求
 
 // 電話號碼隱碼顯示（僅保留末 2 碼；短分機 ≤4 碼直接顯示）
@@ -315,6 +324,9 @@ async function init() {
     document.getElementById('auditDate').value = '';
     loadAuditLog();
   });
+  document.getElementById('usbModeBtn').addEventListener('click', toggleUsbScannerMode);
+  usbScannerMode = !!localStorage.getItem('emo_usbMode');
+  applyUsbMode();
 
   const orderLink = document.getElementById('orderEntry');
   if (orderLink) {
@@ -782,6 +794,10 @@ async function scanPickup(rawOrderNo) {
     await _doScanPickup(rawOrderNo);
   } finally {
     scanBusy = false;
+    if (usbScannerMode) {
+      const el = document.getElementById('pickupNo');
+      if (el) setTimeout(() => el.focus(), 200);
+    }
   }
 }
 
@@ -1208,6 +1224,27 @@ function hidePickupToast() {
   const box = document.getElementById('pickupToast');
   if (box) box.hidden = true;
   if (pickupToastTimer) { clearTimeout(pickupToastTimer); pickupToastTimer = null; }
+  if (usbScannerMode) {
+    const el = document.getElementById('pickupNo');
+    if (el) el.focus();
+  }
+}
+
+function applyUsbMode() {
+  const btn = document.getElementById('usbModeBtn');
+  const bar = document.getElementById('usbModeBar');
+  if (btn) btn.classList.toggle('active', usbScannerMode);
+  if (bar) bar.hidden = !usbScannerMode;
+}
+
+function toggleUsbScannerMode() {
+  usbScannerMode = !usbScannerMode;
+  localStorage.setItem('emo_usbMode', usbScannerMode ? '1' : '');
+  applyUsbMode();
+  if (usbScannerMode) {
+    const el = document.getElementById('pickupNo');
+    if (el) el.focus();
+  }
 }
 
 /**
