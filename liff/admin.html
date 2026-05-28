@@ -906,9 +906,13 @@ async function _doScanPickup(rawOrderNo) {
   showMsg(data.error || '掃描失敗', true);
   if (useBigToast) {
     const isNotFound = data.reason === 'not_found' || (data.error && /查無/i.test(data.error));
+    const isExpired  = data.reason === 'expired'   || (data.error && /過期/i.test(data.error));
     showPickupToast({
       status: 'err',
-      title: data.reason === 'not_ordered' ? '沒訂該餐' : isNotFound ? '無此訂單' : '無法領取',
+      title: data.reason === 'not_ordered' ? '沒訂該餐'
+           : isExpired  ? '此訂單已過期'
+           : isNotFound ? '無此訂單'
+           : '無法領取',
       orderNo,
       lines: [headerLine, data.error || ''].filter(Boolean),
     });
