@@ -99,6 +99,17 @@
   </div>
 </div>
 
+<!-- 非用餐時段大通知 -->
+<div id="noWindowToast" class="no-window-toast" hidden>
+  <div class="no-window-card">
+    <div class="no-window-icon">⏰</div>
+    <div class="no-window-title">非用餐時段</div>
+    <div class="no-window-msg">請稍候！</div>
+    <div id="noWindowHint" class="no-window-hint"></div>
+    <button type="button" id="noWindowClose" class="no-window-close">確定</button>
+  </div>
+</div>
+
 <style>
   .walkin-toast[hidden] { display: none !important; }
   .walkin-toast {
@@ -126,6 +137,26 @@
   .walkin-toast-close {
     margin: 0; padding: 12px 24px; border: 0; border-radius: 8px;
     background: #06c755; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
+  }
+  .no-window-toast[hidden] { display: none !important; }
+  .no-window-toast {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .no-window-card {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; min-width: 280px; max-width: 88vw;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border-top: 8px solid #d49a00;
+  }
+  .no-window-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+  .no-window-title { font-size: 26px; font-weight: 800; color: #8a6500; margin-bottom: 4px; }
+  .no-window-msg   { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
+  .no-window-hint  { font-size: 14px; color: #6b7280; line-height: 1.7; margin-bottom: 20px; }
+  .no-window-close {
+    padding: 12px 36px; border: 0; border-radius: 10px;
+    background: #d49a00; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
   }
 </style>
 
@@ -373,6 +404,16 @@ function hideWalkinToast() {
   if (walkinToastTimer) { clearTimeout(walkinToastTimer); walkinToastTimer = null; }
 }
 
+function showNoWindowToast(windows) {
+  const hint = windows ? Object.entries(windows)
+    .map(([k, w]) => `${({breakfast:'早餐',lunch:'中餐',dinner:'晚餐'})[k]||k} ${w.start}–${w.stop}`)
+    .join('、') : '';
+  const el = document.getElementById('noWindowHint');
+  if (el) el.textContent = hint ? `用餐時段：${hint}` : '';
+  const box = document.getElementById('noWindowToast');
+  if (box) box.hidden = false;
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -383,9 +424,16 @@ document.addEventListener('click', e => {
   if (e.target && (e.target.id === 'walkinToast' || e.target.id === 'walkinToastClose')) {
     hideWalkinToast();
   }
+  if (e.target && (e.target.id === 'noWindowToast' || e.target.id === 'noWindowClose')) {
+    document.getElementById('noWindowToast').hidden = true;
+  }
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') hideWalkinToast();
+  if (e.key === 'Escape') {
+    hideWalkinToast();
+    const nw = document.getElementById('noWindowToast');
+    if (nw) nw.hidden = true;
+  }
 });
 
 /**
@@ -454,6 +502,13 @@ async function activateWalkinFromOrder(orderNo) {
       .join('、');
   }
   setWalkinMode(true, windowLabel, meal.walkinWindow || null);
+  const _now = (d => d.getHours() * 60 + d.getMinutes())(new Date());
+  const _inWindow = walkinWindows && Object.values(walkinWindows).some(w => {
+    const [sh, sm] = (w.start || '00:00').split(':').map(Number);
+    const [eh, em] = (w.stop  || '23:59').split(':').map(Number);
+    return _now >= sh * 60 + sm && _now <= eh * 60 + em;
+  });
+  if (!_inWindow) showNoWindowToast(walkinWindows);
 
   const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
   showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，預選${mealLabel}` : ''}（現場點餐模式）`);
