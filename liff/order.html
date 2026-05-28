@@ -151,6 +151,17 @@
   </div>
 </div>
 
+<!-- 用餐時段領餐確認大通知 -->
+<div id="mealConfirmToast" class="meal-confirm-toast" hidden>
+  <div class="meal-confirm-card">
+    <div class="meal-confirm-icon">✅</div>
+    <div class="meal-confirm-title" id="mcTitle">領餐資訊</div>
+    <div class="meal-confirm-order" id="mcOrder">—</div>
+    <div class="meal-confirm-lines" id="mcLines"></div>
+    <button type="button" id="mealConfirmClose" class="meal-confirm-close">確定</button>
+  </div>
+</div>
+
 <style>
 /* ── 份數步進器 ── */
   .qty-stepper {
@@ -224,6 +235,30 @@
   .no-window-close {
     padding: 12px 36px; border: 0; border-radius: 10px;
     background: #d49a00; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
+  }
+  .meal-confirm-toast[hidden] { display: none !important; }
+  .meal-confirm-toast {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .meal-confirm-card {
+    background: #fff; border-radius: 16px;
+    padding: 32px 28px; min-width: 280px; max-width: 88vw;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    border-top: 8px solid #06c755;
+  }
+  .meal-confirm-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
+  .meal-confirm-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+  .meal-confirm-order {
+    font-size: 36px; font-weight: 800; letter-spacing: 1px; color: #047a3a;
+    margin-bottom: 10px; font-family: ui-monospace, "Menlo", "Consolas", monospace;
+  }
+  .meal-confirm-lines { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 16px; }
+  .meal-confirm-lines div { margin: 2px 0; }
+  .meal-confirm-close {
+    padding: 12px 36px; border: 0; border-radius: 10px;
+    background: #06c755; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
   }
 </style>
 
@@ -583,6 +618,18 @@ function showNoWindowToast(windows) {
   if (box) box.hidden = false;
 }
 
+function showMealConfirmToast({ orderNo, mealLabel, mealItem, unit, name }) {
+  document.getElementById('mcTitle').textContent = `${mealLabel}領餐資訊`;
+  document.getElementById('mcOrder').textContent = orderNo || '—';
+  const lines = [
+    (unit || name) ? `${unit}　${name}`.trim() : '',
+    mealItem ? `${mealLabel}：${mealItem}` : '',
+  ].filter(Boolean);
+  document.getElementById('mcLines').innerHTML =
+    lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
+  document.getElementById('mealConfirmToast').hidden = false;
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -596,12 +643,17 @@ document.addEventListener('click', e => {
   if (e.target && (e.target.id === 'noWindowToast' || e.target.id === 'noWindowClose')) {
     document.getElementById('noWindowToast').hidden = true;
   }
+  if (e.target && (e.target.id === 'mealConfirmToast' || e.target.id === 'mealConfirmClose')) {
+    document.getElementById('mealConfirmToast').hidden = true;
+  }
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     hideWalkinToast();
     const nw = document.getElementById('noWindowToast');
     if (nw) nw.hidden = true;
+    const mc = document.getElementById('mealConfirmToast');
+    if (mc) mc.hidden = true;
   }
 });
 
@@ -683,7 +735,14 @@ async function activateWalkinFromOrder(orderNo) {
 
   const mealLabel = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[meal.key] || '當時段';
   showMsg(`✅ 已帶入 ${p.name || ''} 的資料${meal.suggest ? `，預選${mealLabel}` : ''}（現場點餐模式）`);
-  if (!walkinMealActive) showNoWindowToast(walkinWindowData);
+  if (!walkinMealActive) {
+    showNoWindowToast(walkinWindowData);
+  } else {
+    const ml = ({ breakfast: '早餐', lunch: '中餐', dinner: '晚餐' })[walkinMealActive] || walkinMealActive;
+    showMealConfirmToast({ orderNo, mealLabel: ml, mealItem: meal.suggest || '', unit: p.unit || '', name: p.name || '' });
+    // 同步通知後端標領（後端驗證身分，失敗靜默處理）
+    postJson({ action: 'scanPickup', idToken, orderNo }).catch(() => {});
+  }
 }
 
 async function postJson(payload) {
