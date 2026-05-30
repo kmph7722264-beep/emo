@@ -1,0 +1,455 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMO 6宮格圖文選單更新教學</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font: 15px/1.7 "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+  background: #f0f4f8;
+  color: #1a1a1a;
+}
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+/* ── 頁首 ── */
+.header {
+  text-align: center;
+  background: linear-gradient(135deg, #0d3b66 0%, #1565c0 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 32px 24px 28px;
+  margin-bottom: 32px;
+}
+.header h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.header p  { font-size: 14px; opacity: .8; }
+.badge {
+  display: inline-block;
+  background: rgba(255,255,255,.2);
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 20px;
+  padding: 3px 14px;
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+
+/* ── 流程概覽 ── */
+.flow {
+  display: flex;
+  gap: 0;
+  margin-bottom: 36px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.flow-item {
+  flex: 1;
+  min-width: 110px;
+  text-align: center;
+  position: relative;
+}
+.flow-item::after {
+  content: '▶';
+  position: absolute;
+  right: -10px; top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 13px;
+}
+.flow-item:last-child::after { display: none; }
+.flow-circle {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.flow-item:nth-child(1) .flow-circle { background: #e0f2fe; }
+.flow-item:nth-child(2) .flow-circle { background: #dcfce7; }
+.flow-item:nth-child(3) .flow-circle { background: #fef3c7; }
+.flow-item:nth-child(4) .flow-circle { background: #fce7f3; }
+.flow-label { font-size: 12px; color: #475569; font-weight: 600; }
+
+/* ── STEP 卡片 ── */
+.step-card {
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.s1 .step-num { background: #3b82f6; }
+.s2 .step-num { background: #10b981; }
+.s3 .step-num { background: #f59e0b; }
+.s4 .step-num { background: #ec4899; }
+.step-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+.step-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 1px;
+}
+.step-body {
+  padding: 20px 22px;
+}
+
+/* ── 說明清單 ── */
+ol.guide { padding-left: 20px; }
+ol.guide li {
+  margin-bottom: 14px;
+  line-height: 1.7;
+}
+ol.guide li strong { color: #0d3b66; }
+
+/* ── 程式碼區塊 ── */
+.code-block {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font: 14px/1.6 "Consolas", "Menlo", "SF Mono", monospace;
+  margin: 12px 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+.code-block .cm  { color: #64748b; }   /* comment */
+.code-block .hl  { color: #fbbf24; }   /* highlight */
+.code-block .ok  { color: #34d399; }   /* green */
+.code-block .kw  { color: #93c5fd; }   /* keyword */
+
+/* ── 文字對照表 ── */
+.table-wrap { overflow-x: auto; margin: 14px 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th {
+  background: #f8fafc;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: 0; }
+td.col-name { font-weight: 700; color: #0d3b66; white-space: nowrap; }
+td.col-old  { color: #94a3b8; text-decoration: line-through; }
+td.col-new  { color: #059669; font-weight: 600; }
+
+/* ── 提示框 ── */
+.tip {
+  display: flex;
+  gap: 12px;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0 10px 10px 0;
+  padding: 13px 16px;
+  margin: 14px 0;
+  font-size: 13px;
+  color: #1e40af;
+  line-height: 1.6;
+}
+.tip.warn {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.tip.ok {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #166534;
+}
+.tip-icon { flex-shrink: 0; font-size: 18px; margin-top: 1px; }
+
+/* ── 按鈕外觀模擬 ── */
+.fake-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: #10b981;
+  border: none;
+  margin: 2px 0;
+}
+.fake-btn.blue { background: #3b82f6; }
+.fake-btn.orange { background: #f59e0b; }
+
+/* ── 格子預覽 ── */
+.grid-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+.gp-cell {
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  color: #fff;
+}
+.gp-cell .gp-title { font-weight: 700; font-size: 14px; }
+.gp-cell .gp-sub   { font-size: 11px; opacity: .85; margin-top: 3px; }
+.gp-cell.c1 { background: linear-gradient(135deg, #00a850, #00cd69); }
+.gp-cell.c2 { background: linear-gradient(135deg, #f58012, #ffac40); color: #fff; }
+.gp-cell.c3 { background: linear-gradient(135deg, #e4af00, #ffd732); color: #543200; }
+.gp-cell.c4 { background: linear-gradient(135deg, #2676f5, #58a2ff); }
+.gp-cell.c5 { background: linear-gradient(135deg, #da2d80, #ff64ac); }
+.gp-cell.c6 { background: linear-gradient(135deg, #344159, #5a6c91); }
+
+/* ── 頁尾 ── */
+.footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 頁首 -->
+  <div class="header">
+    <div class="badge">EMO 圖文選單管理手冊</div>
+    <h1>🖼 6 宮格圖文選單<br>更新步驟教學</h1>
+    <p>修改文字 → 重新生成圖片 → 上傳 LINE → 完成</p>
+  </div>
+
+  <!-- 流程概覽 -->
+  <div class="flow">
+    <div class="flow-item">
+      <div class="flow-circle">✏️</div>
+      <div class="flow-label">修改文字</div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-circle">⚙️</div>
+      <div class="flow-label">執行程式</div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-circle">☁️</div>
+      <div class="flow-label">上傳 LINE</div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-circle">✅</div>
+      <div class="flow-label">完成</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 1 ── -->
+  <div class="step-card s1">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">開啟設定檔，修改文字</div>
+        <div class="step-sub">檔案位置：C:\emo\make_richmenu.py</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="guide">
+        <li>用記事本或 VS Code 開啟 <strong>C:\emo\make_richmenu.py</strong></li>
+        <li>找到第 25 行附近的 <strong>CELLS</strong> 區塊，這裡就是 6 格的內容設定：</li>
+      </ol>
+
+      <div class="code-block"><span class="cm"># 格式：("大標題",  "副標說明",  ...)</span>
+CELLS = [
+    (<span class="hl">"線上訂單"</span>,    <span class="ok">"掃碼立即點餐"</span>,   ...),
+    (<span class="hl">"現場用餐"</span>,    <span class="ok">"掃描點餐單QR購餐"</span>,...),
+    (<span class="hl">"每日菜單"</span>,    <span class="ok">"今日菜色一覽"</span>,   ...),
+    (<span class="hl">"訂單查詢"</span>,    <span class="ok">"查看我的訂單"</span>,   ...),
+    (<span class="hl">"用餐回饋問卷"</span>, <span class="ok">"分享您的體驗"</span>,  ...),
+    (<span class="hl">"管理入口"</span>,    <span class="ok">"後台管理系統"</span>,   ...),
+]</div>
+
+      <div class="tip">
+        <div class="tip-icon">💡</div>
+        <div><strong>只需修改引號內的文字</strong>，第一個是大標題，第二個是副標說明。<br>
+        例如把 <code>"今日菜色一覽"</code> 改成 <code>"點選查看今日餐點"</code> 即可。</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>格子</th><th>大標題（不建議改）</th><th>副標說明（可自由修改）</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="col-name">格 1（左上）</td><td>線上訂單</td><td>掃碼立即點餐</td></tr>
+            <tr><td class="col-name">格 2（中上）</td><td>現場用餐</td><td>掃描點餐單QR購餐</td></tr>
+            <tr><td class="col-name">格 3（右上）</td><td>每日菜單</td><td>今日菜色一覽</td></tr>
+            <tr><td class="col-name">格 4（左下）</td><td>訂單查詢</td><td>查看我的訂單</td></tr>
+            <tr><td class="col-name">格 5（中下）</td><td>用餐回饋問卷</td><td>分享您的體驗</td></tr>
+            <tr><td class="col-name">格 6（右下）</td><td>管理入口</td><td>後台管理系統</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tip warn">
+        <div class="tip-icon">⚠️</div>
+        <div>副標說明<strong>建議 8 個字以內</strong>，超過太長可能顯示不全。</div>
+      </div>
+
+      <li style="margin-top:10px; list-style:none">修改完成後，<strong>儲存檔案</strong>（Ctrl + S）。</li>
+    </div>
+  </div>
+
+  <!-- ── STEP 2 ── -->
+  <div class="step-card s2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">執行程式，重新生成圖片</div>
+        <div class="step-sub">需要電腦已安裝 Python 與 Pillow</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="guide">
+        <li>在 <strong>C:\emo</strong> 資料夾空白處，按住 <strong>Shift + 右鍵</strong>，選「<strong>在這裡開啟 PowerShell 視窗</strong>」（或「命令提示字元」）</li>
+        <li>輸入以下指令，按 Enter：</li>
+      </ol>
+
+      <div class="code-block"><span class="ok">python</span> make_richmenu.py</div>
+
+      <ol class="guide" start="3">
+        <li>看到畫面出現以下訊息，代表成功：</li>
+      </ol>
+
+      <div class="code-block"><span class="ok">Done: C:/emo/EMO_richmenu_6grid.png</span></div>
+
+      <div class="tip ok">
+        <div class="tip-icon">✅</div>
+        <div>新圖片已儲存在 <strong>C:\emo\EMO_richmenu_6grid.png</strong>，可以雙擊預覽確認文字是否正確。</div>
+      </div>
+
+      <div class="tip warn">
+        <div class="tip-icon">⚠️</div>
+        <div>若出現 <code>ModuleNotFoundError: No module named 'PIL'</code>，請先執行：<br>
+        <code>pip install Pillow</code>，再重新執行步驟 2。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3 ── -->
+  <div class="step-card s3">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">登入 LINE，更新圖文選單圖片</div>
+        <div class="step-sub">在電腦瀏覽器操作（建議使用 Chrome）</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="guide">
+        <li>用瀏覽器開啟 LINE Official Account Manager：<br>
+            <strong>https://manager.line.biz</strong><br>
+            用您的 LINE 帳號登入。</li>
+
+        <li>從左側選單點選您的 <strong>EMO 官方帳號</strong>。</li>
+
+        <li>點左側 <strong>「聊天室相關功能」→「圖文選單」</strong>。</li>
+
+        <li>找到已建立的 EMO 選單，點右側 <span class="fake-btn blue">編輯</span> 按鈕。</li>
+
+        <li>點選「<strong>圖片</strong>」區域，再點 <span class="fake-btn orange">變更圖片</span>。</li>
+
+        <li>選擇剛剛生成的新圖片：<br>
+            <strong>C:\emo\EMO_richmenu_6grid.png</strong></li>
+
+        <li>圖片上傳完成後，點右上角 <span class="fake-btn">儲存並發布</span>。</li>
+      </ol>
+
+      <div class="tip">
+        <div class="tip-icon">💡</div>
+        <div>若沒有「編輯」按鈕，表示選單尚未建立，請參考《LINE圖文選單設定教學.md》完整建立流程。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 4 ── -->
+  <div class="step-card s4">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">手機確認更新成功</div>
+        <div class="step-sub">約 1–2 分鐘內生效</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="guide">
+        <li>打開手機 LINE，進入 <strong>EMO 通知機器人</strong> 對話視窗。</li>
+        <li>下方圖文選單應已顯示新的圖片，確認文字是否正確。</li>
+        <li>若還顯示舊圖：下拉聊天畫面重新整理，或關閉 LINE 後重新開啟。</li>
+      </ol>
+
+      <!-- 6格預覽 -->
+      <p style="font-size:13px; color:#64748b; margin: 14px 0 8px;">完成後圖文選單預覽（目前版本）：</p>
+      <div class="grid-preview">
+        <div class="gp-cell c1">
+          <div class="gp-title">線上訂單</div>
+          <div class="gp-sub">掃碼立即點餐</div>
+        </div>
+        <div class="gp-cell c2">
+          <div class="gp-title">現場用餐</div>
+          <div class="gp-sub">掃描點餐單QR購餐</div>
+        </div>
+        <div class="gp-cell c3">
+          <div class="gp-title">每日菜單</div>
+          <div class="gp-sub">今日菜色一覽</div>
+        </div>
+        <div class="gp-cell c4">
+          <div class="gp-title">訂單查詢</div>
+          <div class="gp-sub">查看我的訂單</div>
+        </div>
+        <div class="gp-cell c5">
+          <div class="gp-title">用餐回饋問卷</div>
+          <div class="gp-sub">分享您的體驗</div>
+        </div>
+        <div class="gp-cell c6">
+          <div class="gp-title">管理入口</div>
+          <div class="gp-sub">後台管理系統</div>
+        </div>
+      </div>
+
+      <div class="tip ok">
+        <div class="tip-icon">🎉</div>
+        <div>更新完成！往後每次只需重複步驟 1 → 2 → 3，即可快速更新任何格子的說明文字。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁尾 -->
+  <div class="footer">
+    雄好竹軒智慧用餐系統　|　圖文選單更新教學 v1
+  </div>
+
+</div>
+</body>
+</html>

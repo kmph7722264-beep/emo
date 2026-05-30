@@ -1,0 +1,1092 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雄好竹軒智慧用餐系統－功能說明書</title>
+<style>
+  :root {
+    --navy:   #0d3b66;
+    --navy-l: #eef6ff;
+    --green:  #06c755;
+    --green-d:#047a3a;
+    --green-l:#ecfdf3;
+    --gray:   #6b7280;
+    --border: #d1d5db;
+    --text:   #1a1a1a;
+    --warn-l: #fffbeb;
+    --warn:   #92400e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans TC', '微軟正黑體', system-ui, sans-serif;
+    background: #fff; color: var(--text); line-height: 1.9;
+    font-size: 14px;
+  }
+
+  /* ════════════════ 封面 ════════════════ */
+  .cover-page {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    background: linear-gradient(160deg, var(--navy) 0%, #1a5276 55%, #0d4e8a 100%);
+    color: #fff; padding: 60px 40px; text-align: center;
+    page-break-after: always;
+  }
+  .cover-logo {
+    width: 80px; height: 80px; border-radius: 20px;
+    background: var(--green); display: flex; align-items: center;
+    justify-content: center; font-size: 38px; margin-bottom: 28px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+  .cover-badge {
+    border: 1px solid rgba(255,255,255,.4); border-radius: 999px;
+    padding: 4px 18px; font-size: 12px; letter-spacing: 1px;
+    color: #b8d4f0; margin-bottom: 20px; display: inline-block;
+  }
+  .cover-title {
+    font-size: 32px; font-weight: 800; letter-spacing: 2px;
+    margin-bottom: 10px; line-height: 1.4;
+  }
+  .cover-sub {
+    font-size: 16px; color: #90b8d8; margin-bottom: 40px;
+  }
+  .cover-divider {
+    width: 60px; height: 3px; background: var(--green);
+    border-radius: 2px; margin: 0 auto 36px;
+  }
+  .cover-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 40px;
+    font-size: 13px; color: #c9dff0; max-width: 420px; text-align: left;
+  }
+  .cover-meta-item strong { color: #fff; display: block; font-size: 11px;
+    letter-spacing: .5px; color: #7fb3d9; margin-bottom: 2px; }
+  .cover-footer {
+    position: absolute; bottom: 32px; font-size: 12px; color: #5a8ab0;
+    letter-spacing: .5px;
+  }
+
+  /* ════════════════ 頁面佈局 ════════════════ */
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 48px 60px; }
+
+  /* ════════════════ 目錄 ════════════════ */
+  .toc-section { padding: 40px 48px 48px; max-width: 860px; margin: 0 auto; }
+  .toc-title {
+    font-size: 22px; font-weight: 800; color: var(--navy);
+    border-left: 5px solid var(--green); padding-left: 14px;
+    margin-bottom: 24px;
+  }
+  .toc-list { list-style: none; }
+  .toc-list > li {
+    border-bottom: 1px dotted var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 4px;
+  }
+  .toc-list > li a { text-decoration: none; color: var(--navy); font-weight: 600; font-size: 14px; }
+  .toc-list > li a:hover { color: var(--green-d); }
+  .toc-list .toc-sub { list-style: none; padding-left: 20px; width: 100%; }
+  .toc-list .toc-sub li {
+    border-bottom: none; padding: 3px 4px;
+    display: flex; justify-content: space-between;
+  }
+  .toc-list .toc-sub li a { font-weight: 400; color: var(--gray); font-size: 13px; }
+  .toc-pg { font-size: 12px; color: var(--gray); }
+  .toc-divider { border: 0; border-top: 2px solid var(--navy); margin: 16px 0 24px; }
+
+  /* ════════════════ 章節標題 ════════════════ */
+  .ch-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px; padding-bottom: 14px;
+    border-bottom: 3px solid var(--navy);
+  }
+  .ch-num {
+    background: var(--navy); color: #fff;
+    border-radius: 10px; padding: 6px 14px;
+    font-size: 13px; font-weight: 700; letter-spacing: .5px;
+    flex-shrink: 0;
+  }
+  .ch-head h2 { font-size: 20px; font-weight: 800; color: var(--navy); }
+
+  .sec-head {
+    font-size: 16px; font-weight: 700; color: var(--navy);
+    margin: 28px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sec-head::before {
+    content: ''; width: 4px; height: 18px; background: var(--green);
+    border-radius: 2px; flex-shrink: 0;
+  }
+
+  .sub-head {
+    font-size: 14px; font-weight: 700; color: #374151;
+    margin: 18px 0 8px; padding-left: 10px;
+    border-left: 3px solid var(--border);
+  }
+
+  /* ════════════════ 通用排版 ════════════════ */
+  p { margin-bottom: 12px; color: #374151; }
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+  li { margin-bottom: 5px; color: #374151; }
+  strong { color: var(--text); }
+  code {
+    background: #f3f4f6; border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px; font-size: 12.5px;
+    font-family: 'Cascadia Code', Consolas, monospace;
+  }
+
+  /* ════════════════ 表格 ════════════════ */
+  .data-table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13.5px; }
+  .data-table th {
+    background: var(--navy); color: #fff;
+    padding: 9px 12px; text-align: left; font-weight: 600;
+  }
+  .data-table th:first-child { border-radius: 6px 0 0 0; }
+  .data-table th:last-child  { border-radius: 0 6px 0 0; }
+  .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: 0; }
+  .data-table tr:nth-child(even) td { background: #f8fafc; }
+
+  /* ════════════════ 功能卡片 ════════════════ */
+  .func-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px; margin: 14px 0 24px;
+  }
+  .func-card {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; font-size: 13px;
+  }
+  .func-card .fc-icon { font-size: 24px; margin-bottom: 8px; }
+  .func-card h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .func-card p { color: #374151; margin: 0; font-size: 13px; }
+  .func-card.highlight { background: var(--navy-l); border-color: #a6c8ec; }
+
+  /* ════════════════ 流程步驟 ════════════════ */
+  .steps { display: flex; flex-direction: column; gap: 0; margin: 12px 0 20px; }
+  .step {
+    display: flex; gap: 16px; position: relative;
+    padding-bottom: 20px;
+  }
+  .step::before {
+    content: ''; position: absolute; left: 16px; top: 36px;
+    width: 2px; height: calc(100% - 36px); background: #e5e7eb;
+  }
+  .step:last-child::before { display: none; }
+  .step:last-child { padding-bottom: 0; }
+  .step-dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0; z-index: 1;
+  }
+  .step-body { flex: 1; padding-top: 5px; }
+  .step-body strong { display: block; font-size: 14px; color: var(--navy); margin-bottom: 3px; }
+  .step-body p { font-size: 13px; color: #374151; margin: 0; }
+
+  /* ════════════════ 角色徽章 ════════════════ */
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 999px; padding: 3px 12px;
+    font-size: 12px; font-weight: 700;
+  }
+  .role-user  { background: var(--green-l); color: var(--green-d); border: 1px solid #b7e8c8; }
+  .role-admin { background: #fef3c7; color: #92400e; border: 1px solid #fcd28a; }
+  .role-mgr   { background: var(--navy-l); color: var(--navy); border: 1px solid #a6c8ec; }
+  .role-sys   { background: #f3f4f6; color: #374151; border: 1px solid var(--border); }
+
+  /* ════════════════ 提示框 ════════════════ */
+  .note-box {
+    border-radius: 8px; padding: 12px 16px; margin: 12px 0;
+    font-size: 13px; display: flex; gap: 10px;
+  }
+  .note-box.info  { background: var(--navy-l); border-left: 4px solid var(--navy); color: #0d3b66; }
+  .note-box.tip   { background: var(--green-l); border-left: 4px solid var(--green-d); color: #0a4a24; }
+  .note-box.warn  { background: var(--warn-l); border-left: 4px solid #d97706; color: var(--warn); }
+  .note-box .nb-icon { flex-shrink: 0; font-size: 15px; }
+
+  /* ════════════════ 章節分隔 ════════════════ */
+  .ch-divider { border: 0; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ════════════════ 安全矩陣 ════════════════ */
+  .sec-matrix td:first-child { font-weight: 600; }
+  .status-ok   { color: var(--green-d); font-weight: 700; }
+  .status-warn { color: var(--warn); font-weight: 700; }
+
+  /* ════════════════ 規格列表 ════════════════ */
+  .spec-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 20px;
+  }
+  .spec-item {
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; font-size: 13px;
+  }
+  .spec-item strong { display: block; color: var(--navy); font-size: 12px;
+    margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* ════════════════ 列印樣式 ════════════════ */
+  @media print {
+    body { font-size: 12px; }
+    .cover-page { page-break-after: always; min-height: auto; padding: 80px 40px; }
+    .page { padding: 30px 40px; }
+    .ch-divider { margin: 24px 0; }
+    .func-grid { grid-template-columns: 1fr 1fr; }
+    .spec-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .page, .toc-section { padding: 24px 20px; }
+    .cover-title { font-size: 22px; }
+    .cover-meta { grid-template-columns: 1fr; }
+    .spec-grid { grid-template-columns: 1fr; }
+    .func-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     封面
+════════════════════════════════════════ -->
+<div class="cover-page" style="position:relative">
+  <div class="cover-logo">🍱</div>
+  <div class="cover-badge">OFFICIAL DOCUMENT</div>
+  <div class="cover-title">雄好竹軒<br>電子點餐系統</div>
+  <div class="cover-sub">功能說明書</div>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <strong>文件版本</strong>v13.0（資安強化版）
+    </div>
+    <div class="cover-meta-item">
+      <strong>發行日期</strong>2026 年 5 月 25 日
+    </div>
+    <div class="cover-meta-item">
+      <strong>適用系統</strong>雄好竹軒智慧用餐系統
+    </div>
+    <div class="cover-meta-item">
+      <strong>文件性質</strong>正式功能說明文件
+    </div>
+    <div class="cover-meta-item">
+      <strong>系統平台</strong>LINE App（LIFF）
+    </div>
+    <div class="cover-meta-item">
+      <strong>使用對象</strong>全體用餐人員及管理員
+    </div>
+  </div>
+  <div class="cover-footer">雄好竹軒管理單位　｜　EMO Electronic Meal Ordering System</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     目錄
+════════════════════════════════════════ -->
+<div class="toc-section">
+  <div class="toc-title">目　錄</div>
+  <hr class="toc-divider">
+  <ol class="toc-list">
+    <li><a href="#ch1">第一章　系統概述</a><span class="toc-pg"></span></li>
+    <li><a href="#ch2">第二章　系統架構與技術規格</a><span class="toc-pg"></span></li>
+    <li><a href="#ch3">第三章　使用者角色與權限</a><span class="toc-pg"></span></li>
+    <li><a href="#ch4">第四章　主要功能說明</a><span class="toc-pg"></span>
+      <ul class="toc-sub">
+        <li><a href="#ch4-1">4.1　每日菜單查詢</a></li>
+        <li><a href="#ch4-2">4.2　線上訂餐</a></li>
+        <li><a href="#ch4-3">4.3　現場點餐（walkin）</a></li>
+        <li><a href="#ch4-4">4.4　我的訂單</a></li>
+        <li><a href="#ch4-5">4.5　用餐回饋問卷</a></li>
+        <li><a href="#ch4-6">4.6　管理員功能</a></li>
+        <li><a href="#ch4-7">4.7　QR Code 領餐驗證</a></li>
+        <li><a href="#ch4-8">4.8　統計報表</a></li>
+      </ul>
+    </li>
+    <li><a href="#ch5">第五章　自動化機制</a><span class="toc-pg"></span></li>
+    <li><a href="#ch6">第六章　資訊安全設計</a><span class="toc-pg"></span></li>
+    <li><a href="#ch7">第七章　個人資料保護</a><span class="toc-pg"></span></li>
+    <li><a href="#ch8">第八章　使用限制與注意事項</a><span class="toc-pg"></span></li>
+    <li><a href="#ch9">第九章　附錄</a><span class="toc-pg"></span></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════
+     第一章　系統概述
+════════════════════════════════════════ -->
+<div class="page" id="ch1">
+  <div class="ch-head">
+    <span class="ch-num">第一章</span>
+    <h2>系統概述</h2>
+  </div>
+
+  <div class="sec-head">1.1　系統緣起與目的</div>
+  <p>雄好竹軒智慧用餐系統（以下簡稱「本系統」）係為改善雄好竹軒傳統紙本或口頭訂餐作業所衍生之人力耗費、統計錯誤及餐點浪費等問題，所建置之數位化訂餐管理平台。</p>
+  <p>本系統以 LINE 應用程式為載體，透過 LIFF（LINE Front-end Framework）技術，使全體用餐人員得於手機上完成訂餐、查詢菜單及填寫回饋問卷等作業，無需額外安裝任何應用程式。</p>
+
+  <div class="sec-head">1.2　系統效益</div>
+  <div class="func-grid">
+    <div class="func-card highlight">
+      <div class="fc-icon">⏱️</div>
+      <h4>降低行政作業時間</h4>
+      <p>訂餐、統計、廚房通知全程自動化，每日省去人工匯整工作。</p>
+    </div>
+    <div class="func-card highlight">
+      <div class="fc-icon">📉</div>
+      <h4>減少餐點備料浪費</h4>
+      <p>精確統計各餐實際訂購量，廚房依數備料，有效降低剩餘。</p>
+    </div>
+    <div class="func-card highlight">
+      <div class="fc-icon">📊</div>
+      <h4>提供決策數據支援</h4>
+      <p>日報、月報自動推送，棄單率統計，協助管理層掌握用餐趨勢。</p>
+    </div>
+    <div class="func-card highlight">
+      <div class="fc-icon">🛡️</div>
+      <h4>強化個資保護</h4>
+      <p>符合個人資料保護法規範，電話遮罩、操作稽核，保障人員隱私。</p>
+    </div>
+  </div>
+
+  <div class="sec-head">1.3　系統版本沿革</div>
+  <table class="data-table">
+    <thead><tr><th>版本</th><th>主要異動</th><th>發行期間</th></tr></thead>
+    <tbody>
+      <tr><td>v1–v3</td><td>基礎訂餐、菜單管理、訂單編號、領餐標記</td><td>初期建置</td></tr>
+      <tr><td>v4–v5</td><td>三餐各別領餐追蹤、棄單偵測、黑名單停權</td><td>功能擴充期</td></tr>
+      <tr><td>v6–v7</td><td>LINE 廚房群組通知、QR 掃描領餐時段管制</td><td>通知強化期</td></tr>
+      <tr><td>v8–v9</td><td>訂單軟刪除取消、管理員操作稽核記錄</td><td>稽核建立期</td></tr>
+      <tr><td>v10–v11</td><td>結單彙整推送、每日 / 月報自動推播</td><td>報表自動化期</td></tr>
+      <tr><td>v12</td><td>用餐回饋問卷（HMAC 簽章連結）、現場點餐 QR 帶入</td><td>問卷 / 體驗期</td></tr>
+      <tr><td><strong>v13（現行）</strong></td><td>使用者自助訂單查詢、資訊安全全面強化</td><td><strong>2026-05</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第二章　系統架構與技術規格
+════════════════════════════════════════ -->
+<div class="page" id="ch2">
+  <div class="ch-head">
+    <span class="ch-num">第二章</span>
+    <h2>系統架構與技術規格</h2>
+  </div>
+
+  <div class="sec-head">2.1　系統架構</div>
+  <p>本系統採用三層式架構，以 LINE 平台為接入層、GitHub Pages 靜態網頁為前端呈現層、Google Apps Script 為後端邏輯層，Google Sheets 作為資料儲存層。</p>
+
+  <table class="data-table">
+    <thead><tr><th>層次</th><th>技術</th><th>功能說明</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>用戶端（接入層）</strong></td>
+        <td>LINE App / LIFF</td>
+        <td>提供使用者登入驗證（LINE 帳號）及 WebView 介面顯示，無需額外安裝 App</td>
+      </tr>
+      <tr>
+        <td><strong>前端（展示層）</strong></td>
+        <td>HTML5 / CSS3 / JavaScript<br>GitHub Pages 靜態託管</td>
+        <td>6 支 LIFF 頁面分別負責菜單、訂餐、管理、掃描、我的訂單、問卷等功能</td>
+      </tr>
+      <tr>
+        <td><strong>後端（邏輯層）</strong></td>
+        <td>Google Apps Script (GAS)<br>REST API（/exec 端點）</td>
+        <td>處理身份驗證、訂單邏輯、資料寫入、LINE 推播通知及報表產生</td>
+      </tr>
+      <tr>
+        <td><strong>資料層</strong></td>
+        <td>Google Sheets</td>
+        <td>儲存訂單、菜單、管理員名單、操作稽核記錄及問卷資料等五個工作表</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">2.2　LIFF 頁面清單</div>
+  <table class="data-table">
+    <thead><tr><th>頁面名稱</th><th>主要功能</th><th>使用角色</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>menu.html</strong>　每日菜單</td>
+        <td>查詢任意日期的早 / 中 / 晚餐菜色、結單時間、中餐剩餘份數</td>
+        <td><span class="role-badge role-user">所有人員</span></td>
+      </tr>
+      <tr>
+        <td><strong>order.html</strong>　線上訂餐</td>
+        <td>選擇餐點送出訂單，接收 LINE 訂單確認卡片（含 QR Code）</td>
+        <td><span class="role-badge role-user">所有人員</span></td>
+      </tr>
+      <tr>
+        <td><strong>myorders.html</strong>　我的訂單</td>
+        <td>查詢個人訂單紀錄、領餐狀態，快速進入待填問卷</td>
+        <td><span class="role-badge role-user">所有人員</span></td>
+      </tr>
+      <tr>
+        <td><strong>survey.html</strong>　用餐回饋</td>
+        <td>填寫整體滿意度、餐點品質、服務態度評分及文字建議</td>
+        <td><span class="role-badge role-user">所有人員</span></td>
+      </tr>
+      <tr>
+        <td><strong>admin.html</strong>　管理後台</td>
+        <td>查詢訂單、標記領餐、取消訂單、更新菜單、查看稽核記錄</td>
+        <td><span class="role-badge role-admin">管理員</span></td>
+      </tr>
+      <tr>
+        <td><strong>scan.html</strong>　QR 掃描</td>
+        <td>掃描使用者 QR Code 自動帶入訂單資訊，加速現場點餐流程</td>
+        <td><span class="role-badge role-admin">管理員</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">2.3　技術規格</div>
+  <div class="spec-grid">
+    <div class="spec-item"><strong>使用裝置</strong>Android / iOS 智慧型手機（已安裝 LINE）</div>
+    <div class="spec-item"><strong>網路需求</strong>行動網路或 Wi-Fi（需連線使用）</div>
+    <div class="spec-item"><strong>身份驗證</strong>LINE 帳號登入（OAuth 2.0 ID Token）</div>
+    <div class="spec-item"><strong>推播通知</strong>LINE Messaging API（Bot 推播）</div>
+    <div class="spec-item"><strong>資料儲存</strong>Google Sheets（Google 帳號管理）</div>
+    <div class="spec-item"><strong>後端語言</strong>Google Apps Script（JavaScript 環境）</div>
+    <div class="spec-item"><strong>前端託管</strong>GitHub Pages（HTTPS 靜態網頁）</div>
+    <div class="spec-item"><strong>QR 掃描</strong>jsQR v1.4.0（本地端處理，不傳送至外部）</div>
+  </div>
+
+  <div class="sec-head">2.4　資料工作表結構</div>
+  <table class="data-table">
+    <thead><tr><th>工作表</th><th>欄位數</th><th>主要內容</th><th>保存說明</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Orders</strong>（訂單）</td>
+        <td>28 欄</td>
+        <td>時間戳記、單位、訂購人、電話、日期、三餐選項、備註、userId、訂單編號、領餐狀態、棄單旗標、取消資訊、現場旗標、問卷旗標</td>
+        <td>保存期限 1 年</td>
+      </tr>
+      <tr>
+        <td><strong>Menu</strong>（菜單）</td>
+        <td>4 欄</td>
+        <td>日期、餐別（早餐 / 中餐A/B/C / 晚餐）、餐點名稱、更新時間</td>
+        <td>長期保留</td>
+      </tr>
+      <tr>
+        <td><strong>Admins</strong>（管理員）</td>
+        <td>4 欄</td>
+        <td>LINE userId、名稱、停用日期、備註</td>
+        <td>隨人員異動維護</td>
+      </tr>
+      <tr>
+        <td><strong>AuditLog</strong>（稽核）</td>
+        <td>7 欄</td>
+        <td>時間戳記、操作者 userId / 名稱、動作代碼、目標訂單號、細節 JSON、結果</td>
+        <td>建議保留 90 天</td>
+      </tr>
+      <tr>
+        <td><strong>Survey</strong>（問卷）</td>
+        <td>8 欄</td>
+        <td>時間戳記、訂單編號、userId、訂購日期、整體 / 餐點 / 服務評分（1–5）、文字意見</td>
+        <td>保存期限 1 年</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第三章　使用者角色與權限
+════════════════════════════════════════ -->
+<div class="page" id="ch3">
+  <div class="ch-head">
+    <span class="ch-num">第三章</span>
+    <h2>使用者角色與權限</h2>
+  </div>
+
+  <div class="sec-head">3.1　角色定義</div>
+  <table class="data-table">
+    <thead>
+      <tr><th>角色</th><th>身份說明</th><th>驗證方式</th><th>可使用功能</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="role-badge role-user">一般用餐人員</span></td>
+        <td>使用 LINE 訂餐的全體同仁</td>
+        <td>LINE 帳號登入（LIFF 自動）</td>
+        <td>查詢菜單、線上訂餐、查詢個人訂單、填寫問卷</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge role-admin">管理員</span></td>
+        <td>食堂管理人員、指定行政人員</td>
+        <td>LINE userId 登錄於 Admins 工作表</td>
+        <td>以上全部，加上：標記領餐、取消訂單、更新菜單、查詢所有訂單、操作稽核、報表查詢、QR 掃描領餐</td>
+      </tr>
+      <tr>
+        <td><span class="role-badge role-sys">自動化系統</span></td>
+        <td>GAS 時間觸發器</td>
+        <td>系統排程觸發</td>
+        <td>棄單偵測、結單彙整推播、日報 / 月報推播</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">3.2　管理員帳號管理</div>
+  <p>管理員資格由系統管理人員直接維護 Google Sheets「Admins」工作表。</p>
+  <table class="data-table">
+    <thead><tr><th>欄位</th><th>說明</th><th>範例</th></tr></thead>
+    <tbody>
+      <tr><td>A 欄：LINE userId</td><td>LINE 帳號唯一識別碼（U 開頭，44 碼字串）</td><td><code>Uabcdef1234567890...</code></td></tr>
+      <tr><td>B 欄：名稱</td><td>管理員顯示名稱，用於稽核記錄</td><td>王小明</td></tr>
+      <tr><td>C 欄：停用日期</td><td>填入 <code>YYYY-MM-DD</code> 格式後，到期日起自動停用管理員權限；空白表示持續有效</td><td><code>2026-12-31</code></td></tr>
+      <tr><td>D 欄：備註</td><td>自由填寫，不影響系統邏輯</td><td>第一區值班管理員</td></tr>
+    </tbody>
+  </table>
+  <div class="note-box warn">
+    <span class="nb-icon">⚠️</span>
+    <span>管理員人員異動時，請立即於 C 欄填入停用日期（或刪除該列），以防止離職人員繼續擁有管理權限。</span>
+  </div>
+
+  <div class="sec-head">3.3　黑名單停權機制</div>
+  <p>為抑制惡意訂餐後棄單的行為，系統設有自動停權機制：</p>
+  <ul>
+    <li>滑動視窗：<strong>30 天</strong>內累計棄單次數</li>
+    <li>停權門檻：棄單<strong>超過 3 次</strong>（第 4 次棄單時生效）</li>
+    <li>停權期間：<strong>30 天</strong>（期滿自動解除）</li>
+    <li>停權對象：僅限線上訂餐，現場點餐不受影響</li>
+    <li>申訴管道：如有疑問請聯絡管理員手動調整</li>
+  </ul>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第四章　主要功能說明
+════════════════════════════════════════ -->
+<div class="page" id="ch4">
+  <div class="ch-head">
+    <span class="ch-num">第四章</span>
+    <h2>主要功能說明</h2>
+  </div>
+
+  <!-- 4.1 菜單查詢 -->
+  <div class="sec-head" id="ch4-1">4.1　每日菜單查詢</div>
+  <p>開放所有人員（含未登入狀態）查詢任意日期的菜單資訊，頁面載入時自動顯示當日菜單。</p>
+
+  <div class="sub-head">顯示資訊</div>
+  <ul>
+    <li><strong>早餐</strong>：餐點名稱、結單時間（07:00）、訂購狀態（可訂購 / 已結單）</li>
+    <li><strong>中餐 A / B / C</strong>：各品項名稱、剩餘份數（上限 40 份 / 品項）、訂購狀態</li>
+    <li><strong>晚餐</strong>：餐點名稱、結單時間（16:00）、訂購狀態</li>
+    <li>未來日期顯示「未來日期」標籤；過去日期顯示「已結單」</li>
+  </ul>
+
+  <div class="sub-head">結單時間</div>
+  <table class="data-table">
+    <thead><tr><th>餐別</th><th>結單時間</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>早餐</td><td>每日 07:00</td><td>逾時當日早餐不可訂購</td></tr>
+      <tr><td>中餐</td><td>每日 10:30</td><td>逾時當日中餐不可訂購</td></tr>
+      <tr><td>晚餐</td><td>每日 16:00</td><td>逾時當日晚餐不可訂購</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 4.2 線上訂餐 -->
+  <div class="sec-head" id="ch4-2">4.2　線上訂餐</div>
+  <p>已登入 LINE 帳號的人員可透過訂餐頁面選擇餐點並送出訂單，系統於訂單確認後即時推播 LINE 訊息至使用者。</p>
+
+  <div class="sub-head">訂餐流程</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-dot">1</div>
+      <div class="step-body">
+        <strong>開啟訂餐頁面</strong>
+        <p>透過 LINE OA 選單或連結進入，系統自動以 LINE 帳號登入，並從歷史訂單自動帶入單位、姓名、電話資料。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">2</div>
+      <div class="step-body">
+        <strong>選擇訂購日期</strong>
+        <p>預設為今日，可切換至未來日期。系統自動顯示各餐可訂購狀態及中餐剩餘份數。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">3</div>
+      <div class="step-body">
+        <strong>勾選餐點</strong>
+        <p>早、中、晚餐分別以勾選方式選取；中餐需指定 A / B / C 品項（各品項每日上限 40 份）；未勾選任一餐別視為不訂購該餐。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">4</div>
+      <div class="step-body">
+        <strong>填寫備註並同意個資告知</strong>
+        <p>備註欄為選填（上限 200 字）；首次使用須閱讀並勾選個人資料保護告知事項。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">5</div>
+      <div class="step-body">
+        <strong>送出訂單</strong>
+        <p>系統驗證資料無誤後寫入訂單，並透過 LINE Bot 推播「訂單確認卡片」（含 QR Code 及問卷連結）。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-head">訂單確認卡片內容</div>
+  <ul>
+    <li>訂單編號（格式：<code>YYYYMMDD-NNN</code>）</li>
+    <li>單位、訂購人、警用電話、訂購日期</li>
+    <li>各餐選項</li>
+    <li>領餐用 QR Code（領餐時向管理員出示）</li>
+    <li>用餐回饋問卷快速連結</li>
+    <li>棄單規則提醒</li>
+  </ul>
+
+  <div class="note-box info">
+    <span class="nb-icon">ℹ️</span>
+    <span>同一使用者在同一日期僅可送出一筆訂單。如需修改，請聯絡管理員取消原訂單後重新訂購。</span>
+  </div>
+
+  <!-- 4.3 現場點餐 -->
+  <div class="sec-head" id="ch4-3">4.3　現場點餐（walkin 模式）</div>
+  <p>提供無法提前線上訂餐之人員（如臨時加班、訪客等）於食堂現場直接完成點餐作業。</p>
+
+  <div class="sub-head">現場點餐時段</div>
+  <table class="data-table">
+    <thead><tr><th>餐別</th><th>現場受理時間</th></tr></thead>
+    <tbody>
+      <tr><td>早餐</td><td>07:00 – 08:10</td></tr>
+      <tr><td>中餐</td><td>10:30 – 12:40</td></tr>
+      <tr><td>晚餐</td><td>16:00 – 17:40</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub-head">與線上訂餐的差異</div>
+  <ul>
+    <li>中餐不分 A/B/C 品項，亦不受 40 份上限限制</li>
+    <li>訂單不發送 LINE 確認通知（現場操作）</li>
+    <li>不受黑名單停權限制（管理員代客下單）</li>
+    <li>備註欄自動標記「【現場點餐】」以利識別</li>
+    <li>可掃描既有訂單 QR 自動帶入歷史訂購人資料</li>
+  </ul>
+
+  <!-- 4.4 我的訂單 -->
+  <div class="sec-head" id="ch4-4">4.4　我的訂單</div>
+  <p>使用者可查詢個人最近 50 筆訂單的完整狀態，無需聯絡管理員即可掌握訂餐及領餐情形。</p>
+
+  <div class="sub-head">顯示資訊</div>
+  <ul>
+    <li>訂單編號、訂購日期、各餐選項</li>
+    <li>各餐領餐狀態：<strong>已領</strong>（含領餐時間）/ <strong>未領</strong> / <strong>已棄單</strong></li>
+    <li>訂單取消狀態及原因</li>
+    <li>問卷填寫狀態</li>
+  </ul>
+
+  <div class="sub-head">Tab 切換</div>
+  <ul>
+    <li><strong>全部訂單</strong>：顯示所有訂單，含已取消</li>
+    <li><strong>待填問卷</strong>：篩選出當日或過去未填問卷且未取消的訂單，快速進入問卷填寫</li>
+  </ul>
+
+  <!-- 4.5 用餐回饋問卷 -->
+  <div class="sec-head" id="ch4-5">4.5　用餐回饋問卷</div>
+  <p>系統於訂單確認時即自動附上問卷連結，使用者可於當日 24:00 前填寫，每筆訂單限填一次。</p>
+
+  <div class="sub-head">問卷內容</div>
+  <ul>
+    <li><strong>整體滿意度</strong>（必填，1–5 分）</li>
+    <li><strong>餐點品質</strong>（必填，1–5 分）</li>
+    <li><strong>服務態度</strong>（必填，1–5 分）</li>
+    <li><strong>文字建議</strong>（選填，上限 500 字）</li>
+  </ul>
+
+  <div class="sub-head">問卷安全機制</div>
+  <ul>
+    <li>連結含 HMAC-SHA256 數位簽章，無法偽造或複製給他人使用</li>
+    <li>連結僅限本人、當日有效，逾時自動失效</li>
+    <li>每筆訂單僅可填寫一次，重複填寫時系統予以拒絕</li>
+  </ul>
+
+  <!-- 4.6 管理員功能 -->
+  <div class="sec-head" id="ch4-6">4.6　管理員功能</div>
+
+  <div class="sub-head">訂單查詢</div>
+  <ul>
+    <li>依日期查詢當日全部訂單，含各餐人數統計</li>
+    <li>依訂單編號或姓名快速搜尋特定訂單</li>
+    <li>顯示各訂單的領餐狀態、取消狀態、備註</li>
+  </ul>
+
+  <div class="sub-head">領餐標記</div>
+  <ul>
+    <li><strong>手動標記</strong>：點擊訂單卡片上的餐別按鈕，逐筆標記已領</li>
+    <li><strong>QR 掃描標記</strong>：於領餐時段內掃描使用者手機上的 QR Code，系統依當下時間自動判斷對應餐別並標記</li>
+    <li>已標記的時間自動記錄（格式：<code>HH:mm</code>），不可重複標記</li>
+  </ul>
+
+  <div class="sub-head">訂單取消</div>
+  <ul>
+    <li>管理員可取消任一訂單（軟刪除，資料保留）</li>
+    <li>取消後自動釋出中餐 A/B/C 名額供他人訂購</li>
+    <li>取消原因、操作者名稱及時間均記錄於訂單及稽核記錄</li>
+    <li>已取消訂單不列入棄單統計</li>
+  </ul>
+
+  <div class="sub-head">菜單管理</div>
+  <ul>
+    <li>新增或更新任意日期的早 / 中餐 A、B、C / 晚餐菜色</li>
+    <li>系統採「最近適用日期」邏輯：某日若未設定菜單，自動沿用最近一筆歷史菜單</li>
+    <li>可查詢菜單更新歷史記錄</li>
+  </ul>
+
+  <div class="sub-head">操作稽核記錄</div>
+  <p>所有管理員操作（標記領餐、取消訂單、更新菜單等）均自動寫入 AuditLog 工作表，可在管理頁依日期或動作類型查詢，供事後稽核或爭議處理。</p>
+
+  <!-- 4.7 QR Code 領餐驗證 -->
+  <div class="sec-head" id="ch4-7">4.7　QR Code 領餐驗證</div>
+  <p>每筆訂單確認後，使用者的 LINE 訊息中均附有專屬 QR Code，供領餐時向管理員出示掃描。</p>
+
+  <div class="sub-head">掃描時段</div>
+  <table class="data-table">
+    <thead><tr><th>餐別</th><th>QR 掃描受理時間</th><th>時段外處理</th></tr></thead>
+    <tbody>
+      <tr><td>早餐</td><td>07:00 – 08:00</td><td rowspan="3">時段外掃描一律拒絕，改由管理員手動點按標記</td></tr>
+      <tr><td>中餐</td><td>11:30 – 12:30</td></tr>
+      <tr><td>晚餐</td><td>16:50 – 18:00</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub-head">掃描結果判斷</div>
+  <ul>
+    <li>訂單存在 + 當前時段有訂該餐 + 尚未標記 → 自動標記已領，顯示訂購人資訊確認</li>
+    <li>訂單已取消 → 顯示錯誤，不可標記</li>
+    <li>該餐已領 → 提示重複，回傳原領餐時間</li>
+    <li>該訂單無訂此餐 → 顯示錯誤</li>
+  </ul>
+
+  <!-- 4.8 統計報表 -->
+  <div class="sec-head" id="ch4-8">4.8　統計報表</div>
+
+  <div class="sub-head">每日結單彙整（自動推送）</div>
+  <p>每餐結單後，系統自動推送彙整訊息至廚房 LINE 群組，內容包含：</p>
+  <ul>
+    <li>訂購名單（單位、姓名、品項、備註、自備餐具標記）</li>
+    <li>各品項數量統計（中餐分 A/B/C 計數）</li>
+    <li>已取消訂單獨立列出（標明不需準備）</li>
+  </ul>
+
+  <div class="sub-head">每日統計日報（自動推送）</div>
+  <p>每日 18:00 後自動推送至管理群組，內容包含：</p>
+  <ul>
+    <li>訂單總計（有效 / 已取消）</li>
+    <li>三餐各別訂購數 / 領餐數 / 棄單數</li>
+    <li>中餐 A / B / C 各別數量</li>
+    <li>整體領餐率 / 棄單率</li>
+    <li>訂購單位 TOP 5</li>
+    <li>當日問卷回覆統計（份數、平均評分、留言摘要）</li>
+  </ul>
+
+  <div class="sub-head">月報（自動推送）</div>
+  <p>每月 1 日 09:00 自動推送前月月報，額外包含：</p>
+  <ul>
+    <li>涵蓋工作日數</li>
+    <li>訂購單位 TOP 10</li>
+    <li>棄單紀錄 TOP 5（含單位、姓名）</li>
+    <li>問卷平均評分（整體 / 餐點 / 服務）</li>
+  </ul>
+
+  <div class="note-box tip">
+    <span class="nb-icon">💡</span>
+    <span>管理員亦可在管理頁手動查詢任意日期或月份的統計數據，無需等待自動推送。</span>
+  </div>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第五章　自動化機制
+════════════════════════════════════════ -->
+<div class="page" id="ch5">
+  <div class="ch-head">
+    <span class="ch-num">第五章</span>
+    <h2>自動化機制</h2>
+  </div>
+
+  <p>本系統設有多支定時觸發器（Time-based Trigger），由 Google Apps Script 排程自動執行，無需人工介入。</p>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>觸發器名稱</th><th>執行頻率</th><th>功能說明</th><th>設定方式</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>棄單偵測</strong><br><code>markAbandonedOrders</code></td>
+        <td>每 10 分鐘</td>
+        <td>掃描訂單，將超過棄單 cutoff（早 08:00 / 中 12:30 / 晚 18:00）且尚未領餐、未取消的訂單標記為棄單</td>
+        <td>執行 <code>setupAbandonmentTrigger()</code></td>
+      </tr>
+      <tr>
+        <td><strong>結單彙整推播</strong><br><code>checkAndSendDueSummaries</code></td>
+        <td>每 5 分鐘</td>
+        <td>每餐結單後首次執行時，推送該餐訂購彙整至廚房 LINE 群組；鎖鍵確保每餐每日只推送一次</td>
+        <td>執行 <code>setupOrderSummaryTrigger()</code></td>
+      </tr>
+      <tr>
+        <td><strong>日報 / 月報推播</strong><br><code>checkAndSendDueReports</code></td>
+        <td>每 5 分鐘</td>
+        <td>每日 18:00 後推送日報；每月 1 日 09:00 後推送前月月報；鎖鍵確保每次只推送一次</td>
+        <td>執行 <code>setupV11ReportTrigger()</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note-box warn">
+    <span class="nb-icon">⚠️</span>
+    <span>以上三支觸發器需於 GAS 部署後各執行一次對應的 setup 函式方可啟動。請確認 LINE_KITCHEN_GROUP_ID 及 LINE_CHANNEL_ACCESS_TOKEN 等必要設定均已填入指令碼屬性。</span>
+  </div>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第六章　資訊安全設計
+════════════════════════════════════════ -->
+<div class="page" id="ch6">
+  <div class="ch-head">
+    <span class="ch-num">第六章</span>
+    <h2>資訊安全設計</h2>
+  </div>
+
+  <div class="sec-head">6.1　身份驗證機制</div>
+  <ul>
+    <li>所有 LIFF 頁面均透過 LINE 平台進行 OAuth 2.0 身份驗證，未登入者自動導向 LINE 登入頁面</li>
+    <li>後端每次 API 請求均呼叫 LINE Verify API（<code>oauth2/v2.1/verify</code>）驗證 ID Token 真偽，不信任前端傳入的使用者資訊</li>
+    <li>Token 有效期限約 1 小時，前端設有到期前 5 分鐘警示提示使用者重新整理</li>
+  </ul>
+
+  <div class="sec-head">6.2　資料傳輸安全</div>
+  <ul>
+    <li>前端至後端的所有通訊均透過 HTTPS 加密傳輸</li>
+    <li>所有頁面設有 <code>Referrer-Policy: no-referrer</code>，防止 LIFF URL（含使用者 token 參數）洩漏至第三方服務</li>
+    <li>問卷連結採 HMAC-SHA256 數位簽章，確保連結無法偽造或轉讓</li>
+  </ul>
+
+  <div class="sec-head">6.3　輸入驗證與注入防護</div>
+  <table class="data-table sec-matrix">
+    <thead><tr><th>防護項目</th><th>實作位置</th><th>狀態</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Sheets 公式注入防護</td>
+        <td>後端 <code>sanitizeText_()</code> 函式，寫入前對 <code>=</code>、<code>+</code>、<code>-</code>、<code>@</code>、<code>|</code> 開頭字串補空格</td>
+        <td class="status-ok">✅ 已實作</td>
+      </tr>
+      <tr>
+        <td>輸入長度限制</td>
+        <td>後端：單位 ≤50 字、姓名 ≤20 字、電話 ≤20 字、備註 ≤200 字、取消原因 ≤200 字、問卷意見 ≤500 字</td>
+        <td class="status-ok">✅ 已實作</td>
+      </tr>
+      <tr>
+        <td>重複訂單防護</td>
+        <td>後端於寫入前檢查同一 userId + 日期是否已有有效訂單，防止重複送出</td>
+        <td class="status-ok">✅ 已實作</td>
+      </tr>
+      <tr>
+        <td>重複送出防護（前端）</td>
+        <td>前端送出後立即鎖定按鈕，<code>submitting</code> 旗標防止重複點擊</td>
+        <td class="status-ok">✅ 已實作</td>
+      </tr>
+      <tr>
+        <td>掃描重複觸發防護</td>
+        <td>前端 <code>scanBusy</code> 旗標防止 QR 掃描快速觸發兩次</td>
+        <td class="status-ok">✅ 已實作</td>
+      </tr>
+      <tr>
+        <td>內部錯誤訊息遮蔽</td>
+        <td>後端頂層 <code>catch</code> 改回傳通用錯誤訊息，詳細堆疊僅記錄於 GAS 執行記錄</td>
+        <td class="status-ok">✅ 已實作</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">6.4　供應鏈安全</div>
+  <ul>
+    <li>QR Code 掃描函式庫（jsQR v1.4.0）已改為<strong>自行託管</strong>（<code>liff/lib/jsqr.min.js</code>），不依賴第三方 CDN，消除外部套件被竄改的供應鏈風險</li>
+    <li>LINE LIFF SDK 仍使用官方 CDN（<code>static.line-scdn.net</code>），由 LINE 官方維護</li>
+  </ul>
+
+  <div class="sec-head">6.5　管理員權限控管</div>
+  <ul>
+    <li>管理員身份以 LINE userId 為唯一依據，僅在 Admins 工作表中登錄者方具管理權限</li>
+    <li>Admins 工作表 C 欄可設定停用日期，到期後自動撤銷管理員資格</li>
+    <li>所有管理員操作均記錄於 AuditLog（操作者、時間、動作、目標、結果），可事後稽核</li>
+  </ul>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第七章　個人資料保護
+════════════════════════════════════════ -->
+<div class="page" id="ch7">
+  <div class="ch-head">
+    <span class="ch-num">第七章</span>
+    <h2>個人資料保護</h2>
+  </div>
+
+  <div class="sec-head">7.1　個人資料告知事項</div>
+  <p>依個人資料保護法第 8 條規定，本系統於使用者<strong>首次訂餐前</strong>提供以下告知事項，並要求勾選同意後方可送出訂單：</p>
+
+  <table class="data-table">
+    <thead><tr><th>告知項目</th><th>內容</th></tr></thead>
+    <tbody>
+      <tr><td>蒐集目的</td><td>提供雄好竹軒訂餐服務</td></tr>
+      <tr><td>蒐集項目</td><td>姓名、警用電話、LINE 帳號識別碼（userId）</td></tr>
+      <tr><td>利用期間</td><td>服務存續期間內</td></tr>
+      <tr><td>保存期限</td><td>訂單資料保存 1 年</td></tr>
+      <tr><td>利用對象</td><td>本系統管理人員（食堂作業用途）</td></tr>
+      <tr><td>資料移轉</td><td>不對外提供或移轉</td></tr>
+      <tr><td>申訴管道</td><td>如有疑問請洽系統管理員</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">7.2　電話號碼保護</div>
+  <ul>
+    <li>管理頁面顯示電話號碼時，採用遮罩格式（例：<code>091****78</code>），防止無關人員瀏覽螢幕時看到完整號碼</li>
+    <li>完整號碼僅儲存於 Google Sheets，存取權限限於試算表擁有者及明確授權人員</li>
+  </ul>
+
+  <div class="sec-head">7.3　資料儲存位置</div>
+  <p>所有個人資料均儲存於 <strong>Google Sheets</strong>（由本單位 Google 帳號持有），儲存地點遵循 Google Workspace 資料處理條款。系統不將個人資料傳送至 Google 及 LINE 以外的任何第三方服務。</p>
+
+  <div class="sec-head">7.4　當事人權利</div>
+  <p>依個人資料保護法，使用者享有查閱、更正、刪除個人資料之權利。如需行使上述權利，請聯繫本單位系統管理員，由管理員於 Google Sheets 中協助處理。</p>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第八章　使用限制與注意事項
+════════════════════════════════════════ -->
+<div class="page" id="ch8">
+  <div class="ch-head">
+    <span class="ch-num">第八章</span>
+    <h2>使用限制與注意事項</h2>
+  </div>
+
+  <div class="sec-head">8.1　訂餐規則</div>
+  <table class="data-table">
+    <thead><tr><th>規則項目</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>訂餐時間限制</td><td>超過各餐結單時間後，當日該餐不可訂購；過去日期一律不可訂購</td></tr>
+      <tr><td>每日限訂一單</td><td>同一帳號同一日期僅可送出一筆訂單（現場點餐除外）</td></tr>
+      <tr><td>中餐份數上限</td><td>中餐 A / B / C 各品項每日上限 40 份，額滿後不可選取</td></tr>
+      <tr><td>訂單修改</td><td>送出後不可自行修改，如需異動請聯絡管理員</td></tr>
+      <tr><td>訂單取消</td><td>僅管理員可執行取消，一旦取消不可復原</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">8.2　領餐與棄單規則</div>
+  <table class="data-table">
+    <thead><tr><th>規則項目</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>棄單認定時間</td><td>早餐逾 08:00、中餐逾 12:30、晚餐逾 18:00 仍未領餐者，自動標記為棄單</td></tr>
+      <tr><td>棄單累計計算</td><td>滾動計算最近 30 天內的棄單次數</td></tr>
+      <tr><td>停權門檻</td><td>30 天內棄單超過 3 次（第 4 次起）自動停權</td></tr>
+      <tr><td>停權期間</td><td>停權後 30 天內無法使用線上訂餐功能</td></tr>
+      <tr><td>申訴處理</td><td>如因特殊事由（公務外出、臨時調派）造成棄單，可聯繫管理員說明，必要時可手動調整統計</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">8.3　問卷填寫說明</div>
+  <ul>
+    <li>問卷連結於下單時一併推送，有效期限至當日 24:00</li>
+    <li>每筆訂單限填一次，填寫完成後不可修改</li>
+    <li>如未在 LINE 訊息中找到問卷連結，可至「我的訂單」頁面進入「待填問卷」分頁點選填寫</li>
+  </ul>
+
+  <div class="sec-head">8.4　系統使用環境</div>
+  <ul>
+    <li>本系統需使用 LINE App 開啟，不支援在一般瀏覽器（Chrome / Safari 等）單獨使用</li>
+    <li>需保持網路連線（行動網路或 Wi-Fi）</li>
+    <li>LINE App 版本建議更新至最新版本，以確保 LIFF 功能正常運作</li>
+    <li>掃描功能需授予相機存取權限</li>
+  </ul>
+</div>
+
+<hr class="ch-divider">
+
+<!-- ═══════════════════════════════════════
+     第九章　附錄
+════════════════════════════════════════ -->
+<div class="page" id="ch9">
+  <div class="ch-head">
+    <span class="ch-num">第九章</span>
+    <h2>附錄</h2>
+  </div>
+
+  <div class="sec-head">附錄 A　指令碼屬性設定一覽</div>
+  <p>以下屬性需於 Google Apps Script「專案設定 → 指令碼屬性」中設定。</p>
+  <table class="data-table">
+    <thead><tr><th>屬性名稱</th><th>說明</th><th>必填</th></tr></thead>
+    <tbody>
+      <tr><td><code>SHEET_ID</code></td><td>Google Sheets 試算表 ID（URL 中的英數字串）</td><td>是</td></tr>
+      <tr><td><code>LINE_CHANNEL_ID</code></td><td>LINE Login Channel ID（用於 ID Token 驗證）</td><td>是</td></tr>
+      <tr><td><code>LINE_CHANNEL_ACCESS_TOKEN</code></td><td>LINE Messaging API Channel Access Token（用於推播）</td><td>是</td></tr>
+      <tr><td><code>LINE_KITCHEN_GROUP_ID</code></td><td>廚房群組 LINE Group ID（結單彙整推送目標）</td><td>是</td></tr>
+      <tr><td><code>LINE_ADMIN_GROUP_ID</code></td><td>管理群組 LINE Group ID（日報 / 月報推送目標）；未設定時自動使用廚房群組</td><td>否</td></tr>
+      <tr><td><code>LIFF_SURVEY_URL</code></td><td>問卷 LIFF 入口 URL（<code>https://liff.line.me/&lt;id&gt;</code>）；未設定時略過問卷推送</td><td>否</td></tr>
+      <tr><td><code>LIFF_ORDER_URL</code></td><td>訂餐 LIFF 入口 URL；用於訂單 QR Code 深連結；未設定時 QR 僅含訂單編號</td><td>否</td></tr>
+      <tr><td><code>SURVEY_SIGNING_KEY</code></td><td>問卷 token HMAC 密鑰；留空時首次需要時自動產生</td><td>否</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">附錄 B　時間參數快速參照</div>
+  <table class="data-table">
+    <thead><tr><th>參數類型</th><th>早餐</th><th>中餐</th><th>晚餐</th></tr></thead>
+    <tbody>
+      <tr><td>線上結單截止</td><td>07:00</td><td>10:30</td><td>16:00</td></tr>
+      <tr><td>QR 掃描受理時段</td><td>07:00–08:00</td><td>11:30–12:30</td><td>16:50–18:00</td></tr>
+      <tr><td>現場點餐受理時段</td><td>07:00–08:10</td><td>10:30–12:40</td><td>16:00–17:40</td></tr>
+      <tr><td>棄單認定時間</td><td>08:00</td><td>12:30</td><td>18:00</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">附錄 C　常見問題</div>
+  <table class="data-table">
+    <thead><tr><th>問題</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>無法進入訂餐頁面</td>
+        <td>確認已安裝 LINE App 且已登入；確認網路正常；確認連結為 <code>liff.line.me</code> 開頭</td>
+      </tr>
+      <tr>
+        <td>訂餐後未收到 LINE 確認訊息</td>
+        <td>確認 LINE Bot 為「好友」狀態（未封鎖）；確認網路正常；若 2 分鐘內未收到，可聯絡管理員確認訂單是否已建立</td>
+      </tr>
+      <tr>
+        <td>無法選取中餐（顯示額滿）</td>
+        <td>該品項當日 40 份已訂滿，請改選其他品項</td>
+      </tr>
+      <tr>
+        <td>掃描 QR 失敗</td>
+        <td>確認在對應用餐時段內；確認授予相機權限；確認 QR Code 完整顯示（避免截圖模糊）</td>
+      </tr>
+      <tr>
+        <td>問卷連結點擊後顯示已失效</td>
+        <td>問卷僅限當日 24:00 前填寫，逾時自動失效；可至「我的訂單」→「待填問卷」重新取得當日連結</td>
+      </tr>
+      <tr>
+        <td>顯示「您已被停權」</td>
+        <td>30 天內棄單超過 3 次，線上訂餐暫停。如有特殊情況請聯絡管理員</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">附錄 D　版本修訂記錄</div>
+  <table class="data-table">
+    <thead><tr><th>版本</th><th>日期</th><th>修訂內容</th></tr></thead>
+    <tbody>
+      <tr><td>v1.0</td><td>2026-05-25</td><td>初版發行，對應系統版本 v13（資安強化版）</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:48px; padding: 20px 24px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; text-align:center; color:var(--gray); font-size:13px;">
+    <p>雄好竹軒智慧用餐系統（EMO）｜功能說明書 v1.0</p>
+    <p style="margin-top:4px">發行日期：2026 年 5 月 25 日　｜　本文件為正式功能說明，如有異動將以最新版本為準</p>
+  </div>
+</div>
+
+</body>
+</html>

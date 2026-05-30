@@ -1,0 +1,711 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>雄好竹軒系統上線評估暨建議報告</title>
+<style>
+@page {
+  size: A4 portrait;
+  margin: 18mm 16mm 22mm 16mm;
+  @bottom-center {
+    content: "雄好竹軒 智慧用餐系統上線評估暨建議報告  |  資訊室  |  第 " counter(page) " / " counter(pages) " 頁";
+    font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+    font-size: 9pt;
+    color: #6b7280;
+  }
+}
+
+html, body {
+  font-family: "Microsoft JhengHei", "微軟正黑體", "PingFang TC", sans-serif;
+  font-size: 11pt;
+  line-height: 1.8;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── 封面 ── */
+.cover {
+  text-align: center;
+  padding: 40pt 20pt 30pt;
+  border-bottom: 4pt solid #f59e0b;
+  margin-bottom: 20pt;
+  page-break-after: avoid;
+}
+.cover .logo-bar {
+  font-size: 13pt;
+  color: #6b7280;
+  margin-bottom: 16pt;
+  letter-spacing: 2px;
+}
+.cover h1 {
+  font-size: 26pt;
+  color: #0d3b66;
+  margin: 0 0 10pt;
+  line-height: 1.4;
+}
+.cover .subtitle {
+  font-size: 14pt;
+  color: #374151;
+  margin: 6pt 0 20pt;
+}
+.cover-table {
+  display: inline-block;
+  text-align: left;
+  border: 1pt solid #d1d5db;
+  border-radius: 6pt;
+  padding: 14pt 28pt;
+  font-size: 10.5pt;
+  line-height: 2;
+  color: #374151;
+  margin-top: 10pt;
+}
+.cover-table td:first-child { color: #6b7280; padding-right: 16pt; white-space: nowrap; }
+.cover-table td:last-child  { font-weight: 700; color: #0d3b66; }
+
+/* ── 章節標題 ── */
+h2 {
+  font-size: 17pt;
+  color: #ffffff;
+  background: #0d3b66;
+  padding: 8pt 14pt;
+  margin: 30pt 0 14pt 0;
+  page-break-before: always;
+  page-break-after: avoid;
+  border-left: 8pt solid #f59e0b;
+}
+h2.no-break { page-break-before: auto; }
+
+h3 {
+  font-size: 13pt;
+  color: #0d3b66;
+  margin: 18pt 0 8pt 0;
+  padding-left: 10pt;
+  border-left: 4pt solid #f59e0b;
+  page-break-after: avoid;
+}
+
+h4 {
+  font-size: 11.5pt;
+  color: #0d3b66;
+  margin: 12pt 0 5pt 0;
+  page-break-after: avoid;
+}
+
+p { margin: 6pt 0; }
+ul, ol { padding-left: 22pt; margin: 6pt 0; }
+li { margin: 3pt 0; }
+
+/* ── 表格 ── */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10pt 0 14pt 0;
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+th {
+  background: #0d3b66;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 6pt 9pt;
+  text-align: center;
+  border: 1pt solid #0d3b66;
+}
+td {
+  padding: 5pt 9pt;
+  border: 1pt solid #d1d5db;
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #f0f7ff; }
+
+/* ── 提示框 ── */
+.info-box {
+  background: #eff6ff;
+  border-left: 4pt solid #3b82f6;
+  border-radius: 4pt;
+  padding: 10pt 14pt;
+  margin: 10pt 0;
+  page-break-inside: avoid;
+}
+.warn-box {
+  background: #fffbeb;
+  border-left: 4pt solid #f59e0b;
+  border-radius: 4pt;
+  padding: 10pt 14pt;
+  margin: 10pt 0;
+  page-break-inside: avoid;
+}
+.green-box {
+  background: #f0fdf4;
+  border-left: 4pt solid #22c55e;
+  border-radius: 4pt;
+  padding: 10pt 14pt;
+  margin: 10pt 0;
+  page-break-inside: avoid;
+}
+
+/* ── 小標籤 ── */
+.tag {
+  display: inline-block;
+  padding: 1pt 7pt;
+  border-radius: 99pt;
+  font-size: 9pt;
+  font-weight: 700;
+  margin-right: 4pt;
+}
+.tag-blue   { background: #dbeafe; color: #1d4ed8; }
+.tag-green  { background: #dcfce7; color: #15803d; }
+.tag-orange { background: #fef3c7; color: #b45309; }
+
+/* ── 意見框 ── */
+.suggest-block {
+  background: #fafafa;
+  border: 1pt solid #e5e7eb;
+  border-radius: 6pt;
+  padding: 12pt 16pt;
+  margin: 10pt 0;
+  page-break-inside: avoid;
+}
+.suggest-block .s-title {
+  font-weight: 700;
+  color: #0d3b66;
+  font-size: 11.5pt;
+  margin-bottom: 6pt;
+}
+
+/* ── 摘要橫幅 ── */
+.summary-strip {
+  background: linear-gradient(135deg, #0d3b66 0%, #1e5fa8 100%);
+  color: #fff;
+  border-radius: 6pt;
+  padding: 16pt 20pt;
+  margin: 16pt 0 0;
+  page-break-inside: avoid;
+}
+.summary-strip p { margin: 4pt 0; font-size: 10.5pt; }
+.summary-strip strong { font-size: 12pt; }
+
+@media print {
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ 封面 ════════════════ -->
+<div class="cover">
+  <div class="logo-bar">高雄市政府警察局　雄好竹軒</div>
+  <h1>雄好竹軒 智慧用餐系統<br>上線評估暨建議報告</h1>
+  <div class="subtitle">── 系統效益、用餐與餐具政策、名稱與功能修正建議 ──</div>
+  <table class="cover-table">
+    <tr><td>報告單位</td><td>資訊室</td></tr>
+    <tr><td>報告日期</td><td>中華民國 115 年 5 月 29 日</td></tr>
+    <tr><td>文件版本</td><td>V2.0</td></tr>
+    <tr><td>機密等級</td><td>內部使用</td></tr>
+  </table>
+</div>
+
+
+<!-- ════════════════ 壹、前言 ════════════════ -->
+<h2 class="no-break">壹、前言</h2>
+
+<p>
+本局雄好竹軒為服務同仁日常飲食需求，規劃建置電子化智慧用餐系統（EMO）。
+本報告旨在評估該系統正式上線後可達成之效益，並就符合局長鼓勵同仁現場用餐
+之政策方向，提出用餐及餐具使用政策設計，以及系統名稱與功能之修正建議，
+以利後續上線推動。
+</p>
+
+<div class="info-box">
+  <strong>📌 報告重點摘要：</strong>
+  <ul style="margin:6pt 0 0;">
+    <li>精準控管食材採購、減少備料浪費，降低廚餘量</li>
+    <li>全程數位作業，消除人工填單、省紙、節能減碳</li>
+    <li>精準掌握每餐用餐人數與同仁個人喜好</li>
+    <li>彈性補救機制：因勤務無法準時到場者，仍可享用預訂喜好餐點</li>
+    <li>現場掃描 QR Code 取代過去紙本簽名，大幅縮短用餐領餐流程</li>
+    <li>鼓勵現場用餐並自備餐具；選用現場一次性免洗餐具者，依餐點定價收取費用</li>
+    <li>建議修正系統名稱及功能限制，呼應局長推動現場用餐之美意</li>
+  </ul>
+</div>
+
+
+<!-- ════════════════ 貳、系統效益分析 ════════════════ -->
+<h2>貳、系統核心效益分析</h2>
+
+<h3>一、預先控管食材採購，有效減少浪費</h3>
+<p>
+傳統用餐方式因無法預知到場人數，廚房必須備足「最大量」食材，往往造成備料剩餘、
+廚餘增加及食材成本浪費。EMO 系統導入後，廚房可於每日結單時間點（早餐、中餐、晚餐各次）
+取得<strong>精確訂餐人數及餐點品項統計</strong>，據此採購及備料，達到：
+</p>
+<ul>
+  <li>食材採購量精準化，減少過剩備料所造成之損耗</li>
+  <li>廚餘量顯著降低，符合環保減廢政策</li>
+  <li>降低食材成本，有助提升餐點品質</li>
+</ul>
+<div class="green-box">
+  預估效益：每餐備料誤差可由現行人工估算之 ±20–30% 降至 ±5% 以內，
+  廚餘量可減少 30–50%。
+</div>
+
+<h3>二、現場掃描 QR Code 取代紙本簽名，加速用餐流程</h3>
+<p>
+過去同仁到食堂領餐，須逐一於紙本名單上親筆簽名，管理員人工逐筆核對，
+不僅耗時，高峰時段更容易造成排隊壅塞，影響同仁寶貴的用餐休息時間。
+EMO 系統以<strong>現場掃描個人 QR Code</strong> 全面取代紙本簽名，流程如下：
+</p>
+<ul>
+  <li>同仁到場後，以手機出示個人專屬 QR Code，或由管理員以掃描器讀取</li>
+  <li>系統即時比對訂單資料，<strong>1 秒內完成身分確認與取餐記錄</strong></li>
+  <li>管理員筆電自動顯示該員訂單明細及餐具選擇，備餐取餐一氣呵成</li>
+  <li>完全無需紙本名單，免除事後人工整理簽到表之作業</li>
+</ul>
+
+<table>
+  <tr>
+    <th style="width:30%">流程項目</th>
+    <th>導入前（紙本簽名）</th>
+    <th>導入後（QR Code 掃描）</th>
+  </tr>
+  <tr>
+    <td>身分確認方式</td>
+    <td>人工比對名冊、同仁親筆簽名</td>
+    <td>掃描 QR Code，系統自動比對</td>
+  </tr>
+  <tr>
+    <td>每人平均耗時</td>
+    <td>約 15–30 秒（排隊、翻頁、簽名）</td>
+    <td>約 1–3 秒（掃碼即完成）</td>
+  </tr>
+  <tr>
+    <td>高峰排隊情況</td>
+    <td>易塞車，用餐時間受壓縮</td>
+    <td>快速通關，排隊現象大幅改善</td>
+  </tr>
+  <tr>
+    <td>事後資料整理</td>
+    <td>需人工彙整紙本簽到表</td>
+    <td>系統自動記錄，可即時查詢匯出</td>
+  </tr>
+  <tr>
+    <td>錯誤風險</td>
+    <td>字跡潦草、漏簽、代簽等問題</td>
+    <td>數位記錄精準，無誤判空間</td>
+  </tr>
+</table>
+
+<div class="green-box">
+  <strong>效益：</strong>每人取餐時間由原本 15–30 秒縮短至 1–3 秒，
+  高峰時段 50 人領餐估計可節省 15–20 分鐘排隊時間，
+  讓同仁充分利用有限的用餐休息時光。
+</div>
+
+<h3>三、省去其他人工作業</h3>
+<p>
+除以 QR Code 取代簽名外，EMO 系統亦全面自動化下列行政作業：
+</p>
+<ul>
+  <li>LINE 官方帳號線上點餐，訂單即時寫入雲端資料庫</li>
+  <li>廚房端自動彙整每餐訂單總表，免除人工統計</li>
+  <li>訂單查詢、修改、取消均透過系統自助完成</li>
+</ul>
+
+<h3>四、無紙化作業，省紙節能</h3>
+<p>
+系統完全數位化，訂單、菜單、用餐回饋問卷均透過手機完成，全面取消紙本表單：
+</p>
+<table>
+  <tr>
+    <th>作業項目</th>
+    <th>導入前（紙本）</th>
+    <th>導入後（數位）</th>
+  </tr>
+  <tr><td>菜單公告</td><td>紙本張貼或傳閱</td><td>LINE 菜單頁面即時更新</td></tr>
+  <tr><td>訂餐記錄</td><td>紙本填寫或口頭告知</td><td>APP 線上點選，即時儲存</td></tr>
+  <tr><td>取餐簽名</td><td>紙本名冊逐筆親筆簽名</td><td>個人 QR Code 掃描，1 秒完成</td></tr>
+  <tr><td>取餐核對</td><td>人工比對名單</td><td>QR Code 掃描自動核對</td></tr>
+  <tr><td>用餐回饋</td><td>紙本問卷</td><td>LINE 問卷即時回收</td></tr>
+  <tr><td>訂單統計</td><td>人工彙算</td><td>系統自動統計報表</td></tr>
+</table>
+
+<h3>五、節能減碳，落實永續經營</h3>
+<p>
+系統採 Google Apps Script 雲端架構，無需實體伺服器，有效降低電力消耗。
+配合無紙化政策及食材精準採購，整體可達到：
+</p>
+<ul>
+  <li>減少紙張耗用及印刷能源</li>
+  <li>降低因過量備料導致的食物廢棄所產生之碳足跡</li>
+  <li>雲端服務本身之碳排放遠低於地端機房</li>
+  <li>鼓勵自備餐具，減少一次性容器垃圾量</li>
+</ul>
+
+<h3>六、精準掌握用餐人數及同仁喜好</h3>
+<p>
+系統可就每位同仁之訂餐紀錄進行長期累積分析，提供下列管理資訊：
+</p>
+<ul>
+  <li><strong>每日各餐到場人數預測</strong>：依訂單數即時統計，廚房可精確備餐</li>
+  <li><strong>個人喜好分析</strong>：記錄同仁歷次選擇之餐點，廚房可據此調整菜色比例</li>
+  <li><strong>備料需求預估</strong>：依訂單品項加總，計算各食材用量，提升採購精準度</li>
+  <li><strong>出缺席規律掌握</strong>：長期資料可識別哪些勤務時段用餐率偏低，供行政規劃參考</li>
+</ul>
+
+
+<!-- ════════════════ 參、符合局長鼓勵現場用餐之設計 ════════════════ -->
+<h2>參、符合局長鼓勵現場用餐之設計理念</h2>
+
+<h3>一、設計理念說明</h3>
+<p>
+局長基於鼓勵同仁現場用餐之良善初衷，期望同仁能利用用餐時間獲得充分休息、
+增進同仁情誼及維護健康飲食習慣。EMO 系統在設計上完全呼應此一方向，
+<strong>以現場用餐為主軸，同時保留勤務彈性補救機制</strong>，達到雙贏。
+</p>
+
+<h3>二、雙贏機制：勤務繁忙者仍能精準享用預訂餐點</h3>
+<div class="warn-box">
+  <strong>核心設計理念：</strong>鼓勵現場用餐 ≠ 強制準時到場。
+  本系統透過「線上預訂 + 彈性領餐」機制，確保因勤務繁忙無法準時到場之同仁，
+  仍能在用餐時間內領取到自己事先訂好的喜好餐點，完全不違局長美意。
+</div>
+<p>具體運作方式如下：</p>
+<ul>
+  <li><strong>線上預訂（結單前）</strong>：同仁可於當天早上透過 LINE 預訂午餐或晚餐，選定喜好餐點</li>
+  <li><strong>現場到場領餐</strong>：到場後掃描 QR Code，系統即顯示其預訂訂單，確認後取餐</li>
+  <li><strong>延遲到場仍能取餐</strong>：若因勤務延誤，在用餐時段結束前（即結單後 10 分鐘內）到場，
+      系統仍保留其訂單，廚房依訂單備餐，不會因遲到而取消</li>
+  <li><strong>備註欄位補充說明</strong>：同仁可在備註欄填寫「因勤務晚點取餐，改以便當外帶」等說明，
+      廚房可提前備妥便當形式以便攜帶</li>
+</ul>
+
+<table>
+  <tr>
+    <th>情境</th>
+    <th>作業方式</th>
+    <th>效果</th>
+  </tr>
+  <tr>
+    <td>準時到場同仁</td>
+    <td>掃 QR Code 確認領餐，現場享用</td>
+    <td>快速取餐，輕鬆用餐</td>
+  </tr>
+  <tr>
+    <td>因勤務略為延遲者</td>
+    <td>訂單保留至用餐結束前 10 分鐘，到場即可取</td>
+    <td>不因延誤而失去訂餐，準時享用喜好餐點</td>
+  </tr>
+  <tr>
+    <td>勤務繁忙需外帶者</td>
+    <td>備註欄填寫外帶說明，廚房備妥便當形式</td>
+    <td>彈性因應，不浪費食材</td>
+  </tr>
+  <tr>
+    <td>未預訂直接到場者</td>
+    <td>現場掃 QR Code 進入點餐頁面，現場即點即取</td>
+    <td>無縫銜接，不遺漏任何用餐需求</td>
+  </tr>
+</table>
+
+<div class="green-box">
+  <strong>雙贏成果：</strong>廚房依訂單精準備餐，不多不少；同仁不管準時或略遲，
+  都能享用到自己喜好的餐點，完全符合局長「鼓勵現場用餐」之美意，
+  同時兼顧實際勤務彈性，達到管理與服務的雙贏目標。
+</div>
+
+
+<!-- ════════════════ 肆、餐具使用政策 ════════════════ -->
+<h2>肆、用餐餐具政策說明</h2>
+
+<h3>一、政策設計理念</h3>
+<p>
+為落實局長鼓勵同仁現場用餐之政策，並同步推動環保減廢意識，本系統建議實施
+<strong>「鼓勵自備餐具、現場提供一次性免洗餐具依定價收費」</strong>之餐具使用政策。
+此政策設計簡單明確，兼顧同仁用餐便利性與環保意識引導。
+</p>
+
+<h3>二、餐具使用方案說明</h3>
+<table>
+  <tr>
+    <th style="width:20%">餐具類型</th>
+    <th style="width:25%">適用對象</th>
+    <th style="width:20%">費用說明</th>
+    <th>說明</th>
+  </tr>
+  <tr>
+    <td style="text-align:center;font-weight:700;">自備餐具</td>
+    <td>現場用餐或外帶同仁均可</td>
+    <td style="text-align:center;color:#15803d;font-weight:700;">依餐點定價</td>
+    <td>同仁自行攜帶環保餐具，最高環保效益，系統訂餐時可勾選登記</td>
+  </tr>
+  <tr>
+    <td style="text-align:center;font-weight:700;">現場一次性<br>免洗餐具</td>
+    <td>現場用餐同仁</td>
+    <td style="text-align:center;color:#1d4ed8;font-weight:700;">依餐點定價</td>
+    <td>使用現場提供之一次性免洗餐具，依餐點原定價格收取費用，方便同仁靈活選擇</td>
+  </tr>
+</table>
+
+<div class="info-box">
+  <strong>💡 政策說明：</strong><br>
+  本政策以<strong>鼓勵</strong>為出發點，不強制規定餐具使用方式，確保每位同仁均能依個人
+  當日狀況彈性選用，不因餐具選擇造成任何不便或障礙：
+  <ul style="margin:6pt 0 0;">
+    <li>自備餐具：響應環保、養成良好用餐習慣，系統訂餐時可事先勾選</li>
+    <li>使用一次性免洗餐具：依餐點定價正常收費，不額外加收費用</li>
+    <li>兩種方式費用透明，同仁可自由選擇，無強制負擔</li>
+  </ul>
+</div>
+
+<h3>三、系統作業方式</h3>
+<p>
+訂餐頁面中設有「餐具選擇」欄位，同仁訂餐或現場點餐時可勾選是否自備餐具：
+</p>
+<ul>
+  <li>✅ 自備餐具（鼓勵選項，系統記錄備查）</li>
+  <li>☐ 使用現場提供一次性免洗餐具（依定價收費）</li>
+</ul>
+<p>
+餐具選擇結果即時寫入訂單資料庫，出餐管理員筆電於同仁領餐時自動顯示餐具選擇狀態，
+管理員可據此備餐及收費，作業流程清晰無誤。長期統計資料亦可供管理層評估環保成效。
+</p>
+
+
+<!-- ════════════════ 伍、系統名稱修正建議 ════════════════ -->
+<h2>伍、系統名稱修正建議</h2>
+
+<h3>一、現行名稱問題分析</h3>
+<p>
+現行系統名稱為「<strong>EMO 電子點餐系統</strong>」或「<strong>EMO 電子點餐系統（雄好竹軒）</strong>」。
+</p>
+<div class="warn-box">
+  <strong>問題說明：</strong>
+  <ul style="margin:6pt 0 0;">
+    <li>「電子點餐」易讓同仁聯想到外賣或純線上訂購，與局長鼓勵<strong>現場用餐</strong>之政策方向形象略有落差</li>
+    <li>「EMO」縮寫若未加說明，意涵不夠直觀，不易讓同仁感受到系統的親和力</li>
+    <li>系統目前已整合「現場掃碼點餐」、「訂單查詢」、「用餐回饋問卷」等多元功能，
+        已超越單純「電子點餐」之範疇</li>
+  </ul>
+</div>
+
+<h3>二、建議修正名稱</h3>
+<div class="suggest-block">
+  <div class="s-title">【建議方案一】雄好竹軒 智慧用餐系統</div>
+  <p>
+    保留「EMO」品牌識別，加入「智慧用餐」強調系統整合能力及現場用餐精神，
+    且「用餐」比「點餐」更能涵蓋整個用餐服務流程。
+  </p>
+  <p><span class="tag tag-green">建議採用</span> 易於推廣，兼顧品牌延續與政策方向</p>
+</div>
+<div class="suggest-block">
+  <div class="s-title">【建議方案二】雄好竹軒智慧用餐平台</div>
+  <p>
+    「平台」二字強調系統功能多元，EMO 以副名稱呈現，主標題直指「智慧用餐」，
+    更符合局長鼓勵現場用餐之形象定位。
+  </p>
+  <p><span class="tag tag-blue">備選方案</span> 適合對外公告或宣傳使用</p>
+</div>
+<div class="suggest-block">
+  <div class="s-title">【建議方案三】保留現名，修正對外說明</div>
+  <p>
+    維持「EMO」縮寫，但公告解釋為「Eat More On-site」（鼓勵現場用餐），
+    並加入副標題「智慧點餐 × 現場美食」，以文字說明強化現場用餐精神，
+    免除更改系統名稱的技術及行政成本。
+  </p>
+  <p><span class="tag tag-orange">低成本方案</span> 無需更動系統底層設定，以宣傳包裝調整</p>
+</div>
+
+<h3>三、名稱修正建議彙整</h3>
+<table>
+  <tr>
+    <th>方案</th>
+    <th>建議名稱</th>
+    <th>優點</th>
+    <th>注意事項</th>
+  </tr>
+  <tr>
+    <td style="text-align:center;">方案一</td>
+    <td>雄好竹軒 智慧用餐系統</td>
+    <td>品牌延續、涵蓋全功能、形象現代</td>
+    <td>需更新 LINE 官方帳號名稱及相關文宣</td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">方案二</td>
+    <td>雄好竹軒智慧用餐平台</td>
+    <td>對外形象佳，功能定位清晰</td>
+    <td>與現行「EMO」慣用名稱略有不同</td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">方案三</td>
+    <td>EMO（Eat More On-site）</td>
+    <td>零技術成本，以說明文字補充</td>
+    <td>需搭配宣導材料讓同仁了解新詮釋</td>
+  </tr>
+</table>
+
+
+<!-- ════════════════ 陸、功能限制修正建議 ════════════════ -->
+<h2>陸、功能限制修正建議</h2>
+
+<h3>一、現行功能限制盤點</h3>
+<p>
+現行系統設計以「線上預訂」為主要使用情境，部分功能設計與局長積極推動
+現場用餐之方向仍有調整空間，建議一併修正：
+</p>
+
+<table>
+  <tr>
+    <th style="width:25%">功能項目</th>
+    <th style="width:30%">現行限制</th>
+    <th style="width:45%">建議修正方向</th>
+  </tr>
+  <tr>
+    <td>訂餐頁面「現場用餐」選項</td>
+    <td>選項位置不夠顯眼，同仁較少勾選</td>
+    <td>將「現場用餐」設為<strong>預設值</strong>，需主動切換才能選擇「外帶」，
+        以設計引導同仁優先選擇現場用餐</td>
+  </tr>
+  <tr>
+    <td>訂餐結單時間</td>
+    <td>固定結單時間，彈性不足</td>
+    <td>增加「現場即點即取」通道（無需預訂），允許同仁在用餐時段現場掃碼臨時點餐，
+        進一步鼓勵即興現場用餐</td>
+  </tr>
+  <tr>
+    <td>菜單展示方式</td>
+    <td>純文字列表，吸引力有限</td>
+    <td>增加每日菜色圖片或吸引人的描述，提升現場用餐意願</td>
+  </tr>
+  <tr>
+    <td>用餐回饋問卷</td>
+    <td>問卷為獨立入口，填寫率偏低</td>
+    <td>領餐後自動推送問卷連結，提升填寫率，同時收集同仁喜好數據供廚房參考</td>
+  </tr>
+  <tr>
+    <td>備註欄預設文字</td>
+    <td>無預設提示，同仁不知如何填寫</td>
+    <td>已修正為「貼心叮嚀…例如：因勤務晚點取餐，改以便當外帶…」，
+        引導同仁善用備註功能</td>
+  </tr>
+  <tr>
+    <td>通知推播頻率</td>
+    <td>僅限管理員端通知</td>
+    <td>增加「餐點即將開始」提醒推播，於用餐時間前 15 分鐘通知已訂餐同仁，
+        提升現場到場率</td>
+  </tr>
+</table>
+
+<h3>二、建議新增功能</h3>
+<div class="suggest-block">
+  <div class="s-title">✦ 新增「今日現場用餐人數」即時顯示</div>
+  <p>
+    在管理員後台及 LINE 菜單頁面顯示「今日已有 XX 人選擇現場用餐」，
+    製造正向社群氛圍，透過同儕效應鼓勵更多同仁選擇現場用餐。
+  </p>
+</div>
+<div class="suggest-block">
+  <div class="s-title">✦ 新增「用餐里程碑」鼓勵設計</div>
+  <p>
+    累計現場用餐次數達一定數量（如：本月連續 10 次現場用餐），
+    系統自動標記並於下次登入時顯示鼓勵訊息，強化同仁現場用餐之行為意願。
+  </p>
+</div>
+<div class="suggest-block">
+  <div class="s-title">✦ 新增「自備餐具使用率」統計</div>
+  <p>
+    管理後台顯示每月自備餐具之使用比率統計圖表，
+    具體呈現環保推動成效，可作為局長施政成果之佐證資料。
+  </p>
+</div>
+
+
+<!-- ════════════════ 柒、上線推動建議 ════════════════ -->
+<h2>柒、系統上線推動建議</h2>
+
+<h3>一、上線前準備事項</h3>
+<table>
+  <tr>
+    <th>項目</th>
+    <th>負責單位</th>
+    <th>建議完成時程</th>
+    <th>備注</th>
+  </tr>
+  <tr>
+    <td>訂餐頁面「現場用餐」設為預設值</td>
+    <td>資訊室</td>
+    <td>上線前 1 週</td>
+    <td>系統程式調整</td>
+  </tr>
+  <tr>
+    <td>餐具選擇欄位及計費邏輯驗證</td>
+    <td>資訊室 + 餐廳</td>
+    <td>上線前 1 週</td>
+    <td>測試所有費用計算情境</td>
+  </tr>
+  <tr>
+    <td>系統名稱更新（LINE 帳號、文宣）</td>
+    <td>資訊室 + 行政室</td>
+    <td>上線前 3 天</td>
+    <td>依選定方案執行</td>
+  </tr>
+  <tr>
+    <td>同仁教育訓練及操作手冊發放</td>
+    <td>行政室</td>
+    <td>上線前 1 週</td>
+    <td>可利用 LINE 廣播推送教學影片</td>
+  </tr>
+  <tr>
+    <td>管理員 QR Code 掃描器測試</td>
+    <td>資訊室</td>
+    <td>上線前 3 天</td>
+    <td>筆電及手機設備均需測試</td>
+  </tr>
+  <tr>
+    <td>試運行（1–2 週灰度上線）</td>
+    <td>資訊室 + 餐廳</td>
+    <td>正式上線前</td>
+    <td>先以志願參與同仁進行試跑</td>
+  </tr>
+</table>
+
+<h3>二、上線後持續改進機制</h3>
+<ul>
+  <li>每週由系統自動產出訂餐統計及自備餐具使用率報表，供管理層參閱</li>
+  <li>每月透過 LINE 問卷收集同仁使用反饋，作為功能改進依據</li>
+  <li>每季評估廚餘量及食材浪費情形，量化系統效益</li>
+</ul>
+
+
+<!-- ════════════════ 捌、結語 ════════════════ -->
+<h2>捌、結語</h2>
+
+<p>
+雄好竹軒 智慧用餐系統之建置，充分體現本局對同仁飲食健康與勤務彈性的雙重關懷，
+完全契合局長鼓勵同仁現場用餐、增進情誼之政策美意。
+</p>
+<p>
+本系統透過<strong>精準訂餐機制</strong>解決廚房備料浪費問題，透過<strong>全程數位化</strong>省去人工
+作業成本，透過<strong>彈性補救設計</strong>確保因勤務繁忙之同仁不會錯失喜好餐點，
+並透過<strong>簡明餐具政策</strong>鼓勵同仁自備餐具響應環保，同時保留現場一次性免洗餐具
+依定價收費之選項，充分顧及同仁用餐彈性，達到管理效率與同仁福祉的雙贏目標。
+</p>
+<p>
+在系統名稱與功能方面，本報告提出三項名稱修正方案及多項功能優化建議，
+建議局長擇優裁示，以利後續上線推廣，充分展現本局智慧化管理之成果。
+</p>
+
+<div class="summary-strip">
+  <strong>核心效益一覽</strong>
+  <p>✦ 減少食材浪費 30–50%　　✦ 省去人工統計作業　　✦ 全程無紙化</p>
+  <p>✦ 精準掌握每餐用餐人數及喜好　　✦ 因勤務延誤仍可享用預訂喜好餐點</p>
+  <p>✦ 鼓勵自備餐具響應環保　　✦ 節能減碳，落實永續經營</p>
+</div>
+
+<br>
+<p style="text-align:right; color:#6b7280; font-size:9.5pt; margin-top:20pt;">
+  本報告由資訊室編製　　中華民國 115 年 5 月 29 日
+</p>
+
+</body>
+</html>

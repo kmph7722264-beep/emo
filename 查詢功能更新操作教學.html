@@ -1,0 +1,405 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>查詢功能更新操作教學</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font: 15px/1.7 "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+  background: #f0f4f8; color: #1a1a1a;
+}
+.page { max-width: 780px; margin: 0 auto; padding: 32px 20px 64px; }
+
+/* 頁首 */
+.header {
+  background: linear-gradient(135deg, #0d3b66 0%, #1976d2 100%);
+  color: #fff; border-radius: 18px;
+  padding: 30px 24px 26px; margin-bottom: 28px; text-align: center;
+}
+.header .badge {
+  display: inline-block; background: rgba(255,255,255,.2);
+  border: 1px solid rgba(255,255,255,.35); border-radius: 20px;
+  padding: 3px 14px; font-size: 12px; margin-bottom: 12px;
+}
+.header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.header p  { font-size: 13px; opacity: .8; }
+
+/* 功能概覽 */
+.overview {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 28px;
+}
+.ov-card {
+  background: #fff; border-radius: 12px;
+  padding: 16px 12px; text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.07);
+  border-top: 4px solid;
+}
+.ov-card:nth-child(1) { border-color: #f59e0b; }
+.ov-card:nth-child(2) { border-color: #3b82f6; }
+.ov-card:nth-child(3) { border-color: #ec4899; }
+.ov-icon { font-size: 30px; margin-bottom: 6px; }
+.ov-title { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+.ov-sub   { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+/* Step 卡片 */
+.step-card {
+  background: #fff; border-radius: 16px;
+  margin-bottom: 20px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+.step-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; border-bottom: 1px solid #f1f5f9;
+}
+.step-num {
+  flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
+  color: #fff; font-weight: 700; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.s1 .step-num { background: #0d3b66; }
+.s2 .step-num { background: #2563eb; }
+.s3 .step-num { background: #7c3aed; }
+.s4 .step-num { background: #059669; }
+.s5 .step-num { background: #dc2626; }
+.step-title { font-size: 17px; font-weight: 700; }
+.step-sub   { font-size: 12px; color: #64748b; margin-top: 2px; }
+.step-body  { padding: 20px 22px; }
+
+ol.guide { padding-left: 20px; }
+ol.guide li { margin-bottom: 14px; line-height: 1.75; }
+ol.guide li strong { color: #0d3b66; }
+
+/* 程式碼 */
+.code {
+  background: #0f172a; color: #e2e8f0;
+  border-radius: 10px; padding: 14px 18px;
+  font: 13px/1.65 "Consolas", "Menlo", monospace;
+  margin: 10px 0; overflow-x: auto; white-space: pre;
+}
+.code .g  { color: #34d399; }   /* green */
+.code .y  { color: #fbbf24; }   /* yellow */
+.code .b  { color: #93c5fd; }   /* blue */
+.code .m  { color: #f472b6; }   /* pink/muted */
+.code .cm { color: #475569; }   /* comment */
+
+/* 提示框 */
+.tip {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 13px 16px; border-radius: 0 10px 10px 0;
+  border-left: 4px solid; margin: 12px 0; font-size: 13px; line-height: 1.65;
+}
+.tip.info  { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+.tip.warn  { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.tip.ok    { background: #f0fdf4; border-color: #22c55e; color: #166534; }
+.tip .ti   { flex-shrink: 0; font-size: 18px; }
+
+/* 連結表格 */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+th { background: #f8fafc; padding: 10px 12px; text-align: left; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; }
+td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+.col-grid  { font-weight: 700; color: #0d3b66; white-space: nowrap; }
+.col-page  { color: #7c3aed; font-family: monospace; font-size: 12px; }
+.col-param { color: #059669; font-size: 12px; }
+
+/* 假按鈕 */
+.fake-btn {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.fb-blue   { background: #2563eb; }
+.fb-green  { background: #059669; }
+.fb-orange { background: #f59e0b; }
+.fb-red    { background: #dc2626; }
+
+/* 分隔 */
+.section-title {
+  font-size: 13px; font-weight: 700; color: #64748b;
+  letter-spacing: .5px; text-transform: uppercase;
+  margin: 6px 0 10px; padding-left: 2px;
+}
+
+/* 頁尾 */
+.footer { text-align: center; margin-top: 40px; font-size: 13px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- 頁首 -->
+<div class="header">
+  <div class="badge">EMO 查詢功能更新手冊</div>
+  <h1>📱 每日菜單 ／ 訂單查詢 ／ 問卷入口<br>五步驟完成上線</h1>
+  <p>本次新增 2 支 LIFF 頁面 + 後端 2 個 API，約需 15 分鐘完成</p>
+</div>
+
+<!-- 功能概覽 -->
+<div class="overview">
+  <div class="ov-card">
+    <div class="ov-icon">📋</div>
+    <div class="ov-title">每日菜單</div>
+    <div class="ov-sub">menu.html<br>查當日餐點＋剩餘份數</div>
+  </div>
+  <div class="ov-card">
+    <div class="ov-icon">🗒</div>
+    <div class="ov-title">我的訂單</div>
+    <div class="ov-sub">myorders.html<br>查歷史訂單＋領餐狀態</div>
+  </div>
+  <div class="ov-card">
+    <div class="ov-icon">📝</div>
+    <div class="ov-title">用餐問卷入口</div>
+    <div class="ov-sub">myorders.html?survey=1<br>待填問卷清單</div>
+  </div>
+</div>
+
+<!-- ── STEP 1 ── -->
+<div class="step-card s1">
+  <div class="step-header">
+    <div class="step-num">1</div>
+    <div>
+      <div class="step-title">更新並重新部署 Google Apps Script</div>
+      <div class="step-sub">讓後端支援新的「查詢訂單」和「取得問卷連結」功能</div>
+    </div>
+  </div>
+  <div class="step-body">
+    <ol class="guide">
+      <li>用瀏覽器開啟 <strong>script.google.com</strong>，登入後點開 <strong>EMO 專案</strong>。</li>
+      <li>將 <strong>C:\emo\gas\Code.gs</strong> 的全部內容複製（Ctrl+A → Ctrl+C）。</li>
+      <li>在 Apps Script 編輯器中，選取全部程式碼（Ctrl+A）→ 貼上（Ctrl+V）。</li>
+      <li>點上方 <span class="fake-btn fb-blue">💾 儲存</span>（Ctrl+S）。</li>
+      <li>點右上角 <span class="fake-btn fb-blue">部署 ▾</span> → 選「<strong>管理部署作業</strong>」。</li>
+      <li>找到現有的部署項目，點右側 <strong>✏️ 編輯</strong> 圖示。</li>
+      <li>「版本」選 <strong>新版本</strong>（下拉選單選「建立新版本」）。</li>
+      <li>點 <span class="fake-btn fb-green">部署</span>，完成後複製 <strong>/exec 網址</strong>（不需修改，和之前相同）。</li>
+    </ol>
+    <div class="tip ok">
+      <div class="ti">✅</div>
+      <div>部署後可在 Apps Script 執行紀錄確認沒有錯誤，表示更新成功。</div>
+    </div>
+    <div class="tip warn">
+      <div class="ti">⚠️</div>
+      <div>必須選「<strong>新版本</strong>」才會生效。若只按儲存而不重新部署，新功能不會上線。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STEP 2 ── -->
+<div class="step-card s2">
+  <div class="step-header">
+    <div class="step-num">2</div>
+    <div>
+      <div class="step-title">在 LINE Developers 建立兩個新 LIFF App</div>
+      <div class="step-sub">menu.html 和 myorders.html 各需一個獨立 LIFF ID</div>
+    </div>
+  </div>
+  <div class="step-body">
+    <ol class="guide">
+      <li>開啟 <strong>developers.line.biz</strong> → 選您的 <strong>Provider</strong> → 點 <strong>Login Channel</strong>（就是 EMO 的登入 Channel）。</li>
+      <li>上方選單點 <strong>LIFF</strong> → 右上角點 <strong>Add</strong>。</li>
+      <li>
+        依下表建立 <strong>第一個</strong>（每日菜單）：
+        <table style="margin-top:8px">
+          <tr><th>欄位</th><th>填入值</th></tr>
+          <tr><td>LIFF app name</td><td><strong>EMO每日菜單</strong></td></tr>
+          <tr><td>Size</td><td><strong>Full</strong></td></tr>
+          <tr><td>Endpoint URL</td><td>您的 <code>menu.html</code> 網址（HTTPS）</td></tr>
+          <tr><td>Scopes</td><td>勾選 <strong>profile</strong></td></tr>
+          <tr><td>Scan QR</td><td>不需開啟</td></tr>
+        </table>
+        點 <strong>Add</strong> → 複製出現的 <strong>LIFF ID</strong>（格式：<code>1234567890-xxxxxxxx</code>）。
+      </li>
+      <li>
+        再點一次 <strong>Add</strong>，建立 <strong>第二個</strong>（我的訂單）：
+        <table style="margin-top:8px">
+          <tr><th>欄位</th><th>填入值</th></tr>
+          <tr><td>LIFF app name</td><td><strong>EMO我的訂單</strong></td></tr>
+          <tr><td>Size</td><td><strong>Full</strong></td></tr>
+          <tr><td>Endpoint URL</td><td>您的 <code>myorders.html</code> 網址（HTTPS）</td></tr>
+          <tr><td>Scopes</td><td>勾選 <strong>profile</strong></td></tr>
+        </table>
+        點 <strong>Add</strong> → 複製第二個 <strong>LIFF ID</strong>。
+      </li>
+    </ol>
+    <div class="tip info">
+      <div class="ti">💡</div>
+      <div>LIFF ID 格式像 <code>2010095803-AbCdEfGh</code>。<br>
+      建立後在 LIFF 列表可隨時回來複製。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STEP 3 ── -->
+<div class="step-card s3">
+  <div class="step-header">
+    <div class="step-num">3</div>
+    <div>
+      <div class="step-title">填入 LIFF ID，上傳兩支新頁面</div>
+      <div class="step-sub">編輯 menu.html 和 myorders.html，把剛才的 LIFF ID 填進去</div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p class="section-title">修改 menu.html</p>
+    <ol class="guide">
+      <li>用記事本開啟 <strong>C:\emo\liff\menu.html</strong>。</li>
+      <li>找到第 2 行 <code>const LIFF_ID</code>，把引號內的 ID 改成「<strong>每日菜單</strong>」的 LIFF ID：</li>
+    </ol>
+    <div class="code"><span class="cm">// 改這一行（menu.html）</span>
+const LIFF_ID = '<span class="y">填入 EMO每日菜單 的 LIFF ID</span>';</div>
+
+    <p class="section-title" style="margin-top:16px">修改 myorders.html</p>
+    <ol class="guide">
+      <li>用記事本開啟 <strong>C:\emo\liff\myorders.html</strong>。</li>
+      <li>同樣找到 <code>const LIFF_ID</code>，改為「<strong>我的訂單</strong>」的 LIFF ID：</li>
+    </ol>
+    <div class="code"><span class="cm">// 改這一行（myorders.html）</span>
+const LIFF_ID = '<span class="y">填入 EMO我的訂單 的 LIFF ID</span>';</div>
+
+    <p class="section-title" style="margin-top:16px">上傳到您的主機</p>
+    <ol class="guide" start="3">
+      <li>
+        將修改好的兩個檔案，和原有的 <code>style.css</code>，一起上傳到您的靜態主機（GitHub Pages / Netlify / 自架伺服器皆可），放在和其他 LIFF 頁面相同的目錄下。
+      </li>
+    </ol>
+    <div class="tip warn">
+      <div class="ti">⚠️</div>
+      <div>網址必須是 <strong>HTTPS</strong>，否則 LINE LIFF 無法載入頁面。</div>
+    </div>
+    <div class="tip info">
+      <div class="ti">💡</div>
+      <div>上傳後可直接在瀏覽器輸入 <code>https://您的網址/menu.html</code> 預覽，確認頁面正常顯示（非 LIFF 環境菜單仍可載入，但「前往訂餐」可能需 LINE 才能跳轉）。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STEP 4 ── -->
+<div class="step-card s4">
+  <div class="step-header">
+    <div class="step-num">4</div>
+    <div>
+      <div class="step-title">更新 LINE 圖文選單的按鈕連結</div>
+      <div class="step-sub">讓 6 宮格的格 3、格 4、格 5 指向新頁面</div>
+    </div>
+  </div>
+  <div class="step-body">
+    <ol class="guide">
+      <li>開啟 <strong>manager.line.biz</strong> → 選 EMO 官方帳號。</li>
+      <li>左側選單 → <strong>聊天室相關功能 → 圖文選單</strong>。</li>
+      <li>找到 EMO 選單，點 <span class="fake-btn fb-blue">編輯</span>。</li>
+      <li>依下表更新各格的「動作 → 連結」：</li>
+    </ol>
+
+    <table>
+      <thead>
+        <tr><th>格子</th><th>功能</th><th>動作連結</th><th>說明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-grid">格 3（右上）</td>
+          <td>每日菜單</td>
+          <td class="col-page">https://liff.line.me/<br><strong>[每日菜單 LIFF ID]</strong></td>
+          <td>開啟 menu.html</td>
+        </tr>
+        <tr>
+          <td class="col-grid">格 4（左下）</td>
+          <td>訂單查詢</td>
+          <td class="col-page">https://liff.line.me/<br><strong>[我的訂單 LIFF ID]</strong></td>
+          <td>開啟 myorders.html</td>
+        </tr>
+        <tr>
+          <td class="col-grid">格 5（中下）</td>
+          <td>用餐回饋問卷</td>
+          <td class="col-page">https://liff.line.me/<br><strong>[我的訂單 LIFF ID]</strong><span class="col-param">?survey=1</span></td>
+          <td>直接開啟待填問卷</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tip info">
+      <div class="ti">💡</div>
+      <div>格 5「用餐回饋問卷」和格 4「訂單查詢」使用<strong>同一個 myorders.html</strong>，差別是格 5 的網址後面加了 <code>?survey=1</code>，頁面會自動切換到「待填問卷」分頁。</div>
+    </div>
+
+    <ol class="guide" start="5">
+      <li>三格都更新完後，點右上角 <span class="fake-btn fb-green">儲存並發布</span>。</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ── STEP 5 ── -->
+<div class="step-card s5">
+  <div class="step-header">
+    <div class="step-num">5</div>
+    <div>
+      <div class="step-title">手機測試三項功能</div>
+      <div class="step-sub">確認每個按鈕正常運作</div>
+    </div>
+  </div>
+  <div class="step-body">
+    <ol class="guide">
+      <li>
+        <strong>每日菜單</strong>：點圖文選單「每日菜單」格<br>
+        → 應顯示今日早/中/晚餐名稱與剩餘份數<br>
+        → 點「🛒 前往訂餐」應跳轉至訂單頁
+      </li>
+      <li>
+        <strong>訂單查詢</strong>：點「訂單查詢」格<br>
+        → 應顯示您的歷史訂單（含領餐狀態）<br>
+        → 若無訂單紀錄，顯示「尚無訂單紀錄」
+      </li>
+      <li>
+        <strong>用餐回饋問卷</strong>：點「用餐回饋問卷」格<br>
+        → 自動切到「待填問卷」分頁<br>
+        → 點「📝 填寫用餐回饋問卷」→ 應跳轉至問卷頁
+      </li>
+    </ol>
+
+    <div class="tip ok">
+      <div class="ti">🎉</div>
+      <div>三項功能全部正常即完成！問卷連結需要後端 <code>LIFF_SURVEY_URL</code> 屬性已設定，若顯示「問卷功能尚未啟用」請聯絡管理員確認 Apps Script 屬性。</div>
+    </div>
+
+    <div class="tip warn">
+      <div class="ti">⚠️</div>
+      <div>
+        常見問題排查：
+        <ul style="margin-top:6px; padding-left:18px; font-size:13px">
+          <li>頁面顯示「LIFF 初始化失敗」→ 確認 LIFF App 的 Endpoint URL 正確且已上傳</li>
+          <li>菜單顯示「尚未設定」→ 確認 GAS 的 Menu 工作表已填入當日菜單</li>
+          <li>訂單頁顯示空白 → 確認 GAS 重新部署成功（Step 1）</li>
+          <li>問卷按鈕跳「無法取得他人訂單」→ 確認 LIFF ID 填對（每個頁面用自己的 LIFF ID）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 快速對照 -->
+<div style="background:#fff; border-radius:14px; padding:20px 22px; box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:20px">
+  <div style="font-size:15px; font-weight:700; margin-bottom:14px">📌 快速對照：新建 LIFF App 與對應頁面</div>
+  <table>
+    <thead><tr><th>LIFF App 名稱</th><th>Endpoint URL</th><th>對應 6 宮格</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>EMO每日菜單</strong></td>
+        <td class="col-page">https://您的網址/menu.html</td>
+        <td>格 3 每日菜單</td>
+      </tr>
+      <tr>
+        <td><strong>EMO我的訂單</strong></td>
+        <td class="col-page">https://您的網址/myorders.html</td>
+        <td>格 4 訂單查詢<br>格 5 用餐回饋問卷</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  雄好竹軒智慧用餐系統　|　查詢功能更新教學
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,792 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雄好竹軒智慧用餐系統分析報告</title>
+<style>
+:root {
+  --green: #06c755;
+  --green-d: #047a3a;
+  --blue: #2563eb;
+  --orange: #f59f00;
+  --red: #d23f3f;
+  --bg: #f7f8fa;
+  --card: #fff;
+  --border: #e5e7eb;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0 0 60px;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+.cover {
+  background: linear-gradient(135deg, #047a3a 0%, #06c755 100%);
+  color: #fff; padding: 56px 32px 48px; text-align: center;
+}
+.cover h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: 1px; }
+.cover .sub { font-size: 15px; opacity: .85; margin: 0; }
+.cover .meta { margin-top: 24px; font-size: 13px; opacity: .7; }
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+section { margin-top: 40px; }
+h2 {
+  font-size: 20px; color: var(--green-d);
+  border-left: 4px solid var(--green); padding-left: 12px;
+  margin: 0 0 18px;
+}
+h2.sec-security {
+  color: #7c2d12;
+  border-left-color: #dc2626;
+}
+h3 { font-size: 16px; color: var(--text); margin: 24px 0 10px; }
+h4 { font-size: 14px; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 22px; margin-bottom: 16px;
+}
+p { margin: 8px 0; }
+ul, ol { margin: 8px 0; padding-left: 22px; }
+li { margin: 4px 0; }
+.grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+}
+.badge-green  { background: #d1fae5; color: #047a3a; }
+.badge-blue   { background: #dbeafe; color: #1e40af; }
+.badge-orange { background: #fef3c7; color: #92400e; }
+.badge-red    { background: #fee2e2; color: #991b1b; }
+.badge-gray   { background: #f3f4f6; color: #374151; }
+.badge-purple { background: #ede9fe; color: #5b21b6; }
+table {
+  width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0;
+}
+th {
+  background: #f0fdf4; color: var(--green-d);
+  padding: 8px 12px; text-align: left; font-weight: 700;
+  border-bottom: 2px solid var(--green);
+}
+th.th-sec { background: #fef2f2; color: #7c2d12; border-bottom-color: #dc2626; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+.arch-diagram {
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+  padding: 18px 20px; font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 13px; color: #1a1a1a; white-space: pre; overflow-x: auto;
+}
+.issue-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.issue-row:last-child { border-bottom: 0; }
+.issue-num {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+}
+.issue-num.high   { background: #fee2e2; color: #991b1b; }
+.issue-num.medium { background: #fef3c7; color: #92400e; }
+.issue-num.low    { background: #dbeafe; color: #1e40af; }
+.issue-body { flex: 1; }
+.issue-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.issue-desc { font-size: 13px; color: #374151; line-height: 1.6; }
+.issue-fix { font-size: 13px; color: var(--green-d); margin-top: 4px; }
+.feature-card {
+  border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+}
+.feature-card h4 { margin: 0 0 8px; font-size: 15px; color: var(--text); }
+.priority-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.timeline {
+  border-left: 3px solid var(--green); padding-left: 20px; margin-top: 14px;
+}
+.timeline-item { position: relative; margin-bottom: 22px; }
+.timeline-item::before {
+  content: ''; position: absolute; left: -27px; top: 4px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--green); border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--green);
+}
+.timeline-label { font-weight: 700; font-size: 13px; color: var(--green-d); margin-bottom: 4px; }
+.summary-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0;
+}
+@media (max-width: 640px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+.summary-stat {
+  background: #f0fdf4; border: 1px solid #d1fae5; border-radius: 10px;
+  padding: 14px; text-align: center;
+}
+.summary-stat .num { font-size: 26px; font-weight: 800; color: var(--green-d); }
+.summary-stat .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.risk-matrix {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+}
+.risk-box { border-radius: 8px; padding: 12px 14px; font-size: 13px; }
+.risk-box.high   { background: #fef2f2; border: 1px solid #fecaca; }
+.risk-box.medium { background: #fffbeb; border: 1px solid #fde68a; }
+.risk-box.low    { background: #eff6ff; border: 1px solid #bfdbfe; }
+.risk-box .risk-title { font-weight: 700; margin-bottom: 4px; }
+code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px; background: #f3f4f6; border-radius: 4px; padding: 1px 5px;
+}
+hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
+.toc { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px 20px; margin-top: 24px; }
+.toc h3 { margin: 0 0 10px; font-size: 14px; color: var(--green-d); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin: 4px 0; font-size: 13px; }
+.toc a { color: var(--green-d); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+/* 資安專用樣式 */
+.sec-card {
+  background: #fff; border: 1px solid #fecaca; border-radius: 12px;
+  padding: 20px 22px; margin-bottom: 16px;
+}
+.sec-finding {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 0; border-bottom: 1px solid #fee2e2;
+}
+.sec-finding:last-child { border-bottom: 0; }
+.sec-level {
+  flex-shrink: 0; padding: 3px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 800; letter-spacing: .5px; margin-top: 2px;
+}
+.sec-level.critical { background: #7f1d1d; color: #fff; }
+.sec-level.high     { background: #fee2e2; color: #991b1b; }
+.sec-level.medium   { background: #fef3c7; color: #92400e; }
+.sec-level.low      { background: #dbeafe; color: #1e40af; }
+.sec-body { flex: 1; }
+.sec-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.sec-desc  { font-size: 13px; color: #374151; line-height: 1.6; }
+.sec-rec   { font-size: 13px; color: #047a3a; margin-top: 6px; background: #f0fdf4; border-radius: 6px; padding: 6px 10px; }
+.sec-rec::before { content: '✅ 建議：'; font-weight: 700; }
+.compliance-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;
+}
+.compliance-item {
+  border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px;
+}
+.compliance-item .ci-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+.compliance-item .ci-status { font-size: 12px; }
+.status-ok  { color: #047a3a; }
+.status-warn{ color: #92400e; }
+.status-fail{ color: #991b1b; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>雄好竹軒智慧用餐系統</h1>
+  <p class="sub">系統分析報告 · 資通安全評估 · 待改進事項 · 未來功能建議</p>
+  <p class="meta">報告日期：2026-05-25 ／ 版本：v1.0 ／ 機密等級：內部使用</p>
+</div>
+
+<div class="wrap">
+
+  <div class="toc">
+    <h3>目錄</h3>
+    <ol>
+      <li><a href="#s1">系統現況概覽</a></li>
+      <li><a href="#s2">系統架構分析</a></li>
+      <li><a href="#s3">功能盤點</a></li>
+      <li><a href="#s4">資通安全評估</a></li>
+      <li><a href="#s5">一般性待改進事項</a></li>
+      <li><a href="#s6">風險評估總表</a></li>
+      <li><a href="#s7">未來功能建議</a></li>
+      <li><a href="#s8">建議優先順序與時程</a></li>
+      <li><a href="#s9">結論</a></li>
+    </ol>
+  </div>
+
+  <!-- ─── 1. 現況概覽 ─────────────────────────────────── -->
+  <section id="s1">
+    <h2>一、系統現況概覽</h2>
+
+    <div class="summary-grid">
+      <div class="summary-stat">
+        <div class="num">8</div><div class="lbl">前端頁面</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num">4</div><div class="lbl">LIFF 入口</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num">3</div><div class="lbl">餐別（早/中/晚）</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num">1</div><div class="lbl">後端 API 端點</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num">100%</div><div class="lbl">LINE 整合</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num">免費</div><div class="lbl">基礎建設費用</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">系統定位</h3>
+      <p>雄好竹軒智慧用餐系統是一套專為警政單位（雄好竹軒）設計的 LINE 內嵌訂餐平台。使用者透過 LINE App 開啟 LIFF 頁面完成訂餐、查單、領餐，管理員透過同一介面管理菜單、統計出餐、標記領取。</p>
+      <p>系統以「低成本、零伺服器」為核心設計原則：前端部署於 GitHub Pages（免費靜態主機），後端以 Google Apps Script 搭配 Google Sheets 作為資料庫，無需月費主機費用。</p>
+      <p>由於服務對象為警政人員，系統涉及<strong>個人資料（姓名、警用電話、LINE userId）</strong>與<strong>業務資料（訂餐紀錄、用餐習慣）</strong>，資通安全應列為與功能並重的設計要素。</p>
+    </div>
+  </section>
+
+  <!-- ─── 2. 架構分析 ─────────────────────────────────── -->
+  <section id="s2">
+    <h2>二、系統架構分析</h2>
+
+    <div class="arch-diagram">
+使用者（LINE App / 手機相機）
+      │
+      ▼
+  LINE LIFF（WKWebView / WebView）
+      │  id_token 驗證身份
+      │
+      ├── 訂餐  order.html     ─┐
+      ├── 菜單  menu.html       │   GitHub Pages（靜態）
+      ├── 訂單  myorders.html   │   kmph7722264-beep.github.io/emo/liff/
+      ├── 掃碼  scan.html      ─┘
+      │         ↑ 管理者入口（動態連結）
+      │
+      │  HTTPS POST（text/plain 繞過 CORS preflight）
+      ▼
+  Google Apps Script（單一公開 REST 端點）
+      │  action 參數路由
+      │  LINE Token 驗證 → 取得 userId
+      │
+      ▼
+  Google Sheets（資料庫）
+      ├── Orders      訂單主表（含姓名、電話、userId）
+      ├── Menu        每日菜單
+      ├── Admins      管理員白名單（userId）
+      └── AuditLog    操作紀錄
+    </div>
+
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3 style="margin-top:0">技術堆疊</h3>
+        <table>
+          <tr><th>層次</th><th>技術</th></tr>
+          <tr><td>前端框架</td><td>原生 HTML / CSS / JS（無框架）</td></tr>
+          <tr><td>LINE 整合</td><td>LIFF SDK 2.x（edge 版）</td></tr>
+          <tr><td>靜態主機</td><td>GitHub Pages</td></tr>
+          <tr><td>後端運算</td><td>Google Apps Script (GAS)</td></tr>
+          <tr><td>資料庫</td><td>Google Sheets</td></tr>
+          <tr><td>身份驗證</td><td>LINE ID Token（JWT）</td></tr>
+          <tr><td>QR 辨識</td><td>jsQR 1.4.0（CDN）</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">LIFF 配置</h3>
+        <table>
+          <tr><th>頁面</th><th>LIFF ID</th></tr>
+          <tr><td>每日菜單</td><td><code>RMGuPkW1</code></td></tr>
+          <tr><td>我的訂單</td><td><code>3unJvtGw</code></td></tr>
+          <tr><td>現場掃碼</td><td><code>ILAUOKFG</code></td></tr>
+          <tr><td>訂單頁</td><td><code>Neg2TBst</code></td></tr>
+        </table>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px">全部統一指向 <code>emo</code> 倉庫（2026-05-25 完成遷移）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 3. 功能盤點 ─────────────────────────────────── -->
+  <section id="s3">
+    <h2>三、功能盤點</h2>
+
+    <h3>3.1 使用者端功能</h3>
+    <table>
+      <tr><th>功能</th><th>頁面</th><th>狀態</th><th>說明</th></tr>
+      <tr><td>線上訂餐</td><td>order.html</td><td><span class="badge badge-green">完成</span></td><td>早/中餐A·B·C/晚餐，勾選式 UI，未勾選視為不訂</td></tr>
+      <tr><td>查看每日菜單</td><td>menu.html</td><td><span class="badge badge-green">完成</span></td><td>顯示餐名、剩餘數量、開放/截止狀態</td></tr>
+      <tr><td>查詢我的訂單</td><td>myorders.html</td><td><span class="badge badge-green">完成</span></td><td>按日期查歷史訂單、取消狀態</td></tr>
+      <tr><td>現場掃碼點餐</td><td>scan.html + order.html</td><td><span class="badge badge-green">完成</span></td><td>掃 QR → 自動帶入資料 → 現場點餐模式</td></tr>
+      <tr><td>自備餐具勾選</td><td>order.html</td><td><span class="badge badge-green">完成</span></td><td>BYOB 狀態記錄至資料庫</td></tr>
+      <tr><td>現場點餐大通知</td><td>order.html</td><td><span class="badge badge-green">完成</span></td><td>全螢幕顯示訂單編號，30 秒後自動消失</td></tr>
+      <tr><td>用餐意見回饋</td><td>survey.html</td><td><span class="badge badge-blue">已部署</span></td><td>問卷收集功能</td></tr>
+    </table>
+
+    <h3>3.2 管理員端功能</h3>
+    <table>
+      <tr><th>功能</th><th>狀態</th><th>說明</th></tr>
+      <tr><td>每日菜單維護</td><td><span class="badge badge-green">完成</span></td><td>可按日期新增/修改，帶入最近一日菜單為基底，支援歷史下拉</td></tr>
+      <tr><td>訂單統計</td><td><span class="badge badge-green">完成</span></td><td>按日期查：總筆數、各餐數量、已領/未領統計</td></tr>
+      <tr><td>訂單明細列表</td><td><span class="badge badge-green">完成</span></td><td>支援「只看未領餐」篩選、取消訂單</td></tr>
+      <tr><td>領餐快速查詢</td><td><span class="badge badge-green">完成</span></td><td>輸入末 3 碼或掃 QR 標記已領</td></tr>
+      <tr><td>領餐大通知</td><td><span class="badge badge-green">完成</span></td><td>標領時全螢幕通知，顯示用餐人資訊與餐具狀態，10 秒自動消失</td></tr>
+      <tr><td>操作稽核紀錄</td><td><span class="badge badge-green">完成</span></td><td>記錄所有管理員操作（標領/掃碼/取消/修改菜單），含成敗</td></tr>
+      <tr><td>管理員白名單</td><td><span class="badge badge-green">完成</span></td><td>以 LINE userId 寫入 Admins 工作表控制存取</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── 4. 資通安全評估 ─────────────────────────────── -->
+  <section id="s4">
+    <h2 class="sec-security">四、資通安全評估</h2>
+
+    <div class="card" style="background:#fef2f2;border-color:#fecaca">
+      <p>本節依據 <strong>OWASP Top 10</strong>、<strong>個人資料保護法</strong>及<strong>政府資通安全管理法</strong>相關要求，針對系統現況進行評估。系統雖屬內部服務，但涉及警政人員個人資料，且後端 API 端點為公開 URL，應予嚴肅對待。</p>
+    </div>
+
+    <h3>4.1 身份驗證與存取控制</h3>
+    <div class="sec-card">
+
+      <div class="sec-finding">
+        <div><span class="sec-level high">高</span></div>
+        <div class="sec-body">
+          <div class="sec-title">GAS API 端點為公開 URL，無來源白名單</div>
+          <div class="sec-desc">
+            Google Apps Script 部署後的 <code>exec</code> URL 為完全公開連結，不限制呼叫來源。任何人只要從前端 HTML 原始碼取得此 URL，即可直接呼叫 API，無需透過 LINE LIFF。
+            雖然後端依賴 LINE ID Token 驗證身份，若 Token 驗證流程存在缺陷，或攻擊者取得有效 Token，即可在 LINE App 外進行惡意操作（大量假訂單、資料探測）。
+          </div>
+          <div class="sec-rec">設定 GAS 的「Who has access」為「Only myself」並搭配 Service Account，或在 GAS 內檢查 <code>Origin</code> / <code>Referer</code> header 是否來自合法網域（有限效果但增加門檻）。長期建議加入請求頻率限制（Rate Limiting）。</div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level high">高</span></div>
+        <div class="sec-body">
+          <div class="sec-title">管理員白名單無時效機制，離職人員可能保留存取權</div>
+          <div class="sec-desc">
+            管理員身份以 LINE userId 靜態儲存於 Google Sheets「Admins」工作表，無有效期欄位。若管理員調職、離職或手機遺失，其 LINE userId 除非手動刪除，否則永久保有管理員權限，可查看全體訂餐紀錄、取消他人訂單、修改菜單。
+          </div>
+          <div class="sec-rec">Admins 工作表增加「有效期限」欄位（如 <code>2026-12-31</code>），GAS 驗證時額外檢查日期；同時建立定期稽核流程（每季清查一次），並記錄新增/移除管理員的操作。</div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level medium">中</span></div>
+        <div class="sec-body">
+          <div class="sec-title">LINE ID Token 未在後端進行完整 JWT 簽名驗證</div>
+          <div class="sec-desc">
+            LINE ID Token 是一個 JWT，正確的驗證流程應包含：向 LINE Platform API 驗證 Token 簽名、檢查 <code>iss</code>（必須為 <code>https://access.line.me</code>）、<code>aud</code>（必須為本系統 Channel ID）及 <code>exp</code>（過期時間）。若 GAS 僅以 Token 解析姓名/userId 而未完整驗證，可能遭偽造 Token 攻擊。
+          </div>
+          <div class="sec-rec">GAS 應呼叫 LINE Verify API（<code>https://api.line.me/oauth2/v2.1/verify</code>）驗證每個 Token 的真實性，並確認 <code>client_id</code> 符合本系統的 Channel ID。</div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level medium">中</span></div>
+        <div class="sec-body">
+          <div class="sec-title">現場點餐（Walkin）模式缺乏後端時段強制驗證</div>
+          <div class="sec-desc">
+            現場點餐時段限制（早餐 08:00 前、中餐 12:30 前、晚餐 17:30 前結單，結單後 10 分鐘接受現場下單）目前僅由前端顯示提示，後端並未拒絕超時的現場訂單。惡意使用者可在截止後繞過前端限制，直接呼叫 API 送出現場訂單，影響出餐統計與公平性。
+          </div>
+          <div class="sec-rec">GAS 後端在接收 <code>walkin=true</code> 的訂單時，應比對伺服器時間與各餐時窗設定，超時直接回傳錯誤拒絕寫入。</div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>4.2 個人資料保護</h3>
+    <div class="sec-card">
+
+      <div class="sec-finding">
+        <div><span class="sec-level high">高</span></div>
+        <div class="sec-body">
+          <div class="sec-title">個人資料儲存於 Google Sheets，無加密、無存取日誌</div>
+          <div class="sec-desc">
+            訂單主表儲存姓名、警用電話、LINE userId（可對應至個人）、用餐習慣等個人識別資料（PII）。Google Sheets 本身未加密靜態資料，且若 Google 帳號遭入侵，所有訂餐資料將全數外洩。此外，Sheets 的存取紀錄（誰在何時查看了工作表）預設未啟用，難以事後稽核。
+          </div>
+          <div class="sec-rec">
+            (1) 限制 Google Sheets 共用範圍（僅限特定 Google 帳號/群組可存取，關閉「連結共用」）；
+            (2) 啟用 Google Workspace 的稽核日誌（需 Business 以上版本）；
+            (3) 敏感欄位（電話）考慮以 GAS 側加密後儲存；
+            (4) 定期匯出備份並刪除超過保存期限（建議 1 年）的舊資料。
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level high">高</span></div>
+        <div class="sec-body">
+          <div class="sec-title">未告知使用者個資蒐集範圍（缺乏隱私政策）</div>
+          <div class="sec-desc">
+            依個人資料保護法第 8 條，蒐集個人資料應明確告知蒐集目的、類別、利用範圍、保存期限及當事人權利。現行訂餐頁面無任何隱私說明或同意機制，使用者送出訂單即視為同意，不符合法規要求。
+          </div>
+          <div class="sec-rec">在訂餐頁面下方加入隱私說明（蒐集目的：訂餐服務；保存期限：1 年；不對外提供）及同意勾選框，或顯示指向完整隱私政策頁面的連結。</div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level medium">中</span></div>
+        <div class="sec-body">
+          <div class="sec-title">所有管理員可查看全體人員訂餐紀錄（無資料分級）</div>
+          <div class="sec-desc">
+            管理後台訂單明細顯示所有人的姓名、電話、用餐內容，所有具管理員身份者均可無限制查閱。在較大型組織中，應依「最小權限原則」限制資料存取範圍（例如：一線管理員僅能標領，不能查閱他人電話）。
+          </div>
+          <div class="sec-rec">設計角色分級：「超級管理員」（可查所有資料）vs「領餐人員」（僅能標領，電話欄位隱碼顯示 <code>0912***678</code>）。</div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>4.3 輸入驗證與注入防護</h3>
+    <div class="sec-card">
+
+      <div class="sec-finding">
+        <div><span class="sec-level medium">中</span></div>
+        <div class="sec-body">
+          <div class="sec-title">備註欄位為自由文字，後端輸入驗證程度未知</div>
+          <div class="sec-desc">
+            訂餐頁面的「備註」欄位接受任意文字，若後端（GAS）將備註內容直接寫入 Sheets 或回傳顯示，可能存在 CSV 注入（<code>=CMD()</code> 類公式注入 Sheets）或 XSS 風險（若顯示於管理後台時未跳脫）。前端雖有 <code>htmlEsc()</code> 函式，但並非所有顯示路徑均完整套用。
+          </div>
+          <div class="sec-rec">
+            (1) GAS 寫入 Sheets 時，對任何來自使用者的文字欄位在開頭加上單引號（強制為文字格式，防 CSV 注入）；
+            (2) 前端所有動態插入 DOM 的文字一律使用 <code>textContent</code> 而非 <code>innerHTML</code>，或確保完整跳脫；
+            (3) 備註欄位加上長度上限（如 200 字）防止超大 payload。
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level low">低</span></div>
+        <div class="sec-body">
+          <div class="sec-title">外部 CDN 資源未使用 SRI 驗證</div>
+          <div class="sec-desc">
+            頁面載入 LINE LIFF SDK（<code>static.line-scdn.net</code>）及 jsQR（<code>cdn.jsdelivr.net</code>）均未使用子資源完整性（Subresource Integrity, SRI）屬性。若 CDN 遭入侵並替換為惡意版本，使用者裝置將執行惡意腳本，且無任何防護。
+          </div>
+          <div class="sec-rec">對 jsQR 等第三方 CDN 腳本加入 <code>integrity="sha384-..."</code> 屬性；LINE LIFF SDK 因版本持續更新較難固定 Hash，可考慮自行下載至 repo 中托管。</div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>4.4 傳輸安全</h3>
+    <div class="sec-card">
+
+      <div class="sec-finding">
+        <div><span class="sec-level low">低</span></div>
+        <div class="sec-body">
+          <div class="sec-title">使用 <code>text/plain</code> 繞過 CORS preflight（設計上的安全妥協）</div>
+          <div class="sec-desc">
+            為避免 CORS 預檢請求（OPTIONS），POST 請求的 <code>Content-Type</code> 設為 <code>text/plain;charset=utf-8</code>。此做法雖有效且常見，但代表後端放棄了 Content-Type 嚴格驗證的第一道防線，任何網站均可對此 GAS 端點發出「簡單請求」（無需 CORS preflight），略微增加 CSRF 曝露面。
+          </div>
+          <div class="sec-rec">GAS 後端在處理請求時，額外驗證 <code>Origin</code> header（僅接受 <code>github.io</code> 與 <code>liff.line.me</code>）；同時確保所有敏感操作（訂單/標領）均需有效 LINE Token，杜絕未授權的跨站請求。</div>
+        </div>
+      </div>
+
+      <div class="sec-finding">
+        <div><span class="sec-level low">低</span></div>
+        <div class="sec-body">
+          <div class="sec-title">現場掃碼頁使用外部 CDN（jsQR），無法確保版本固定</div>
+          <div class="sec-desc">
+            <code>scan.html</code> 引用 <code>cdn.jsdelivr.net/npm/jsqr@1.4.0</code>，雖已固定版本號，但若 CDN 快取遭污染或 npm 套件被覆寫（供應鏈攻擊），仍有風險。
+          </div>
+          <div class="sec-rec">將 jsQR 的 JS 檔案下載至 <code>liff/lib/jsqr.min.js</code> 自行托管，避免 CDN 依賴，同時加入 SRI 驗證。</div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>4.5 合規性評估</h3>
+    <div class="compliance-grid">
+      <div class="compliance-item">
+        <div class="ci-title">🔒 HTTPS 傳輸加密</div>
+        <div class="ci-status status-ok">✅ GitHub Pages 及 GAS 均強制 HTTPS，傳輸中資料已加密</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">🔒 身份驗證</div>
+        <div class="ci-status status-warn">⚠️ 依賴 LINE ID Token，後端驗證完整性待確認</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">📋 個資法第 8 條告知義務</div>
+        <div class="ci-status status-fail">❌ 未提供隱私說明或同意機制</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">📋 個資法保存期限規範</div>
+        <div class="ci-status status-fail">❌ 訂單資料無自動刪除機制，可能永久保存</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">🛡️ 最小權限原則</div>
+        <div class="ci-status status-warn">⚠️ 管理員權限無分級，所有管理員同等存取</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">🛡️ 操作稽核紀錄</div>
+        <div class="ci-status status-ok">✅ 管理員操作均有 AuditLog 記錄（含成敗）</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">🔐 資料靜態加密</div>
+        <div class="ci-status status-fail">❌ Google Sheets 未加密靜態資料</div>
+      </div>
+      <div class="compliance-item">
+        <div class="ci-title">🔐 供應鏈安全（SRI）</div>
+        <div class="ci-status status-fail">❌ 外部 CDN 腳本未加入 SRI 驗證</div>
+      </div>
+    </div>
+
+    <h3>4.6 資安改善優先排序</h3>
+    <table>
+      <tr>
+        <th class="th-sec">優先級</th>
+        <th class="th-sec">項目</th>
+        <th class="th-sec">建議工期</th>
+      </tr>
+      <tr><td><span class="badge badge-red">立即</span></td><td>加入隱私說明與告知同意（個資法合規）</td><td>1 天</td></tr>
+      <tr><td><span class="badge badge-red">立即</span></td><td>限制 Google Sheets 共用範圍（關閉連結共用）</td><td>1 小時</td></tr>
+      <tr><td><span class="badge badge-red">立即</span></td><td>後端 LINE Token 完整驗證（呼叫 LINE Verify API）</td><td>3 天</td></tr>
+      <tr><td><span class="badge badge-orange">短期</span></td><td>管理員白名單加入有效期欄位 + 定期稽核</td><td>1 天</td></tr>
+      <tr><td><span class="badge badge-orange">短期</span></td><td>現場點餐時段後端強制驗證</td><td>2 天</td></tr>
+      <tr><td><span class="badge badge-orange">短期</span></td><td>備註欄位後端輸入驗證（長度限制 + CSV 注入防護）</td><td>1 天</td></tr>
+      <tr><td><span class="badge badge-blue">中期</span></td><td>jsQR 改為自行托管並加入 SRI</td><td>0.5 天</td></tr>
+      <tr><td><span class="badge badge-blue">中期</span></td><td>管理員角色分級（超管 vs 領餐人員）</td><td>1 週</td></tr>
+      <tr><td><span class="badge badge-blue">中期</span></td><td>舊訂單資料自動清除（超過 1 年者封存或刪除）</td><td>2 天</td></tr>
+      <tr><td><span class="badge badge-gray">長期</span></td><td>API 請求頻率限制（Rate Limiting）</td><td>3 天</td></tr>
+    </table>
+  </section>
+
+  <!-- ─── 5. 一般性待改進事項 ─────────────────────────── -->
+  <section id="s5">
+    <h2>五、一般性待改進事項</h2>
+
+    <h3>5.1 已解決的問題（本次修正）</h3>
+    <div class="card" style="background:#f0fdf4;border-color:#bbf7d0">
+      <ul>
+        <li><strong>iOS UIPickerView 末項消失</strong>：中餐 C 餐在 iPhone 上無法顯示。已徹底重寫為 checkbox/radio 介面，完全避開原生選單限制。</li>
+        <li><strong>切換日期不更新菜單</strong>：已改用 wrapper div 穩定容器重建機制修正。</li>
+        <li><strong>錯誤倉庫問題</strong>：訂單頁 LIFF 指向舊 <code>emo-ordering</code> 倉庫，導致所有修正均無法生效。已統一指向 <code>emo</code> 倉庫。</li>
+        <li><strong>LINE WebView 快取</strong>：根本原因為錯誤倉庫，已隨倉庫遷移解決，並加入 no-cache meta 標籤。</li>
+      </ul>
+    </div>
+
+    <h3>5.2 現存功能性待改進項目</h3>
+    <div class="card">
+      <div class="issue-row">
+        <div class="issue-num high">1</div>
+        <div class="issue-body">
+          <div class="issue-title">單一 GAS 端點 — 無版本控制、無降級機制</div>
+          <div class="issue-desc">若 GAS 部署出錯、配額耗盡（6 分鐘執行上限）或 Google 服務中斷，整個系統全面停擺，且無法快速回滾。</div>
+          <div class="issue-fix">→ 維護兩個 GAS 部署（正式/備援），前端加入 fallback URL 設定。</div>
+        </div>
+      </div>
+      <div class="issue-row">
+        <div class="issue-num medium">2</div>
+        <div class="issue-body">
+          <div class="issue-title">無離線支援 / 網路失敗提示不足</div>
+          <div class="issue-desc">fetch 失敗僅顯示紅字，無重試按鈕。在網路品質不穩的環境中使用者不知如何處理。</div>
+          <div class="issue-fix">→ 加入「重試」按鈕，並以友善文字說明可能原因。</div>
+        </div>
+      </div>
+      <div class="issue-row">
+        <div class="issue-num medium">3</div>
+        <div class="issue-body">
+          <div class="issue-title">問卷與訂單系統未整合</div>
+          <div class="issue-desc">survey.html 為獨立頁面，無法對應至特定訂單或菜色，難以自動化分析滿意度。</div>
+        </div>
+      </div>
+      <div class="issue-row">
+        <div class="issue-num medium">4</div>
+        <div class="issue-body">
+          <div class="issue-title">菜單需每日手動輸入</div>
+          <div class="issue-desc">若管理員忘記輸入，使用者將看到「今日無此餐」。</div>
+          <div class="issue-fix">→ 增加「複製上週同日菜單」快速功能。</div>
+        </div>
+      </div>
+      <div class="issue-row">
+        <div class="issue-num low">5</div>
+        <div class="issue-body">
+          <div class="issue-title">無訂單修改功能</div>
+          <div class="issue-desc">使用者送出後若要更改，只能聯絡管理員取消再重新下單，操作繁瑣。</div>
+          <div class="issue-fix">→ 在「我的訂單」頁加入截止前的「修改」入口。</div>
+        </div>
+      </div>
+      <div class="issue-row">
+        <div class="issue-num low">6</div>
+        <div class="issue-body">
+          <div class="issue-title">GitHub Pages 快取窗口（最長 20 分鐘）</div>
+          <div class="issue-desc">CDN 快取加上 LINE WebView 快取，新版程式部署後最慢需等 20 分鐘生效。</div>
+          <div class="issue-fix">→ 採用版本查詢字串（<code>?v=20260525</code>）強制繞過快取；重大更新時通知使用者清除 LINE 快取。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 6. 風險評估總表 ──────────────────────────────── -->
+  <section id="s6">
+    <h2>六、風險評估總表</h2>
+    <div class="risk-matrix">
+      <div class="risk-box high">
+        <div class="risk-title">🔴 高風險</div>
+        <ul>
+          <li>個資法未告知義務（法律風險）</li>
+          <li>GAS API 端點無存取控制</li>
+          <li>管理員帳號無時效機制</li>
+          <li>LINE Token 後端驗證不完整</li>
+          <li>GAS 配額耗盡 / 服務中斷無降級</li>
+        </ul>
+      </div>
+      <div class="risk-box medium">
+        <div class="risk-title">🟡 中風險</div>
+        <ul>
+          <li>個人資料存放於未加密 Sheets</li>
+          <li>管理員無角色分級（最小權限缺失）</li>
+          <li>現場點餐時段後端未強制</li>
+          <li>備註欄 CSV 注入 / XSS 潛在風險</li>
+          <li>外部 CDN 無 SRI 驗證（供應鏈）</li>
+        </ul>
+      </div>
+      <div class="risk-box medium">
+        <div class="risk-title">🟡 中風險</div>
+        <ul>
+          <li>LINE LIFF SDK 版本異動相容性</li>
+          <li>菜單未輸入導致訂餐異常體驗</li>
+          <li>訂單資料無保存期限自動清除</li>
+          <li>GitHub Pages 快取延遲上線</li>
+        </ul>
+      </div>
+      <div class="risk-box low">
+        <div class="risk-title">🔵 低風險</div>
+        <ul>
+          <li>新款手機 UI 相容問題</li>
+          <li>LINE App 更新改變 WebView 行為</li>
+          <li>CORS preflight 繞過（已有 Token 驗證）</li>
+          <li>jsQR CDN 失效（掃碼功能受影響）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 7. 未來功能建議 ─────────────────────────────── -->
+  <section id="s7">
+    <h2>七、未來功能建議</h2>
+
+    <h3>7.1 短期建議（1–2 個月）</h3>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-red">高優先</span><h4 style="margin:0">後端即時推播通知（出餐口管理者）</h4></div>
+      <p>現場顧客或線上訂餐者到場掃 QR 領餐時，管理者電腦/手機出現大通知（5 秒停留），顯示用餐人資訊、自備餐具狀態。目前管理者須主動查詢，無法被動接收。</p>
+      <p><strong>建議做法</strong>：GAS 標領時透過 LINE Messaging API 推送至管理員 LINE 帳號，並在管理後台使用 BroadcastChannel 同步多分頁顯示。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-orange">中優先</span><h4 style="margin:0">訂單修改功能（截止前）</h4></div>
+      <p>使用者在截止時間前，可在「我的訂單」頁修改當日未截止餐別的選擇。GAS 新增 <code>action=updateOrder</code>，核查截止時間後覆寫欄位並推送 LINE 確認。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-orange">中優先</span><h4 style="margin:0">問卷與訂單掛鉤（滿意度分析）</h4></div>
+      <p>標記領餐後，GAS 透過 LINE Messaging API 推送問卷連結（含訂單編號與日期參數），後端自動按日期、菜色分類統計滿意度，取代現行手動對照。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-orange">中優先</span><h4 style="margin:0">菜單快速複製（沿用上週同日）</h4></div>
+      <p>管理後台加入「複製上週同日菜單」按鈕，減少每日重複輸入，降低忘記輸入的風險。</p>
+    </div>
+
+    <h3>7.2 中期建議（3–6 個月）</h3>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-blue">一般</span><h4 style="margin:0">每週菜單批次設定</h4></div>
+      <p>管理員一次輸入整週（5 天）菜單，系統自動套用對應日期，配合節假日標記（不提供餐點），避免下單失誤。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-blue">一般</span><h4 style="margin:0">訂單統計報表匯出（CSV）</h4></div>
+      <p>管理後台加入「匯出當日/當月訂單 CSV」功能，方便結帳、報銷、統計，並可作為個資盤點依據。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-blue">一般</span><h4 style="margin:0">重複訂單防護</h4></div>
+      <p>GAS 寫入時檢查 userId + date + meal 唯一性，防止同一使用者因網路重試造成重複訂餐。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-blue">一般</span><h4 style="margin:0">食材過敏 / 素食標記</h4></div>
+      <p>菜單維護時標記各餐點的過敏原（花生、海鮮、麩質）及素食屬性，顯示於每日菜單頁，讓使用者訂餐前獲得充分資訊。</p>
+    </div>
+
+    <h3>7.3 長期建議（6 個月以上）</h3>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-gray">長期</span><h4 style="margin:0">後端遷移至 Cloud Run / Firebase</h4></div>
+      <p>當訂單量增大或需要 WebSocket 即時推播時，GAS 的 6 分鐘執行上限與無 Keep-Alive 特性將成為瓶頸。可評估遷移至 Google Cloud Run（按需收費）或 Firebase（免費額度充足）。</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="priority-row"><span class="badge badge-gray">長期</span><h4 style="margin:0">多店點支援</h4></div>
+      <p>若未來雄好竹軒擴充地點，系統可透過 URL 參數 <code>?store=</code> 加上 GAS 多工作表支援，擴展為多店點共用同一套前端程式碼。</p>
+    </div>
+  </section>
+
+  <!-- ─── 8. 優先順序與時程 ──────────────────────────── -->
+  <section id="s8">
+    <h2>八、建議優先順序與實作時程</h2>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-label">第 1 週（立即）— 資安合規</div>
+        <ul>
+          <li>🔴 加入隱私說明與同意告知（個資法）</li>
+          <li>🔴 限制 Google Sheets 共用範圍（關閉連結共用）</li>
+          <li>🔴 GAS 後端完整驗證 LINE ID Token</li>
+          <li>🔴 後端強制驗證現場點餐時段窗口</li>
+        </ul>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-label">第 2–4 週 — 資安強化</div>
+        <ul>
+          <li>🟡 管理員白名單加入有效期限欄位</li>
+          <li>🟡 備註欄位輸入驗證（長度限制 + CSV 注入防護）</li>
+          <li>🟡 jsQR 改為自行托管並加入 SRI</li>
+          <li>🟡 fetch 失敗加入「重試」按鈕</li>
+        </ul>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-label">第 2 個月 — 功能補強</div>
+        <ul>
+          <li>LINE Notify 推播（管理者被動接收標領通知）</li>
+          <li>「修改訂單」功能（截止前，於我的訂單頁入口）</li>
+          <li>問卷與訂單掛鉤（領餐後推問卷連結）</li>
+          <li>菜單「複製上週同日」快速功能</li>
+        </ul>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-label">第 3–6 個月 — 資料治理 + 功能擴充</div>
+        <ul>
+          <li>訂單資料保存期限機制（超過 1 年自動封存）</li>
+          <li>管理員角色分級（超管 vs 領餐人員）</li>
+          <li>每週菜單批次設定</li>
+          <li>訂單報表匯出（CSV）</li>
+          <li>食材過敏 / 素食標記</li>
+        </ul>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-label">6 個月後 — 架構升級</div>
+        <ul>
+          <li>API 請求頻率限制（Rate Limiting）</li>
+          <li>評估後端擴展（Cloud Run / Firebase）</li>
+          <li>多店點支援規劃</li>
+          <li>LINE LIFF SDK 版本升級評估</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── 9. 結論 ─────────────────────────────────────── -->
+  <section id="s9">
+    <h2>九、結論</h2>
+
+    <div class="card">
+      <p>雄好竹軒智慧用餐系統以「零伺服器費用、LINE 生態整合」為核心，已實現完整的訂餐、菜單管理、領餐稽核流程，並於本次修正中解決 iOS 相容性、日期更新及錯誤倉庫等關鍵問題。</p>
+
+      <p><strong>資通安全層面</strong>，系統目前最迫切的問題是<strong>個資法告知義務缺失</strong>及<strong>Google Sheets 個人資料存取控制不足</strong>，這兩項為法律合規要求，應列為最高優先、本週內完成。其次是後端 LINE Token 完整驗證及管理員帳號時效管理，屬技術安全強化，應於一個月內完成。</p>
+
+      <p><strong>功能層面</strong>，最有價值的下一步是<strong>即時出餐通知</strong>（管理者被動接收提醒）及<strong>問卷與訂單掛鉤</strong>，投入相對小但對日常作業效率提升最為顯著。</p>
+
+      <p>整體而言，系統架構清晰、程式碼具可維護性，具備良好的擴充基礎。建議以「<strong>先補資安合規、再強化功能</strong>」的順序推進改進項目，確保在服務效率與資料安全之間取得平衡。</p>
+    </div>
+  </section>
+
+  <hr>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:24px">
+    雄好竹軒智慧用餐系統分析報告 · 2026-05-25 · 機密文件，僅供內部使用
+  </p>
+</div>
+</body>
+</html>

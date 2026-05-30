@@ -1,0 +1,1684 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>EMO 電子點餐系統建置建議書</title>
+<style>
+@page {
+  size: A4 portrait;
+  margin: 18mm 16mm 22mm 16mm;
+  @bottom-center {
+    content: "雄好竹軒智慧用餐系統建置建議書  |  資訊室股長 曾銘忠  |  第 " counter(page) " / " counter(pages) " 頁";
+    font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+    font-size: 9pt;
+    color: #6b7280;
+  }
+}
+
+html, body {
+  font-family: "Microsoft JhengHei", "微軟正黑體", "PingFang TC", sans-serif;
+  font-size: 11pt;
+  line-height: 1.7;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: 26pt;
+  color: #0d3b66;
+  text-align: center;
+  padding: 18pt 0 10pt 0;
+  border-bottom: 4pt solid #f59e0b;
+  margin: 0 0 24pt 0;
+  page-break-after: avoid;
+}
+
+h2 {
+  font-size: 18pt;
+  color: #ffffff;
+  background: #0d3b66;
+  padding: 8pt 14pt;
+  margin: 30pt 0 14pt 0;
+  page-break-before: always;
+  page-break-after: avoid;
+  border-left: 8pt solid #f59e0b;
+}
+
+/* 第一個 h2 不要換頁（封面下一頁直接接） */
+h1 + h2,
+h1 + table + h2 {
+  page-break-before: auto;
+}
+
+h3 {
+  font-size: 14pt;
+  color: #0d3b66;
+  margin: 18pt 0 8pt 0;
+  padding-left: 8pt;
+  border-left: 4pt solid #f59e0b;
+  page-break-after: avoid;
+}
+
+h4 {
+  font-size: 12pt;
+  color: #0d3b66;
+  margin: 12pt 0 6pt 0;
+  page-break-after: avoid;
+}
+
+p, ul, ol {
+  margin: 8pt 0;
+}
+
+ul, ol {
+  padding-left: 22pt;
+}
+
+li {
+  margin: 3pt 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10pt 0 14pt 0;
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+
+th {
+  background: #0d3b66;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 6pt 8pt;
+  text-align: left;
+  border: 1pt solid #0d3b66;
+}
+
+td {
+  padding: 5pt 8pt;
+  border: 1pt solid #d1d5db;
+  vertical-align: top;
+}
+
+tbody tr:nth-child(odd) {
+  background: #f8fafc;
+}
+
+tbody tr:nth-child(even) {
+  background: #ffffff;
+}
+
+/* 強調字體 (** **) */
+strong {
+  color: #b45309;
+  font-weight: bold;
+}
+
+/* 引用區塊 */
+blockquote {
+  margin: 10pt 0;
+  padding: 10pt 14pt;
+  border-left: 4pt solid #f59e0b;
+  background: #fffbeb;
+  color: #44403c;
+  font-size: 10.5pt;
+}
+
+blockquote p {
+  margin: 4pt 0;
+}
+
+/* 程式碼/版本標 */
+code {
+  font-family: "Consolas", "Courier New", monospace;
+  background: #f3f4f6;
+  padding: 1pt 5pt;
+  border-radius: 3pt;
+  color: #b91c1c;
+  font-size: 10pt;
+}
+
+pre {
+  background: #1f2937;
+  color: #f3f4f6;
+  padding: 10pt 14pt;
+  border-radius: 4pt;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 9.5pt;
+  page-break-inside: avoid;
+  line-height: 1.4;
+}
+
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+hr {
+  border: none;
+  border-top: 1pt solid #d1d5db;
+  margin: 14pt 0;
+}
+
+/* 首頁資訊表 (前 6 行) */
+body > table:first-of-type {
+  border: 2pt solid #0d3b66;
+  margin: 12pt auto 24pt auto;
+  width: 80%;
+}
+
+body > table:first-of-type th {
+  width: 30%;
+  background: #0d3b66;
+}
+
+body > table:first-of-type td {
+  font-size: 11pt;
+}
+
+/* 簽章欄 */
+p:has(strong:contains("承辦人簽章")),
+p:has(strong:contains("單位主管簽章")),
+p:has(strong:contains("機關首長核示")) {
+  margin: 20pt 0;
+  border-bottom: 1pt dotted #6b7280;
+  padding-bottom: 4pt;
+}
+</style>
+</head>
+<body>
+<h1 id="emo">EMO 電子點餐系統建置建議書</h1>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>提案名稱</strong></td>
+<td>EMO 電子點餐系統建置案</td>
+</tr>
+<tr>
+<td><strong>提議單位 / 提議人</strong></td>
+<td>資訊室 股長 曾銘忠</td>
+</tr>
+<tr>
+<td><strong>提案日期</strong></td>
+<td>2026-05-21</td>
+</tr>
+<tr>
+<td><strong>系統版本</strong></td>
+<td>v11（LINE LIFF + Google Apps Script + Google Sheets）</td>
+</tr>
+<tr>
+<td><strong>建議規模</strong></td>
+<td>中型（每日 50–200 筆訂單）</td>
+</tr>
+<tr>
+<td><strong>預算總額</strong></td>
+<td><strong>3 年 TCO 約 NT$ 643,840</strong>（不含已投入之內部開發等值 NT$ 1,040,000）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_1">一、提案緣由</h2>
+<p>本單位目前訂餐流程仍以人工統計、紙本或群組訊息往返為主，造成下列困擾：</p>
+<ol>
+<li><strong>訂單彙整費時</strong>：承辦人每日需逐筆抄錄、合計、回報，平均耗時 30 分鐘以上</li>
+<li><strong>領餐核對無憑證</strong>：常發生重領 / 漏領，無客觀稽核機制</li>
+<li><strong>棄餐成本吸收</strong>：訂了不領的食材成本由廚房 / 承辦吸收，缺乏責任追蹤機制</li>
+<li><strong>菜單口頭通知</strong>：無歷史紀錄、溝通成本高</li>
+<li><strong>LINE 群組訊息洗版</strong>：原始設計逐單推播導致重要訊息易被忽略</li>
+</ol>
+<p>為解決上述問題，已先行投入 9 個月、累計 520 工時開發完成 <strong>EMO 電子點餐系統 v11</strong>
+（內部測試完成、待上線）。本建議書檢具：</p>
+<ul>
+<li><strong>系統現有功能盤點</strong>（已實作、可立即上線）</li>
+<li><strong>已完成開發歷程與投入價值</strong>（呈現系統建置投入辛勞度）</li>
+<li><strong>需求訪談功能問卷</strong>（供各使用方驗證需求 / 表達調整意見）</li>
+<li><strong>LINE 通知額外支出費用</strong>（依 2026 官方資費精算）</li>
+<li><strong>現場硬體設備需求</strong>（參照 Samsung 官網與 PChome 實價）</li>
+<li><strong>建置推動期程</strong>（12 週上線甘特）</li>
+<li><strong>日後維護經費支出建議</strong></li>
+<li><strong>3 年總持有成本（TCO）</strong></li>
+</ul>
+<p>爭取建置經費並列入年度預算編列，俾利正式部署。</p>
+<hr />
+<h2 id="_2">二、系統現有功能概覽</h2>
+<h3 id="21-line">2.1 訂購端（勤務人員手機 LINE）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>功能</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>三餐線上訂購</td>
+<td>早餐、中餐（A/B/C 三種便當）、晚餐，可單選或複選</td>
+</tr>
+<tr>
+<td>2</td>
+<td>訂單編號</td>
+<td>自動產生 <code>YYYYMMDD-NNN</code>，每筆訂單唯一可追蹤</td>
+</tr>
+<tr>
+<td>3</td>
+<td>訂單確認卡片</td>
+<td>下單後即時 LINE 推送 Flex 卡片，含訂單明細 + 領餐 QR Code</td>
+</tr>
+<tr>
+<td>4</td>
+<td>中餐套數管控</td>
+<td>每日 A/B/C 各限 40 份，達上限自動鎖定該套餐</td>
+</tr>
+<tr>
+<td>5</td>
+<td>結單時間管控</td>
+<td>早 07:00 / 中 10:30 / 晚 16:00 後不可訂購當日該餐</td>
+</tr>
+<tr>
+<td>6</td>
+<td>未來日期預訂</td>
+<td>可預訂未來日期訂單</td>
+</tr>
+<tr>
+<td>7</td>
+<td>棄單黑名單</td>
+<td>30 日內棄單超過 3 次自動停權 30 天</td>
+</tr>
+<tr>
+<td>8</td>
+<td>必填欄位驗證</td>
+<td>單位 / 姓名 / 警用電話 / 日期皆必填</td>
+</tr>
+<tr>
+<td>9</td>
+<td>備註欄</td>
+<td>可註記特殊需求</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22">2.2 管理端（承辦 / 廚房幹部手機平板）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>功能</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>管理員權限控管</td>
+<td>限白名單 LINE userId 進入管理頁</td>
+</tr>
+<tr>
+<td>2</td>
+<td>每日菜單維護</td>
+<td>可按日期維護菜單，歷史菜單自動保留並提供下拉選單複用</td>
+</tr>
+<tr>
+<td>3</td>
+<td>訂單即時統計</td>
+<td>顯示每餐數量、中餐 A/B/C 分項、總筆數、已領 / 未領 / 取消</td>
+</tr>
+<tr>
+<td>4</td>
+<td>QR 掃描標領</td>
+<td>領餐時掃 QR，依當下時間自動判斷餐別（早 07–08 / 中 11:30–12:30 / 晚 16:50–18:00）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>手動標領 / 取消已領</td>
+<td>無 QR 也可手動標記，可取消已領回復</td>
+</tr>
+<tr>
+<td>6</td>
+<td>訂單軟刪除</td>
+<td>取消訂單需填理由，保留原始資料以利稽核</td>
+</tr>
+<tr>
+<td>7</td>
+<td>操作稽核紀錄</td>
+<td>AuditLog 記錄所有管理員動作（時間 / 操作者 / 動作 / 目標 / 結果）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>統計報表查詢匯出 <strong>(v11)</strong></td>
+<td>提供統計日報、月報表線上查詢與 Excel 匯出，含三餐統計、領餐率、棄單率、訂購單位 TOP 排行</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23">2.3 自動化處理</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>功能</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>棄單自動標記</td>
+<td>每 10 分鐘掃描，逾領餐時段未領者自動標棄單</td>
+</tr>
+<tr>
+<td>2</td>
+<td>廚房群組彙整推送</td>
+<td>每餐結單後自動推送一則彙整訊息到 LINE 群組（v10 新增，含名單 / 數量 / 取消註記）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LINE 訊息額度節省</td>
+<td>由「每筆下單 push 群組」改為「每餐 1 則彙整」，月推播量降低 80% 以上</td>
+</tr>
+<tr>
+<td>4</td>
+<td>統計日報自動推送 <strong>(v11)</strong></td>
+<td>每日 <strong>18:00</strong>（晚餐領餐時段結束）後 <strong>5 分鐘內</strong>，自動將當日統計日報推送至管理 LINE 群組（訂單總計、三餐 訂/領/棄、中餐 A/B/C、領餐率、棄單率、訂購單位 TOP 5）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>月報表自動推送 <strong>(v11)</strong></td>
+<td>每月 <strong>1 日 09:00</strong> 自動結算前月並推送月報摘要至管理 LINE 群組（工作日數、累計訂單、三餐累計、領餐率、棄單率、單位 TOP 10、棄單紀錄 TOP 5）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24">2.4 資料持久化</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>工作表</th>
+<th>欄位數</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Orders</td>
+<td>24 欄</td>
+<td>訂單主檔（含領餐 / 棄單 / 取消三組狀態欄）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Menu</td>
+<td>4 欄</td>
+<td>多日菜單歷史（自動沿用最近設定）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Admins</td>
+<td>3 欄</td>
+<td>管理員白名單</td>
+</tr>
+<tr>
+<td>4</td>
+<td>AuditLog</td>
+<td>7 欄</td>
+<td>管理員操作稽核</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_3">三、已完成開發歷程與投入價值</h2>
+<p>本系統並非外購套裝軟體，係由資訊室股長 <strong>曾銘忠</strong> 自 2025 年 9 月起，
+歷時 <strong>9 個月</strong>、累計投入 <strong>520 工時</strong> 規劃、設計、開發、測試及文件撰寫，
+歷經 <strong>v1 → v11 共 11 個版本迭代</strong>完成。</p>
+<h3 id="31">3.1 版本演進里程碑</h3>
+<table>
+<thead>
+<tr>
+<th>階段</th>
+<th>月份</th>
+<th>版本</th>
+<th>重要里程碑</th>
+<th>投入工時</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>規劃</td>
+<td>2025-09</td>
+<td>v1</td>
+<td>需求訪談、架構選型、Sheet 結構初步設計</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td>基礎建置</td>
+<td>2025-10</td>
+<td>v2</td>
+<td>訂購表單、單位/姓名/警用電話拆欄、Admins 表</td>
+<td>60 hr</td>
+</tr>
+<tr>
+<td>訂單管理</td>
+<td>2025-11</td>
+<td>v3</td>
+<td>訂單編號、多日菜單、QR 確認卡</td>
+<td>70 hr</td>
+</tr>
+<tr>
+<td>領餐優化</td>
+<td>2025-12</td>
+<td>v4</td>
+<td>三餐分別領餐、領餐時間紀錄</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td>紀律機制</td>
+<td>2026-01</td>
+<td>v5</td>
+<td>棄單偵測自動掃描、黑名單停權</td>
+<td>60 hr</td>
+</tr>
+<tr>
+<td>群組通知</td>
+<td>2026-02</td>
+<td>v6</td>
+<td>廚房 LINE 群組推送、Webhook 自動捕捉 groupId</td>
+<td>30 hr</td>
+</tr>
+<tr>
+<td>時段管控</td>
+<td>2026-03</td>
+<td>v7</td>
+<td>取餐時段定義 + QR 掃描自動判斷餐別</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td>稽核強化</td>
+<td>2026-04</td>
+<td>v8 / v9</td>
+<td>訂單軟刪除、AuditLog 全程紀錄、查詢介面</td>
+<td>80 hr</td>
+</tr>
+<tr>
+<td>額度節省</td>
+<td>2026-05</td>
+<td>v10</td>
+<td>結單彙整通知，LINE 推播量降 80% 以上</td>
+<td>20 hr</td>
+</tr>
+<tr>
+<td>報表模組</td>
+<td>2026-06</td>
+<td>v11</td>
+<td>統計日報 / 月報自動推送（18:00 / 1 日 09:00）、管理頁報表查詢匯出</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td>文件整理</td>
+<td>全期</td>
+<td>—</td>
+<td>SETUP.md、操作手冊（含 PDF）、規劃執行報告</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td><strong>合計</strong></td>
+<td><strong>9 個月</strong></td>
+<td><strong>11 版本</strong></td>
+<td></td>
+<td><strong>520 hr</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="32">3.2 等值市場價值試算（呈現系統投入規模，本案毋需編列）</h3>
+<p>依 <strong>資訊軟體業界中階至資深工程師時薪 NT$ 2,000 / 小時</strong>（含設計、開發、測試、文件、會議綜合行情）：</p>
+<table>
+<thead>
+<tr>
+<th>工作類別</th>
+<th>工時</th>
+<th>等值費用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系統規劃 + 需求訪談</td>
+<td>40 hr</td>
+<td>NT$ 80,000</td>
+</tr>
+<tr>
+<td>系統設計 + 資料模型</td>
+<td>60 hr</td>
+<td>NT$ 120,000</td>
+</tr>
+<tr>
+<td>後端開發（GAS Web App，10 版本迭代）</td>
+<td>140 hr</td>
+<td>NT$ 280,000</td>
+</tr>
+<tr>
+<td>前端開發（LIFF order.html / admin.html）</td>
+<td>80 hr</td>
+<td>NT$ 160,000</td>
+</tr>
+<tr>
+<td>LINE Messaging API + LIFF 整合</td>
+<td>30 hr</td>
+<td>NT$ 60,000</td>
+</tr>
+<tr>
+<td>黑名單 / 棄單 / AuditLog 客製機制</td>
+<td>30 hr</td>
+<td>NT$ 60,000</td>
+</tr>
+<tr>
+<td>v10 LINE 額度節省機制</td>
+<td>20 hr</td>
+<td>NT$ 40,000</td>
+</tr>
+<tr>
+<td>v11 統計日報 / 月報自動推送 + 報表 API</td>
+<td>40 hr</td>
+<td>NT$ 80,000</td>
+</tr>
+<tr>
+<td>測試 + 內部驗證</td>
+<td>40 hr</td>
+<td>NT$ 80,000</td>
+</tr>
+<tr>
+<td>文件撰寫（SETUP、操作手冊、規劃報告）</td>
+<td>40 hr</td>
+<td>NT$ 80,000</td>
+</tr>
+<tr>
+<td><strong>已投入內部開發等值合計</strong></td>
+<td><strong>520 hr</strong></td>
+<td><strong>約 NT$ 1,040,000</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>此項投入已由本室內部承接吸收，<strong>本建議書不另編列開發費</strong>，
+列示此節旨在說明系統「等同委外建置約百萬元」之專業投入與價值，
+俾利委員審視系統規模與後續維護人力配置之合理性。</p>
+</blockquote>
+<h3 id="33">3.3 委外比價（同等系統業界報價區間）</h3>
+<table>
+<thead>
+<tr>
+<th>比較項目</th>
+<th>委外承包報價</th>
+<th>本案實際支出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同等規模 LIFF + 後端 + 後台 系統建置</td>
+<td>NT$ 800,000 – 1,500,000</td>
+<td>NT$ 0（已內部開發）</td>
+</tr>
+<tr>
+<td>硬體設備（領餐站 + 廚房接收 + Wi-Fi 補強）</td>
+<td>—</td>
+<td>NT$ 28,480</td>
+</tr>
+<tr>
+<td>系統部署 + 教育訓練 + 操作手冊 + 試運行</td>
+<td>NT$ 50,000 – 100,000</td>
+<td>NT$ 100,000</td>
+</tr>
+<tr>
+<td>首年經常性支出（LINE OA + Google Workspace + 維運 + 訓練 + 耗材）</td>
+<td>NT$ 160,000 – 300,000</td>
+<td>NT$ 167,120</td>
+</tr>
+<tr>
+<td><strong>業界參考總價 ／ 本案首年實際支出</strong></td>
+<td><strong>NT$ 1,010,000 – 1,900,000</strong></td>
+<td><strong>NT$ 295,600</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_4">四、需求訪談功能問卷</h2>
+<p>請各使用者依角色填寫對應問卷，於 ____ 年 __ 月 __ 日前回傳資訊室。</p>
+<blockquote>
+<p>評分方式：5 必要 / 4 重要 / 3 有用 / 2 可省略 / 1 不需要</p>
+</blockquote>
+<h3 id="a">問卷 A：訂購人（勤務人員 / 員工）</h3>
+<p><strong>填表人</strong>：單位 <strong><em>_</em></strong><strong> 姓名 <strong><em>_</em></strong></strong> 日期 <strong><em>_</em></strong>__</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>功能</th>
+<th>重要性</th>
+<th>是否需調整 / 備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>用 LINE 直接訂餐（免另裝 App）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A2</td>
+<td>三餐可分別勾選（早 / 中 / 晚）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A3</td>
+<td>中餐分 A / B / C 三種便當</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A4</td>
+<td>中餐每套限額（避免廚房當日生產過量）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A5</td>
+<td>預訂未來日期</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A6</td>
+<td>結單時間管控（過時不能訂）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td>期望結單時間：早 ___ / 中 ___ / 晚 ___</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>收到含 QR 的訂單確認卡</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A8</td>
+<td>領餐時用 QR 核對</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A9</td>
+<td>備註欄（特殊需求說明）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>A10</td>
+<td>棄單停權機制</td>
+<td>□5 □4 □3 □2 □1</td>
+<td>容許次數：___ 次 / ___ 日</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Q1</strong>：您預計每週使用本系統訂餐 ___ 次。</p>
+<p><strong>Q2</strong>：是否曾遇到下列困擾？（可複選）
+- □ 訂了忘記領餐
+- □ 想取消訂單但找不到方式
+- □ 領餐時排隊太久
+- □ 想更改訂單內容
+- □ 其他：<strong><em>_</em></strong><strong><em>_</em></strong>___</p>
+<p><strong>Q3</strong>：建議新增功能：<strong><em>_</em></strong><strong><em>_</em></strong>___</p>
+<hr />
+<h3 id="b">問卷 B：廚房單位</h3>
+<p><strong>填表人</strong>：單位 <strong><em>_</em></strong><strong> 姓名 <strong><em>_</em></strong></strong> 日期 <strong><em>_</em></strong>__</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>功能</th>
+<th>重要性</th>
+<th>是否需調整 / 備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td>每餐結單後 LINE 群組收到彙整訊息</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>B2</td>
+<td>彙整訊息包含訂購人名單</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>B3</td>
+<td>彙整訊息包含 A / B / C 分項數量</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>B4</td>
+<td>彙整訊息包含取消訂單註記</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>B5</td>
+<td>接受 QR 掃描領餐</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>B6</td>
+<td>自動棄單偵測</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>B7</td>
+<td>菜單前一日可預先發布</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Q1</strong>：彙整訊息希望以何種形式呈現？
+- □ 純文字（目前實作，便於複製貼上）
+- □ 圖文 Flex（樣式較美）
+- □ 列印紙本（需配備熱感印表機）</p>
+<p><strong>Q2</strong>：每日廚房作業約需 ___ 人 / 每餐約 ___ 份產量上限。</p>
+<p><strong>Q3</strong>：希望系統額外提供：<strong><em>_</em></strong><strong><em>_</em></strong>___</p>
+<hr />
+<h3 id="c">問卷 C：管理員 / 承辦人員</h3>
+<p><strong>填表人</strong>：單位 <strong><em>_</em></strong><strong> 姓名 <strong><em>_</em></strong></strong> 日期 <strong><em>_</em></strong>__</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>功能</th>
+<th>重要性</th>
+<th>是否需調整 / 備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>線上維護每日菜單</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C2</td>
+<td>歷史菜單沿用（自動填上次設定）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C3</td>
+<td>即時訂單統計（含分項）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C4</td>
+<td>QR 掃描標領</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C5</td>
+<td>手動標領 / 取消已領</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C6</td>
+<td>訂單軟刪除（保留稽核）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C7</td>
+<td>操作稽核紀錄查詢</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C8</td>
+<td>訂單匯出 Excel</td>
+<td>□5 □4 □3 □2 □1</td>
+<td></td>
+</tr>
+<tr>
+<td>C9</td>
+<td>月報統計（採購量 / 棄餐率）</td>
+<td>□5 □4 □3 □2 □1</td>
+<td>期望期間：□ 週 □ 月 □ 季</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Q1</strong>：管理員預估有 ___ 人。</p>
+<p><strong>Q2</strong>：目前作業最耗時的環節：
+- □ 統計訂單數量
+- □ 對帳 / 結算
+- □ 處理特殊需求
+- □ 其他：<strong><em>_</em></strong><strong><em>_</em></strong>___</p>
+<p><strong>Q3</strong>：需要新增的管理功能：<strong><em>_</em></strong><strong><em>_</em></strong>___</p>
+<hr />
+<h3 id="d">問卷 D：資訊單位</h3>
+<p><strong>填表人</strong>：單位 <strong><em>_</em></strong><strong> 姓名 <strong><em>_</em></strong></strong> 日期 <strong><em>_</em></strong>__</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>項目</th>
+<th>評估</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>採 LINE LIFF + GAS + Google Sheets 架構</td>
+<td>□ 同意 □ 不同意</td>
+<td></td>
+</tr>
+<tr>
+<td>D2</td>
+<td>資料儲存於 Google Sheets / Google Workspace</td>
+<td>□ 同意 □ 不同意</td>
+<td></td>
+</tr>
+<tr>
+<td>D3</td>
+<td>使用既有 LINE 官方帳號</td>
+<td>□ 同意 □ 不同意</td>
+<td></td>
+</tr>
+<tr>
+<td>D4</td>
+<td>LINE OA 升級為「高用量」方案（NT$1,260/月含稅）</td>
+<td>□ 同意 □ 不同意 □ 提供替代</td>
+<td></td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Google Workspace Business Standard × 5 帳號</td>
+<td>□ 同意 □ 不同意 □ 用免費版</td>
+<td></td>
+</tr>
+<tr>
+<td>D6</td>
+<td>維護由資訊室股長 1 人承接</td>
+<td>□ 同意 □ 不同意</td>
+<td></td>
+</tr>
+<tr>
+<td>D7</td>
+<td>後續客製化需求採委外或內部開發</td>
+<td>□ 委外 □ 內部 □ 混合</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Q1</strong>：資安要求是否需額外措施？（如：自架備援、Google Workspace 升級為機關專用域、定期備份匯出）</p>
+<p><strong>Q2</strong>：是否需與既有系統介接？（如：刷卡機、人事系統、會計核銷）</p>
+<hr />
+<h2 id="line-2026">五、LINE 通知費用（依 2026 官方資費）</h2>
+<h3 id="51">5.1 月用量推估</h3>
+<table>
+<thead>
+<tr>
+<th>推播類型</th>
+<th>每筆 / 每次</th>
+<th>每月次數</th>
+<th>月訊息量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>訂購人訂單確認卡片</td>
+<td>1 則 / 訂單</td>
+<td>150 × 22</td>
+<td><strong>3,300 則</strong></td>
+</tr>
+<tr>
+<td>廚房群組彙整推送（v10 已優化）</td>
+<td>3 則 / 日</td>
+<td>3 × 22</td>
+<td><strong>66 則</strong></td>
+</tr>
+<tr>
+<td>系統測試 / 異常重送 預備</td>
+<td>—</td>
+<td>—</td>
+<td><strong>34 則</strong></td>
+</tr>
+<tr>
+<td><strong>平日合計</strong></td>
+<td></td>
+<td></td>
+<td><strong>約 3,400 則 / 月</strong></td>
+</tr>
+<tr>
+<td>高峰月（200 筆 × 25 日 + 群組 + 預備）</td>
+<td></td>
+<td></td>
+<td><strong>約 5,150 則 / 月</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-line-2026">5.2 LINE 官方帳號 2026 收費方案（官方公告）</h3>
+<p>依 LINE Biz-Solutions 台灣官方資費（2026），LINE 官方帳號分為三方案：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>月費（未稅）</th>
+<th>月費（含稅 5%）</th>
+<th>內含推播</th>
+<th>是否可加購</th>
+<th>加購單價</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>輕用量（Communication）</td>
+<td>NT$ 0</td>
+<td>NT$ 0</td>
+<td>200 則</td>
+<td><strong>不可加購</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>中用量</td>
+<td>NT$ 800</td>
+<td>NT$ 840</td>
+<td>3,000 則</td>
+<td><strong>不可加購</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>★ 高用量（推薦）</strong></td>
+<td><strong>NT$ 1,200</strong></td>
+<td><strong>NT$ 1,260</strong></td>
+<td><strong>6,000 則</strong></td>
+<td><strong>可加購</strong></td>
+<td><strong>NT$ 0.20/則 起（階梯遞減）</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>重要：</strong>
+- 中用量 <strong>不可加購</strong>，月推播量超過 3,000 則即須升級高用量
+- 本案月推播 3,400 則 &gt; 3,000 則，<strong>中用量不可選</strong>
+- 必須採高用量方案（6,000 則內，含 76% 緩衝空間）</p>
+<h3 id="53">5.3 年度費用試算</h3>
+<table>
+<thead>
+<tr>
+<th>情境</th>
+<th>月支出（含稅）</th>
+<th>年支出（含稅）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>平日（3,400 則）</td>
+<td>NT$ 1,260</td>
+<td>NT$ 15,120</td>
+</tr>
+<tr>
+<td>高峰月（5,150 則，仍在 6,000 內）</td>
+<td>NT$ 1,260</td>
+<td>—</td>
+</tr>
+<tr>
+<td>極端高峰（&gt; 6,000 則，加購 500 則 × 0.2）</td>
+<td>NT$ 1,360</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>★ 年度建議編列（高用量年費 + 加購預備）</strong></td>
+<td>—</td>
+<td><strong>NT$ 20,000</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-sms-line">5.4 與委外 SMS / 推播比較（佐證 LINE 方案優勢）</h3>
+<table>
+<thead>
+<tr>
+<th>通路</th>
+<th>單則費用</th>
+<th>月推播 3,400 則成本</th>
+<th>年成本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>簡訊 SMS</td>
+<td>NT$ 0.7 – 1.2</td>
+<td>NT$ 2,380 – 4,080</td>
+<td>NT$ 28,560 – 48,960</td>
+</tr>
+<tr>
+<td>LINE Notify（已停止服務 2025-10）</td>
+<td>—</td>
+<td>—</td>
+<td>不可用</td>
+</tr>
+<tr>
+<td><strong>LINE OA 高用量</strong></td>
+<td>NT$ 0.21（攤分）</td>
+<td>NT$ 1,260</td>
+<td><strong>NT$ 15,120</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>採 LINE OA 較 SMS 節省 47% – 69% / 年。</p>
+</blockquote>
+<hr />
+<h2 id="_5">六、現場硬體設備需求（官方/通路實價）</h2>
+<h3 id="61">6.1 訂購端（勤務人員）</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>規格 / 數量</th>
+<th>預估費用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>智慧型手機（已安裝 LINE）</td>
+<td>員工自備</td>
+<td>NT$ 0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-qr">6.2 領餐站（QR 掃描）— 採購清單</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>規格</th>
+<th>採購來源</th>
+<th>數量</th>
+<th>單價</th>
+<th>小計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Samsung Galaxy Tab A9+ Wi-Fi 11"（4G/64GB）</td>
+<td>11 吋 1920×1200 / 後鏡頭 8MP</td>
+<td>Samsung 台灣官網 / PChome 24h</td>
+<td>2</td>
+<td>NT$ 6,990</td>
+<td>NT$ 13,980</td>
+</tr>
+<tr>
+<td>桌面型平板支架（金屬可調式）</td>
+<td>角度可調、防滑</td>
+<td>PChome / momo</td>
+<td>2</td>
+<td>NT$ 850</td>
+<td>NT$ 1,700</td>
+</tr>
+<tr>
+<td>平板防護殼</td>
+<td>防摔、矽膠邊框</td>
+<td>通路</td>
+<td>2</td>
+<td>NT$ 500</td>
+<td>NT$ 1,000</td>
+</tr>
+<tr>
+<td>USB 快充充電器 + 線材</td>
+<td>25W PD 快充</td>
+<td>通路</td>
+<td>2</td>
+<td>NT$ 650</td>
+<td>NT$ 1,300</td>
+</tr>
+<tr>
+<td><strong>小計</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>NT$ 17,980</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="63">6.3 廚房接收端</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>規格</th>
+<th>採購來源</th>
+<th>數量</th>
+<th>單價</th>
+<th>小計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>商用熱感應出單機（80mm 藍牙 + 自動裁紙）</td>
+<td>含 LINE 訊息列印 App</td>
+<td>通路</td>
+<td>1</td>
+<td>NT$ 6,500</td>
+<td>NT$ 6,500</td>
+</tr>
+<tr>
+<td>熱感紙（80mm × 60m）× 10 卷</td>
+<td>1 卷 ≈ 300 張（每張彙整單約 20cm）</td>
+<td>通路</td>
+<td>10</td>
+<td>NT$ 50</td>
+<td>NT$ 500</td>
+</tr>
+<tr>
+<td>手機 / 平板（接收 LINE 群組）</td>
+<td>既有</td>
+<td>—</td>
+<td>—</td>
+<td>NT$ 0</td>
+<td>NT$ 0</td>
+</tr>
+<tr>
+<td><strong>小計</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>NT$ 7,000</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>熱感紙用量推估：</strong></p>
+<ul>
+<li>每張彙整單長度約 <strong>18–22 cm</strong>（含日期、餐別、A/B/C 分項、訂購名單、取消註記），取中值 20 cm</li>
+<li>1 卷（80mm × 60m = 6,000 cm）÷ 20 cm ≈ <strong>300 張 / 卷</strong></li>
+<li>月用量：3 餐 × 22 工作日 ＝ <strong>66 張 / 月</strong>，含廢單 / 試印緩衝 20% ≈ <strong>80 張 / 月</strong></li>
+<li>10 卷 ≈ 3,000 張 ÷ 80 張 ≈ <strong>約 37 個月（3 年以上用量）</strong></li>
+</ul>
+<p><strong>採購建議（含保存期限考量）：</strong>熱感紙顯影劑保存期約 1–2 年，
+為避免久放失效，建議採 <strong>首年 5 卷 + 第 2/3 年各補 3 卷</strong> 分批採購；
+本案一次性預算仍編列 10 卷份額 NT$ 500，剩餘 5 卷可改由經常性耗材分年補充。</p>
+</blockquote>
+<h3 id="64">6.4 網路 / 環境</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>建議</th>
+<th>預估費用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>領餐區 Wi-Fi 訊號補強</td>
+<td>既有 Wi-Fi + 加裝 1 台 AP</td>
+<td>NT$ 3,500</td>
+</tr>
+<tr>
+<td>4G / 5G 行動網路備援</td>
+<td>既有方案</td>
+<td>NT$ 0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="65">6.5 硬體一次性合計</h3>
+<table>
+<thead>
+<tr>
+<th>類別</th>
+<th>金額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>領餐站</td>
+<td>NT$ 17,980</td>
+</tr>
+<tr>
+<td>廚房接收</td>
+<td>NT$ 7,000</td>
+</tr>
+<tr>
+<td>網路補強</td>
+<td>NT$ 3,500</td>
+</tr>
+<tr>
+<td><strong>硬體總計</strong></td>
+<td><strong>NT$ 28,480</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12">七、建置推動期程（12 週上線）</h2>
+<h3 id="71-9-520-3">7.1 已完成期程（過去 9 個月、520 工時，詳見 §3）</h3>
+<pre><code>2025-09 ─ v1 規劃        ●━━━━
+2025-10 ─ v2 基礎建置          ●━━━━
+2025-11 ─ v3 訂單管理              ●━━━━
+2025-12 ─ v4 領餐優化                  ●━━━━
+2026-01 ─ v5 紀律機制                      ●━━━━
+2026-02 ─ v6 群組通知                          ●━━━━
+2026-03 ─ v7 時段管控                              ●━━━━
+2026-04 ─ v8/v9 稽核強化                              ●━━━━
+2026-05 ─ v10 額度節省                                          ●━━━━
+2026-06 ─ v11 報表模組 / 上線就緒                                    ●━━━━
+</code></pre>
+<h3 id="72-12">7.2 後續正式上線期程（12 週）</h3>
+<table>
+<thead>
+<tr>
+<th>階段</th>
+<th>週次</th>
+<th>重點工作</th>
+<th>主辦</th>
+<th>投入工時</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 1</td>
+<td>W1–W2</td>
+<td>需求訪談問卷發放 + 彙整</td>
+<td>資訊室 + 各使用單位</td>
+<td>20 hr</td>
+</tr>
+<tr>
+<td>Phase 2</td>
+<td>W3</td>
+<td>建議書簽核 + 預算編列 + 採購程序</td>
+<td>資訊室 + 主計</td>
+<td>16 hr</td>
+</tr>
+<tr>
+<td>Phase 3</td>
+<td>W4–W5</td>
+<td>LINE OA 升級高用量 + Google Workspace 申辦 + 平板採購 + 印表機到貨設定</td>
+<td>資訊室</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td>Phase 4</td>
+<td>W6–W7</td>
+<td>系統部署 + 白名單建立 + 菜單匯入 + 整合測試</td>
+<td>資訊室</td>
+<td>50 hr</td>
+</tr>
+<tr>
+<td>Phase 5</td>
+<td>W8</td>
+<td>教育訓練：訂購人 / 廚房 / 管理員 三場</td>
+<td>資訊室</td>
+<td>24 hr</td>
+</tr>
+<tr>
+<td>Phase 6</td>
+<td>W9–W10</td>
+<td>試營運（單一單位）+ 問題收集 + 回訓</td>
+<td>資訊室 + 試點單位</td>
+<td>40 hr</td>
+</tr>
+<tr>
+<td>Phase 7</td>
+<td>W11–W12</td>
+<td>全面上線 + 月度檢討啟動</td>
+<td>資訊室 + 全機關</td>
+<td>16 hr</td>
+</tr>
+<tr>
+<td><strong>合計</strong></td>
+<td><strong>12 週</strong></td>
+<td></td>
+<td></td>
+<td><strong>206 hr</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>上線推動投入折算等值：206 hr × NT$ 2,000 ≈ NT$ 412,000（內部資源吸收）。</p>
+</blockquote>
+<hr />
+<h2 id="_6">八、預算彙總</h2>
+<h3 id="81">8.1 一次性建置成本</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>金額</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>平板（Samsung Galaxy Tab A9+ × 2）</td>
+<td>NT$ 13,980</td>
+<td>領餐站 + 廚房備援</td>
+</tr>
+<tr>
+<td>平板配件（支架/防護殼/充電）</td>
+<td>NT$ 4,000</td>
+<td></td>
+</tr>
+<tr>
+<td>商用熱感應出單機 + 紙卷</td>
+<td>NT$ 7,000</td>
+<td>廚房紙本備援列印</td>
+</tr>
+<tr>
+<td>領餐區 Wi-Fi AP 補強</td>
+<td>NT$ 3,500</td>
+<td></td>
+</tr>
+<tr>
+<td>系統部署 + 環境設定</td>
+<td>NT$ 30,000</td>
+<td>GAS 部署、LINE OA 設定、Sheet 權限、白名單</td>
+</tr>
+<tr>
+<td>教育訓練（三場次：訂購人/廚房/管理員）</td>
+<td>NT$ 30,000</td>
+<td>教材 + 講師費</td>
+</tr>
+<tr>
+<td>操作手冊印製（A4 彩印 100 份）</td>
+<td>NT$ 15,000</td>
+<td></td>
+</tr>
+<tr>
+<td>試運行支援（3 週）</td>
+<td>NT$ 25,000</td>
+<td>問題收集、調整、回訓</td>
+</tr>
+<tr>
+<td><strong>一次性建置合計</strong></td>
+<td><strong>NT$ 128,480</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="82">8.2 年度經常性支出</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>金額</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LINE OA 高用量月費（含稅）</td>
+<td>NT$ 15,120</td>
+<td>NT$ 1,260 × 12</td>
+</tr>
+<tr>
+<td>LINE 訊息超量加購預備</td>
+<td>NT$ 5,000</td>
+<td>高峰月 NT$ 0.20/則</td>
+</tr>
+<tr>
+<td>Google Workspace Business Standard × 5 帳號</td>
+<td>NT$ 26,000</td>
+<td>US$ 14 × 5 × 12 ≈ US$ 840 / 年</td>
+</tr>
+<tr>
+<td>系統維護人力（內部資訊室）</td>
+<td>NT$ 60,000</td>
+<td>30 工時 / 年 × NT$ 2,000</td>
+</tr>
+<tr>
+<td>第三方技術支援預備</td>
+<td>NT$ 36,000</td>
+<td>NT$ 3,000 / 月（按次計）</td>
+</tr>
+<tr>
+<td>教育訓練（新人接訓 + 進階）</td>
+<td>NT$ 20,000</td>
+<td>每季 1 場</td>
+</tr>
+<tr>
+<td>設備維護 + 耗材（熱感紙、平板電池）</td>
+<td>NT$ 5,000</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>年度經常性合計</strong></td>
+<td><strong>NT$ 167,120 / 年</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="83">8.3 已投入內部開發成本（呈現價值，本案不需支應）</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>工時</th>
+<th>等值市場價值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系統建置（v1–v11，詳見 §3.2）</td>
+<td>520 hr</td>
+<td><strong>NT$ 1,040,000</strong></td>
+</tr>
+<tr>
+<td>上線推動（12 週，詳見 §7.2）</td>
+<td>206 hr</td>
+<td><strong>NT$ 412,000</strong></td>
+</tr>
+<tr>
+<td><strong>已投入合計</strong></td>
+<td><strong>726 hr</strong></td>
+<td><strong>約 NT$ 1,452,000</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>由資訊室股長 曾銘忠 內部承接，<strong>本建議書不需另支應該等費用</strong>。
+列示此節旨在說明系統投入價值，俾利委員審視整體規模。</p>
+</blockquote>
+<h3 id="84-3-tco">8.4 3 年總持有成本（TCO）</h3>
+<table>
+<thead>
+<tr>
+<th>年度</th>
+<th>一次性</th>
+<th>經常性</th>
+<th>合計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1 年</td>
+<td>NT$ 128,480</td>
+<td>NT$ 167,120</td>
+<td><strong>NT$ 295,600</strong></td>
+</tr>
+<tr>
+<td>第 2 年</td>
+<td>—</td>
+<td>NT$ 167,120</td>
+<td><strong>NT$ 167,120</strong></td>
+</tr>
+<tr>
+<td>第 3 年</td>
+<td>NT$ 14,000（平板汰換預備）</td>
+<td>NT$ 167,120</td>
+<td><strong>NT$ 181,120</strong></td>
+</tr>
+<tr>
+<td><strong>3 年 TCO 合計</strong></td>
+<td></td>
+<td></td>
+<td><strong>NT$ 643,840</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>視角</th>
+<th>金額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>機關實際編列預算（3 年 TCO）</td>
+<td>NT$ 643,840</td>
+</tr>
+<tr>
+<td>已投入內部開發等值</td>
+<td>NT$ 1,452,000</td>
+</tr>
+<tr>
+<td><strong>系統 3 年總投入價值</strong></td>
+<td><strong>約 NT$ 2,095,840</strong></td>
+</tr>
+<tr>
+<td>委外建置同等系統市場報價（業界區間中位）</td>
+<td>NT$ 1,800,000</td>
+</tr>
+<tr>
+<td><strong>預算 vs. 市場價節省</strong></td>
+<td><strong>約 NT$ 1,156,160</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_7">九、效益與風險</h2>
+<h3 id="91">9.1 預期效益</h3>
+<table>
+<thead>
+<tr>
+<th>效益面向</th>
+<th>量化指標</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>承辦工時節省</td>
+<td>每日訂單彙整由 30 分鐘 → &lt; 5 分鐘，<strong>年省約 110 工時</strong></td>
+</tr>
+<tr>
+<td>棄餐成本降低</td>
+<td>黑名單機制，<strong>棄餐率預估降低 50% 以上</strong></td>
+</tr>
+<tr>
+<td>領餐爭議減少</td>
+<td>QR 核對 + AuditLog，提供<strong>客觀稽核憑證</strong></td>
+</tr>
+<tr>
+<td>菜單溝通效率</td>
+<td>歷史菜單沿用，承辦不需重複輸入</td>
+</tr>
+<tr>
+<td>LINE 推播成本可控</td>
+<td>v10 彙整推送，<strong>月推播量降 80%↑</strong>，避免方案升級</td>
+</tr>
+<tr>
+<td>資料即時可視</td>
+<td>訂單統計即時更新，月報快速產出</td>
+</tr>
+<tr>
+<td>委外建置節省</td>
+<td>內部開發等值 NT$ 1,040,000，<strong>3 年 TCO 對比節省約 NT$ 1.16M</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="92">9.2 風險與對應措施</h3>
+<table>
+<thead>
+<tr>
+<th>風險</th>
+<th>對應措施</th>
+<th>剩餘風險</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LINE Bot quota 超限</td>
+<td>已採彙整推送設計；高用量 6,000 則含 76% 緩衝；超量加購每則 NT$ 0.2</td>
+<td>低</td>
+</tr>
+<tr>
+<td>Google Apps Script 執行時間限制</td>
+<td>單次 6 分鐘上限，現行用量遠低於此</td>
+<td>低</td>
+</tr>
+<tr>
+<td>LINE 政策 / 費率變更</td>
+<td>預留升級空間；年度檢視</td>
+<td>中</td>
+</tr>
+<tr>
+<td>管理員離職 / 接訓</td>
+<td>AuditLog 全程追蹤；SETUP.md / 操作手冊完整；年度訓練</td>
+<td>低</td>
+</tr>
+<tr>
+<td>系統服務中斷</td>
+<td>紙本備援程序；熱感印表機備援列印</td>
+<td>低</td>
+</tr>
+<tr>
+<td>Google Sheets 容量上限</td>
+<td>單表 1,000 萬格上限，遠超本案需求</td>
+<td>極低</td>
+</tr>
+<tr>
+<td>資料外洩 / 隱私</td>
+<td>管理員白名單 + AuditLog + LINE ID token 驗證</td>
+<td>低</td>
+</tr>
+<tr>
+<td>內部維運人力中斷</td>
+<td>第三方技術支援預備金 NT$ 36,000/年</td>
+<td>中</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_8">十、結語</h2>
+<p>本系統已歷經 <strong>9 個月、520 工時</strong> 內部開發，完成 <strong>11 個版本迭代</strong>，
+等值市場建置價值約 <strong>NT$ 1,040,000</strong>，目前處於 <strong>「可立即上線」狀態</strong>。</p>
+<p>本建議書編列 3 年總持有成本 <strong>NT$ 643,840</strong>，
+較委外建置同等系統業界報價（約 NT$ 1.8M）<strong>節省約 NT$ 1.16M</strong>，
+具備明確的<strong>經費效益</strong>與<strong>內部技術自主能量</strong>。</p>
+<p><strong>懇請核可建置經費，俾利正式部署，提升訂餐作業效率與品質。</strong></p>
+<hr />
+<h2 id="_9">附件</h2>
+<ul>
+<li>附件一：EMO 系統部署指南（SETUP.md）</li>
+<li>附件二：操作手冊（操作手冊.md / 操作手冊.pdf）</li>
+<li>附件三：規劃執行報告（規劃執行報告.md）</li>
+<li>附件四：v1–v10 版本變更摘要（<strong>v1-v10版本變更摘要.md</strong>；原始細節見 V1直升V3手冊.md / V7直升V9手冊.md / 更新手冊.md）</li>
+<li>附件五：LINE 官方帳號 2026 資費頁面截圖（https://tw.linebiz.com/faq/oa-price/）</li>
+<li>附件六：Samsung Galaxy Tab A9+ 採購頁面截圖（PChome 24h）</li>
+</ul>
+<hr />
+<p><strong>承辦人簽章</strong>：<strong><em>_</em></strong><strong><em>_</em></strong><strong><em>_ <strong>日期</strong>：</em></strong><strong><em>_</em></strong></p>
+<p><strong>單位主管簽章</strong>：<strong><em>_</em></strong><strong><em>_</em></strong><strong><em>_ <strong>日期</strong>：</em></strong><strong><em>_</em></strong></p>
+<p><strong>機關首長核示</strong>：<strong><em>_</em></strong><strong><em>_</em></strong><strong><em>_ <strong>日期</strong>：</em></strong><strong><em>_</em></strong></p>
+</body>
+</html>
