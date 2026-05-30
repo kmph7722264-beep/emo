@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>興園食堂 EMO 電子點餐－用餐流程圖</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #c8d8e8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    font-family: 'Noto Sans TC', '微軟正黑體', sans-serif;
+  }
+
+  /* A4 容器 */
+  .a4 {
+    width: 794px;
+    min-height: 1123px;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+  }
+
+  /* ── 頂部裝飾波浪 ── */
+  .header-bg {
+    background: linear-gradient(150deg, #0d3b66 0%, #1a5a9a 60%, #0d3b66 100%);
+    padding: 28px 40px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-bg::before {
+    content: '';
+    position: absolute; bottom: -2px; left: 0; right: 0; height: 60px;
+    background: #fff;
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+  .header-bg::after {
+    content: '⚓';
+    position: absolute; right: 36px; top: 20px;
+    font-size: 90px; opacity: .07; line-height: 1;
+  }
+
+  .header-inner {
+    display: flex; align-items: center; gap: 18px;
+    position: relative; z-index: 1;
+  }
+  .logo-circle {
+    width: 72px; height: 72px; border-radius: 18px;
+    background: #06c755;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    border: 3px solid rgba(255,255,255,.3);
+  }
+  .header-text {}
+  .header-sub {
+    font-size: 13px; color: #a8cbec; letter-spacing: 2px; margin-bottom: 3px;
+  }
+  .header-title {
+    font-size: 30px; font-weight: 900; color: #fff;
+    letter-spacing: 3px; line-height: 1.1;
+  }
+  .header-title span { color: #06c755; }
+  .header-badge {
+    display: inline-block; margin-top: 6px;
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+    border-radius: 999px; padding: 3px 14px;
+    font-size: 12px; color: #d6ebff; letter-spacing: 1px;
+  }
+
+  /* ── 主體 ── */
+  .body-area {
+    padding: 20px 44px 10px;
+  }
+
+  .intro-line {
+    text-align: center; font-size: 13px; color: #6b7280;
+    margin-bottom: 22px; letter-spacing: .5px;
+  }
+  .intro-line strong { color: #0d3b66; }
+
+  /* ── 流程步驟 ── */
+  .steps {
+    display: flex; flex-direction: column; gap: 0;
+  }
+
+  .step-row {
+    display: flex; align-items: stretch; gap: 0;
+    position: relative;
+  }
+
+  /* 左側數字軸 */
+  .step-axis {
+    width: 64px; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .step-num {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: #fff;
+    flex-shrink: 0; z-index: 1; position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  }
+  .step-axis .line {
+    flex: 1; width: 3px;
+    background: linear-gradient(to bottom, #dbe8f4, #dbe8f4);
+    margin: 4px 0;
+  }
+  .step-row:last-child .step-axis .line { display: none; }
+
+  /* 步驟卡片 */
+  .step-card {
+    flex: 1; margin: 0 0 16px 14px;
+    border-radius: 14px; overflow: hidden;
+    border: 1.5px solid transparent;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    display: flex;
+  }
+  .step-accent {
+    width: 6px; flex-shrink: 0;
+  }
+  .step-content {
+    flex: 1; padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .step-icon {
+    font-size: 36px; flex-shrink: 0; line-height: 1;
+    width: 52px; text-align: center;
+  }
+  .step-text {}
+  .step-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    margin-bottom: 2px; opacity: .8;
+  }
+  .step-title {
+    font-size: 17px; font-weight: 900; margin-bottom: 4px; line-height: 1.3;
+  }
+  .step-desc {
+    font-size: 12.5px; line-height: 1.65; color: #374151;
+  }
+  .step-desc .tag {
+    display: inline-block; border-radius: 4px; padding: 1px 7px;
+    font-size: 11px; font-weight: 700; margin-right: 3px;
+  }
+
+  /* 顏色主題 */
+  .s1 .step-num  { background: linear-gradient(135deg, #1a6b3a, #06c755); }
+  .s1 .step-accent { background: #06c755; }
+  .s1 .step-card  { border-color: #b7e8c8; background: #f0fdf4; }
+  .s1 .step-label { color: #047a3a; }
+  .s1 .step-title { color: #0a4a24; }
+
+  .s2 .step-num  { background: linear-gradient(135deg, #0d3b66, #1a5a9a); }
+  .s2 .step-accent { background: #1a5a9a; }
+  .s2 .step-card  { border-color: #bcd3ed; background: #eef6ff; }
+  .s2 .step-label { color: #0d3b66; }
+  .s2 .step-title { color: #0a2e54; }
+
+  .s3 .step-num  { background: linear-gradient(135deg, #b45309, #f59e0b); }
+  .s3 .step-accent { background: #f59e0b; }
+  .s3 .step-card  { border-color: #fcd28a; background: #fffbeb; }
+  .s3 .step-label { color: #92400e; }
+  .s3 .step-title { color: #78350f; }
+
+  .s4 .step-num  { background: linear-gradient(135deg, #06c755, #00a844); }
+  .s4 .step-accent { background: #06c755; }
+  .s4 .step-card  { border-color: #b7e8c8; background: #f0fdf4; }
+  .s4 .step-label { color: #047a3a; }
+  .s4 .step-title { color: #0a4a24; }
+
+  .s5 .step-num  { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+  .s5 .step-accent { background: #3b82f6; }
+  .s5 .step-card  { border-color: #bfdbfe; background: #eff6ff; }
+  .s5 .step-label { color: #1e40af; }
+  .s5 .step-title { color: #1e3a8a; }
+
+  .s6 .step-num  { background: linear-gradient(135deg, #9333ea, #c026d3); }
+  .s6 .step-accent { background: #c026d3; }
+  .s6 .step-card  { border-color: #e9d5ff; background: #fdf4ff; }
+  .s6 .step-label { color: #7e22ce; }
+  .s6 .step-title { color: #581c87; }
+
+  /* 標籤顏色 */
+  .tag-green  { background: #dcfce7; color: #166534; }
+  .tag-blue   { background: #dbeafe; color: #1e40af; }
+  .tag-amber  { background: #fef3c7; color: #92400e; }
+  .tag-red    { background: #fee2e2; color: #991b1b; }
+
+  /* ── 重要提醒區 ── */
+  .notice-wrap {
+    margin: 8px 44px 20px;
+    background: #fff7ed;
+    border: 1.5px solid #fed7aa;
+    border-radius: 12px;
+    padding: 13px 18px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .notice-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .notice-text { font-size: 12.5px; color: #7c2d12; line-height: 1.7; }
+  .notice-text strong { font-size: 13px; color: #9a3412; }
+
+  /* ── 時間快查 ── */
+  .time-wrap {
+    margin: 0 44px 16px;
+  }
+  .time-title {
+    font-size: 13px; font-weight: 700; color: #0d3b66;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .time-title::before {
+    content: ''; display: inline-block; width: 4px; height: 14px;
+    background: #06c755; border-radius: 2px;
+  }
+  .time-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .time-card {
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    border: 1px solid var(--bc);
+  }
+  .time-head {
+    padding: 7px 10px;
+    font-size: 13px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .time-body {
+    padding: 8px 10px; background: var(--bg);
+    font-size: 11.5px; color: #374151; line-height: 1.8;
+  }
+  .time-body b { color: #111; font-size: 12px; }
+
+  .tc-bf { --bc: #fcd28a; }
+  .tc-bf .time-head { background: linear-gradient(90deg, #d97706, #f59e0b); }
+  .tc-bf .time-body { --bg: #fffbeb; }
+
+  .tc-ln { --bc: #86efac; }
+  .tc-ln .time-head { background: linear-gradient(90deg, #16a34a, #22c55e); }
+  .tc-ln .time-body { --bg: #f0fdf4; }
+
+  .tc-dn { --bc: #93c5fd; }
+  .tc-dn .time-head { background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+  .tc-dn .time-body { --bg: #eff6ff; }
+
+  /* ── 頁尾 ── */
+  .footer-bg {
+    background: linear-gradient(90deg, #0d3b66, #1a5a9a);
+    padding: 14px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px;
+  }
+  .footer-left { color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+  .footer-right { color: #90b8d8; font-size: 11px; letter-spacing: .5px; }
+  .footer-anchor { color: #06c755; font-size: 18px; margin-right: 6px; }
+
+  /* 列印 */
+  @media print {
+    body { background: none; padding: 0; }
+    .a4 { box-shadow: none; width: 100%; min-height: 100vh; }
+  }
+</style>
+</head>
+<body>
+<div class="a4">
+
+  <!-- ── 頁首 ── -->
+  <div class="header-bg">
+    <div class="header-inner">
+      <div class="logo-circle">🍱</div>
+      <div class="header-text">
+        <div class="header-sub">XING YUAN CANTEEN</div>
+        <div class="header-title">興園食堂 <span>EMO</span> 電子點餐</div>
+        <div class="header-badge">⚓ 用 餐 流 程 說 明</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 說明文字 ── -->
+  <div class="body-area">
+    <p class="intro-line">
+      使用 <strong>LINE App</strong> 掃描 QR Code 即可完成訂餐，以下為完整用餐流程
+    </p>
+
+    <!-- ── 步驟 ── -->
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step-row s1">
+        <div class="step-axis">
+          <div class="step-num">1</div>
+          <div class="line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-accent"></div>
+          <div class="step-content">
+            <div class="step-icon">🤖</div>
+            <div class="step-text">
+              <div class="step-label">STEP 01 ／ 前置設定</div>
+              <div class="step-title">加入「興園通知機器人」好友</div>
+              <div class="step-desc">
+                掃描海報上的<span class="tag tag-green">興園通知機器人QR</span>，將 LINE Bot 加為好友。<br>
+                ⚠ 未加好友者將<strong>無法</strong>收到任何訂單通知及問卷連結。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-row s2">
+        <div class="step-axis">
+          <div class="step-num">2</div>
+          <div class="line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-accent"></div>
+          <div class="step-content">
+            <div class="step-icon">📋</div>
+            <div class="step-text">
+              <div class="step-label">STEP 02 ／ 查詢資訊</div>
+              <div class="step-title">查看當日菜單與剩餘份數</div>
+              <div class="step-desc">
+                進入菜單頁查看<span class="tag tag-amber">早餐</span><span class="tag tag-green">中餐 A/B/C</span><span class="tag tag-blue">晚餐</span>的餐點內容。<br>
+                中餐各品項每日限量 <strong>40 份</strong>，剩餘份數即時更新。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-row s3">
+        <div class="step-axis">
+          <div class="step-num">3</div>
+          <div class="line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-accent"></div>
+          <div class="step-content">
+            <div class="step-icon">🛒</div>
+            <div class="step-text">
+              <div class="step-label">STEP 03 ／ 送出訂單</div>
+              <div class="step-title">選擇餐點，填寫資料後送出</div>
+              <div class="step-desc">
+                掃描<span class="tag tag-amber">雄好竹軒智慧用餐QR</span>，勾選所需餐別與品項，<br>
+                填寫單位、姓名、警用電話，確認後點按「<strong>送出訂餐</strong>」。<br>
+                ⏰ 結單時間：早餐 07:00 ／ 中餐 10:30 ／ 晚餐 16:00
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-row s4">
+        <div class="step-axis">
+          <div class="step-num">4</div>
+          <div class="line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-accent"></div>
+          <div class="step-content">
+            <div class="step-icon">💬</div>
+            <div class="step-text">
+              <div class="step-label">STEP 04 ／ 確認通知</div>
+              <div class="step-title">收到 LINE 訂單確認訊息</div>
+              <div class="step-desc">
+                訂單送出後，LINE Bot 自動推播<span class="tag tag-green">訂單確認卡片</span>，<br>
+                內含：訂單編號、餐點明細，以及領餐用 <strong>QR Code</strong>。<br>
+                請保留此訊息，領餐時須出示 QR Code。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-row s5">
+        <div class="step-axis">
+          <div class="step-num">5</div>
+          <div class="line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-accent"></div>
+          <div class="step-content">
+            <div class="step-icon">📱</div>
+            <div class="step-text">
+              <div class="step-label">STEP 05 ／ 領取餐點</div>
+              <div class="step-title">出示 QR Code，向管理員領餐</div>
+              <div class="step-desc">
+                於用餐時段至取餐窗口，開啟 LINE 訊息中的訂單卡片，<br>
+                出示 <strong>QR Code</strong> 讓管理員掃描確認，即可領取餐點。<br>
+                ⏰ 早餐 07:00–08:00 ／ 中餐 11:30–12:30 ／ 晚餐 16:50–18:00
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step-row s6">
+        <div class="step-axis">
+          <div class="step-num">6</div>
+        </div>
+        <div class="step-card">
+          <div class="step-accent"></div>
+          <div class="step-content">
+            <div class="step-icon">⭐</div>
+            <div class="step-text">
+              <div class="step-label">STEP 06 ／ 回饋意見</div>
+              <div class="step-title">填寫用餐回饋問卷（選填）</div>
+              <div class="step-desc">
+                用餐後，點擊 LINE 訂單卡片中的問卷連結，<br>
+                對整體滿意度、餐點品質、服務態度進行評分，<br>
+                問卷當日 24:00 前有效，每筆訂單限填一次。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+  </div><!-- /body-area -->
+
+  <!-- ── 注意事項 ── -->
+  <div class="notice-wrap">
+    <div class="notice-icon">⚠️</div>
+    <div class="notice-text">
+      <strong>棄單規定｜</strong>
+      超過領餐截止時間（早 08:00 ／ 中 12:30 ／ 晚 18:00）仍未領餐，系統將自動標記為棄單。<br>
+      <strong>30 天內棄單超過 3 次，線上訂餐功能將暫停使用 30 天。</strong>如有特殊情況請事先聯絡管理員。
+    </div>
+  </div>
+
+  <!-- ── 時間快查 ── -->
+  <div class="time-wrap">
+    <div class="time-title">各餐時間一覽</div>
+    <div class="time-grid">
+      <div class="time-card tc-bf">
+        <div class="time-head">🌅 早餐</div>
+        <div class="time-body" style="background:#fffbeb">
+          結單：<b>07:00</b><br>
+          領餐：<b>07:00 – 08:00</b><br>
+          棄單：逾 <b>08:00</b>
+        </div>
+      </div>
+      <div class="time-card tc-ln">
+        <div class="time-head">☀️ 中餐</div>
+        <div class="time-body" style="background:#f0fdf4">
+          結單：<b>10:30</b><br>
+          領餐：<b>11:30 – 12:30</b><br>
+          棄單：逾 <b>12:30</b>
+        </div>
+      </div>
+      <div class="time-card tc-dn">
+        <div class="time-head">🌙 晚餐</div>
+        <div class="time-body" style="background:#eff6ff">
+          結單：<b>16:00</b><br>
+          領餐：<b>16:50 – 18:00</b><br>
+          棄單：逾 <b>18:00</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 頁尾 ── -->
+  <div class="footer-bg">
+    <div class="footer-left">
+      <span class="footer-anchor">⚓</span>興園食堂　關心您
+    </div>
+    <div class="footer-right">EMO Electronic Meal Ordering System　｜　如有問題請洽食堂管理員</div>
+  </div>
+
+</div><!-- /a4 -->
+</body>
+</html>
