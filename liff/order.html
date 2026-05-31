@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531b">
+<link rel="stylesheet" href="style.css?v=20260531c">
 <script>
 (function(){
-  var V='20260531b';
+  var V='20260531c';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -503,13 +503,13 @@ async function loadMenu() {
     function htmlEsc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-    // 早/晚餐用 checkbox（單選開關），中餐用 radio（三選一）
+    // 早餐用 checkbox；中餐/晚餐用 radio（單選）
     function rebuildMeal(mealName, items) {
       const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
       const closed = orderable[mealName] === false && !isWalkinWindowActive(mealName);
-      const isLunch = mealName === 'lunch';
-      const inputType = isLunch ? 'radio' : 'checkbox';
+      const isRadio = mealName === 'lunch' || mealName === 'dinner';
+      const inputType = isRadio ? 'radio' : 'checkbox';
       const parts = [];
       for (const { key, prefix, lunchKey } of items) {
         const menuName = data.menu[key] || '';
@@ -545,7 +545,10 @@ async function loadMenu() {
       { key: '中餐B', prefix: 'B 餐：', lunchKey: 'B' },
       { key: '中餐C', prefix: 'C 餐：', lunchKey: 'C' },
     ]);
-    rebuildMeal('dinner', [{ key: '晚餐', prefix: '' }]);
+    rebuildMeal('dinner', [
+      { key: '晚餐A', prefix: 'A 餐：' },
+      { key: '晚餐B', prefix: 'B 餐：' },
+    ]);
 
     // 現場點餐欄：依當前時段開放或標示「不適用」
     walkinWindowData = data.walkinWindow || null;

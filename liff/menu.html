@@ -68,6 +68,8 @@
 .lunch-label.A { background: #2563eb; }
 .lunch-label.B { background: #16a34a; }
 .lunch-label.C { background: #d97706; }
+.lunch-label.DA { background: #7c3aed; }
+.lunch-label.DB { background: #0891b2; }
 .lunch-name { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; }
 .lunch-remain { font-size: 12px; color: var(--muted); }
 /* header 顏色 */
@@ -190,9 +192,19 @@ async function loadMenu() {
       </div>
     </div>`;
 
-    // ── 晚餐 ───────────────────────────────────────
+    // ── 晚餐 A / B ─────────────────────────────────
     const dnStatus = isFuture ? badge('未來日期', 'badge-future')
                    : mealStatus(orderable.dinner, isPast);
+    const dinnerItems = [['A','DA'],['B','DB']].map(([k, cls]) => {
+      const name = menu[`晚餐${k}`] || '（尚未設定）';
+      return `
+      <div class="lunch-item">
+        <div class="lunch-item-head">
+          <span class="lunch-label ${cls}">${k}</span>
+          <span class="lunch-name ${name === '（尚未設定）' ? 'empty' : ''}">${name}</span>
+        </div>
+      </div>`;
+    }).join('');
     html += `
     <div class="meal-card mc-dinner">
       <div class="meal-card-header">
@@ -200,10 +212,8 @@ async function loadMenu() {
         <span style="margin-left:auto">${dnStatus}</span>
       </div>
       <div class="meal-card-body">
-        <div class="meal-name ${menu['晚餐'] ? '' : 'empty'}">
-          ${menu['晚餐'] || '（尚未設定）'}
-        </div>
-        ${!isPast && !isFuture ? `<div class="remain-text">結單時間 ${orderCutoff.dinner}</div>` : ''}
+        <div class="lunch-grid">${dinnerItems}</div>
+        ${!isPast && !isFuture ? `<div class="remain-text" style="margin-top:6px">結單時間 ${orderCutoff.dinner}</div>` : ''}
       </div>
     </div>`;
 
