@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531i">
+<link rel="stylesheet" href="style.css?v=20260531j">
 <script>
 (function(){
-  var V='20260531i';
+  var V='20260531j';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -460,24 +460,6 @@ async function init() {
     });
   });
 
-  // ── 現場點餐互斥鎖：任一早/中/晚餐選取時 disable 現場點餐 checkbox
-  function syncWalkinLock() {
-    if (!walkinMealActive) return; // 「不適用」狀態不需處理
-    const anyMeal = ['breakfast', 'lunch', 'dinner'].some(m => {
-      const w = document.getElementById(`sel-${m}`);
-      return !!(w && w.querySelector('input:checked'));
-    });
-    const walkinInp = document.querySelector('#sel-walkinMeal input[name="walkinMeal"]');
-    if (!walkinInp) return;
-    walkinInp.disabled = anyMeal;
-    walkinInp.closest('label')?.classList.toggle('item-closed', anyMeal);
-    if (anyMeal && walkinInp.checked) {
-      walkinInp.checked = false;
-      const stWM = document.getElementById('qty-walkinMeal');
-      if (stWM) { stWM.hidden = true; stWM.querySelector('.qty-val').textContent = '1'; }
-    }
-  }
-
   // ── 份數步進器：事件委派 — 任何餐點 input 選/取消時顯示或隱藏對應步進器
   document.getElementById('orderForm').addEventListener('change', e => {
     const inp = e.target;
@@ -498,7 +480,6 @@ async function init() {
     const anyChecked = wrap && wrap.querySelector('input:checked');
     stepper.hidden = !anyChecked;
     if (!anyChecked) stepper.querySelector('.qty-val').textContent = '1';
-    syncWalkinLock();
   });
 
   const adminLink = document.getElementById('adminEntry');
