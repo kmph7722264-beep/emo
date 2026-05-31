@@ -81,6 +81,11 @@
 
   <h2>每日餐點維護</h2>
   <p class="hint">可指定特定日期；新日期可直接儲存（系統先帶入最近一日的菜單作為基底）。輸入欄可從歷史菜單下拉選或直接打新名稱。</p>
+  <div class="btn-row" style="margin-bottom:12px">
+    <button type="button" id="menuEditPageBtn" class="secondary" style="display:inline-flex;width:auto;align-items:center;gap:6px">
+      📅 週覽一鍵維護
+    </button>
+  </div>
   <form id="menuForm">
     <label>適用日期
       <input type="date" id="menuDate">
@@ -299,6 +304,14 @@ async function init() {
     const d = document.getElementById('menuDate').value;
     if (!d) { showMsg('請選擇日期', true); return; }
     loadMenuForDate(d);
+  });
+  document.getElementById('menuEditPageBtn').addEventListener('click', () => {
+    const url = 'https://kmph7722264-beep.github.io/emo/liff/menu-edit.html';
+    if (window.liff && typeof liff.openWindow === 'function') {
+      liff.openWindow({ url, external: false });
+    } else {
+      window.location.href = 'menu-edit.html';
+    }
   });
   document.getElementById('menuDate').addEventListener('change', () => {
     const d = document.getElementById('menuDate').value;

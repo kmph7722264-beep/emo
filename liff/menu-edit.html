@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="referrer" content="no-referrer">
+<title>每週菜單維護</title>
+<link rel="stylesheet" href="style.css?v=20260531c">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+/* ── Week navigation ── */
+.week-nav {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.week-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: auto; margin: 0; padding: 8px 14px;
+  border: 1.5px solid var(--line-green); border-radius: 8px;
+  background: #f0fdf4; color: var(--line-green-dark);
+  font: 600 14px/1 inherit; cursor: pointer; flex-shrink: 0;
+}
+.week-btn:hover { background: #dcfce7; }
+.week-label {
+  flex: 1; text-align: center;
+  font-size: 15px; font-weight: 700; color: var(--text);
+}
+.this-week-row {
+  display: flex; justify-content: center; margin-bottom: 14px;
+}
+.this-week-row button {
+  display: inline-flex; width: auto; margin: 0; padding: 7px 20px;
+  font-size: 13px;
+}
+
+/* ── Day card ── */
+.day-card {
+  border: 1.5px solid var(--border); border-radius: 12px;
+  margin-bottom: 10px; overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+}
+.day-card.is-today  { border-color: var(--line-green); }
+.day-card.is-dirty  { border-color: #f59f00; box-shadow: 0 0 0 2px rgba(245,159,0,.12); }
+.day-card.is-past   { opacity: 0.78; }
+.day-card.save-ok   { border-color: var(--line-green) !important; }
+.day-card.save-err  { border-color: var(--err) !important; }
+
+.day-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px;
+  background: #f8fafc; border-bottom: 1px solid var(--border);
+  font-weight: 700; font-size: 15px;
+}
+.day-card.is-today .day-header { background: #f0fdf4; }
+.day-card.is-dirty .day-header { background: #fff9e6; }
+
+.day-date  { flex: 1; }
+.today-badge {
+  display: inline-block; padding: 2px 8px;
+  background: var(--line-green); color: #fff;
+  border-radius: 999px; font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.dirty-dot { font-size: 18px; color: #f59f00; line-height: 1; flex-shrink: 0; }
+
+.day-meals { padding: 8px 12px 10px; }
+
+.meal-row {
+  display: flex; align-items: center; gap: 8px; margin: 5px 0;
+}
+.meal-tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px;
+  font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.tag-bf { background: #d97706; }
+.tag-la { background: #2563eb; }
+.tag-lb { background: #16a34a; }
+.tag-lc { background: #d97706; }
+.tag-dn { background: #7c3aed; }
+
+.meal-inp {
+  flex: 1; display: block; width: auto; margin: 0;
+  padding: 7px 10px; font-size: 14px;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff;
+  outline: none;
+}
+.meal-inp:focus {
+  border-color: var(--line-green);
+  box-shadow: 0 0 0 2px rgba(6,199,85,.15);
+}
+
+.day-err-hint {
+  padding: 4px 14px 8px; font-size: 12px; color: var(--err);
+}
+
+/* ── Sticky save bar ── */
+.save-bar {
+  position: sticky; bottom: 12px; z-index: 100; margin-top: 8px;
+}
+.save-bar button {
+  margin: 0; box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  transition: opacity .15s;
+}
+.save-bar button:disabled { opacity: 0.55; }
+
+/* ── Loading skeleton ── */
+.skeleton-card {
+  border: 1.5px solid var(--border); border-radius: 12px;
+  margin-bottom: 10px; overflow: hidden;
+}
+.skeleton-head { height: 42px; background: #f3f4f6; }
+.skeleton-body { padding: 10px 12px; }
+.skeleton-line {
+  height: 34px; background: linear-gradient(90deg,#f3f4f6 25%,#e9ecef 50%,#f3f4f6 75%);
+  background-size: 200% 100%; border-radius: 8px; margin: 6px 0;
+  animation: shimmer 1.3s infinite;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>📅 每週菜單維護</h1>
+
+  <div class="week-nav">
+    <button type="button" id="btnPrev" class="week-btn">‹ 上週</button>
+    <span id="weekLabel" class="week-label"></span>
+    <button type="button" id="btnNext" class="week-btn">下週 ›</button>
+  </div>
+  <div class="this-week-row">
+    <button type="button" id="btnThisWeek" class="secondary">回本週</button>
+  </div>
+
+  <div id="dayCards"></div>
+
+  <div class="save-bar">
+    <button type="button" id="btnSaveAll" disabled>💾 無變更可儲存</button>
+  </div>
+
+  <p id="msg" class="msg" hidden></p>
+  <p class="footer"><a href="#" id="backBtn">← 回管理頁</a></p>
+</main>
+
+<!-- History datalists -->
+<datalist id="hist-早餐"></datalist>
+<datalist id="hist-中餐A"></datalist>
+<datalist id="hist-中餐B"></datalist>
+<datalist id="hist-中餐C"></datalist>
+<datalist id="hist-晚餐"></datalist>
+
+<script>
+const LIFF_ID  = '2010095803-1ayMPRJ6';
+const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const ADMIN_URL = 'https://liff.line.me/2010095803-1ayMPRJ6';
+
+const MEAL_DEFS = [
+  { key: '早餐',  label: '早', cls: 'bf', ph: '例：燒餅油條 / 飯糰' },
+  { key: '中餐A', label: 'A',  cls: 'la', ph: '例：滷雞腿便當' },
+  { key: '中餐B', label: 'B',  cls: 'lb', ph: '例：排骨便當' },
+  { key: '中餐C', label: 'C',  cls: 'lc', ph: '例：素食便當' },
+  { key: '晚餐',  label: '晚', cls: 'dn', ph: '例：紅燒牛肉麵' },
+];
+const WEEK_DAYS = ['日','一','二','三','四','五','六'];
+
+let idToken   = '';
+let weekStart = getWeekStart(new Date());
+let loading   = false;
+
+/* ── 日期工具 ── */
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function fmtDate(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function getWeekStart(ref) {
+  const d = new Date(ref); d.setHours(0,0,0,0);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return d;
+}
+
+/* ── UI 建置 ── */
+function updateWeekLabel() {
+  const end = new Date(weekStart);
+  end.setDate(end.getDate() + 6);
+  document.getElementById('weekLabel').textContent =
+    `${weekStart.getMonth()+1}/${weekStart.getDate()} – ${end.getMonth()+1}/${end.getDate()}`;
+}
+
+function showSkeletons() {
+  const c = document.getElementById('dayCards');
+  c.innerHTML = Array.from({length:7}, () => `
+    <div class="skeleton-card">
+      <div class="skeleton-head"></div>
+      <div class="skeleton-body">
+        ${Array.from({length:5}, () => '<div class="skeleton-line"></div>').join('')}
+      </div>
+    </div>`).join('');
+}
+
+function buildWeekCards() {
+  const container = document.getElementById('dayCards');
+  container.innerHTML = '';
+  const today = todayStr();
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    const dateStr = fmtDate(d);
+    const label   = `${d.getMonth()+1}/${d.getDate()} (${WEEK_DAYS[d.getDay()]})`;
+    const isToday = dateStr === today;
+    const isPast  = dateStr < today;
+
+    const card = document.createElement('div');
+    card.className = `day-card${isToday ? ' is-today' : ''}${isPast ? ' is-past' : ''}`;
+    card.dataset.date  = dateStr;
+    card.dataset.dirty = 'false';
+
+    const mealRows = MEAL_DEFS.map(m =>
+      `<div class="meal-row">
+        <span class="meal-tag tag-${m.cls}">${m.label}</span>
+        <input class="meal-inp" data-meal="${m.key}" list="hist-${m.key}"
+               placeholder="${m.ph}" autocomplete="off" spellcheck="false">
+      </div>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="day-header">
+        <span class="day-date">${label}</span>
+        ${isToday ? '<span class="today-badge">今天</span>' : ''}
+        <span class="dirty-dot" hidden>●</span>
+      </div>
+      <div class="day-meals">${mealRows}</div>`;
+
+    card.querySelectorAll('.meal-inp').forEach(inp =>
+      inp.addEventListener('input', () => onInput(card))
+    );
+    container.appendChild(card);
+  }
+}
+
+/* ── Dirty 狀態 ── */
+function onInput(card) {
+  const dirty = [...card.querySelectorAll('.meal-inp')].some(inp =>
+    inp.value.trim() !== (inp.dataset.orig || '')
+  );
+  card.dataset.dirty = dirty ? 'true' : 'false';
+  refreshCardUI(card);
+  refreshSaveBtn();
+}
+
+function refreshCardUI(card) {
+  const dirty = card.dataset.dirty === 'true';
+  card.classList.toggle('is-dirty', dirty);
+  card.querySelector('.dirty-dot').hidden = !dirty;
+  card.classList.remove('save-ok', 'save-err');
+  card.querySelector('.day-err-hint')?.remove();
+}
+
+function refreshSaveBtn() {
+  const n   = document.querySelectorAll('.day-card[data-dirty="true"]').length;
+  const btn = document.getElementById('btnSaveAll');
+  btn.disabled    = n === 0;
+  btn.textContent = n > 0 ? `💾 儲存變更（${n} 天）` : '💾 無變更可儲存';
+}
+
+/* ── 資料載入 ── */
+async function loadWeekData() {
+  const cards = [...document.querySelectorAll('.day-card')];
+  // 平行載入 7 天
+  await Promise.all(cards.map(async card => {
+    const date = card.dataset.date;
+    try {
+      const res  = await fetch(`${API_URL}?action=menu&date=${date}`);
+      const data = await res.json();
+      const menu = (data.ok && data.menu) ? data.menu : {};
+      card.querySelectorAll('.meal-inp').forEach(inp => {
+        const v = (menu[inp.dataset.meal] || '');
+        inp.value = v;
+        inp.dataset.orig = v;
+      });
+    } catch (_) {
+      card.querySelectorAll('.meal-inp').forEach(inp => { inp.dataset.orig = ''; });
+    }
+    card.dataset.dirty = 'false';
+    refreshCardUI(card);
+  }));
+  refreshSaveBtn();
+}
+
+async function loadHistory() {
+  try {
+    const data = await postJson({ action: 'menuHistory', idToken });
+    if (!data.ok) return;
+    const hist = data.history || {};
+    MEAL_DEFS.forEach(m => {
+      const dl = document.getElementById(`hist-${m.key}`);
+      if (!dl) return;
+      const names = hist[m.key] || [];
+      dl.innerHTML = names.slice(0, 30)
+        .map(n => `<option value="${n.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">`)
+        .join('');
+    });
+  } catch (_) {}
+}
+
+/* ── 儲存 ── */
+async function saveAll() {
+  const dirtyCds = [...document.querySelectorAll('.day-card[data-dirty="true"]')];
+  if (!dirtyCds.length || loading) return;
+  loading = true;
+
+  const btn = document.getElementById('btnSaveAll');
+  btn.disabled    = true;
+  btn.textContent = '儲存中…';
+
+  const results = await Promise.all(dirtyCds.map(async card => {
+    const date = card.dataset.date;
+    const menu = {};
+    card.querySelectorAll('.meal-inp').forEach(inp => { menu[inp.dataset.meal] = inp.value.trim(); });
+    try {
+      const data = await postJson({ action: 'updateMenu', idToken, date, menu });
+      return { card, ok: !!data.ok, error: data.error };
+    } catch (e) {
+      return { card, ok: false, error: e.message };
+    }
+  }));
+
+  let fail = 0;
+  results.forEach(({ card, ok, error }) => {
+    if (ok) {
+      card.querySelectorAll('.meal-inp').forEach(inp => { inp.dataset.orig = inp.value; });
+      card.dataset.dirty = 'false';
+      card.classList.remove('is-dirty');
+      card.querySelector('.dirty-dot').hidden = true;
+      card.classList.add('save-ok');
+    } else {
+      fail++;
+      card.classList.add('save-err');
+      const hint = document.createElement('div');
+      hint.className = 'day-err-hint';
+      hint.textContent = error || '儲存失敗，請重試';
+      card.querySelector('.day-meals').after(hint);
+    }
+  });
+
+  loading = false;
+  refreshSaveBtn();
+  showMsg(
+    fail === 0
+      ? `✅ 已成功儲存 ${results.length} 天菜單`
+      : `⚠ ${fail} 天儲存失敗，請重試`,
+    fail > 0
+  );
+}
+
+/* ── 換週 ── */
+async function changeWeek() {
+  if (loading) return;
+  loading = true;
+  updateWeekLabel();
+  showSkeletons();
+  buildWeekCards();
+  await Promise.all([loadHistory(), loadWeekData()]);
+  loading = false;
+}
+
+/* ── 訊息 ── */
+function showMsg(text, isErr) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.hidden = false;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.hidden = true; }, 5000);
+}
+
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+/* ── 初始化 ── */
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    idToken = liff.getIDToken() || '';
+  } catch (e) {
+    showMsg('LIFF 初始化失敗：' + e.message, true);
+    return;
+  }
+
+  // 管理員驗證
+  try {
+    const chk = await postJson({ action: 'checkAdmin', idToken });
+    if (!chk.ok || !chk.isAdmin) {
+      document.getElementById('dayCards').innerHTML =
+        '<p class="msg err" style="margin:0">無管理員權限，請聯絡系統管理員。</p>';
+      document.getElementById('btnSaveAll').hidden = true;
+      return;
+    }
+  } catch (e) {
+    showMsg('權限驗證失敗：' + e.message, true); return;
+  }
+
+  // 初始載入
+  loading = true;
+  updateWeekLabel();
+  showSkeletons();
+  buildWeekCards();
+  await Promise.all([loadHistory(), loadWeekData()]);
+  loading = false;
+
+  // 按鈕事件
+  document.getElementById('btnPrev').addEventListener('click', () => {
+    weekStart.setDate(weekStart.getDate() - 7);
+    changeWeek();
+  });
+  document.getElementById('btnNext').addEventListener('click', () => {
+    weekStart.setDate(weekStart.getDate() + 7);
+    changeWeek();
+  });
+  document.getElementById('btnThisWeek').addEventListener('click', () => {
+    weekStart = getWeekStart(new Date());
+    changeWeek();
+  });
+  document.getElementById('btnSaveAll').addEventListener('click', saveAll);
+  document.getElementById('backBtn').addEventListener('click', e => {
+    e.preventDefault();
+    if (window.liff && typeof liff.openWindow === 'function') {
+      liff.openWindow({ url: ADMIN_URL, external: false });
+    } else {
+      history.back();
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
