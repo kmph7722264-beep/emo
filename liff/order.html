@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531f">
+<link rel="stylesheet" href="style.css?v=20260531g">
 <script>
 (function(){
-  var V='20260531f';
+  var V='20260531g';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -524,7 +524,7 @@ async function loadMenu() {
       const isRadio = mealName === 'lunch' || mealName === 'dinner';
       const inputType = isRadio ? 'radio' : 'checkbox';
       const parts = [];
-      for (const { key, prefix, lunchKey } of items) {
+      for (const { key, prefix, bookedKey } of items) {
         const menuName = data.menu[key] || '';
         if (!menuName) continue;
         const baseLabel = (prefix || '') + menuName;
@@ -534,10 +534,14 @@ async function loadMenu() {
         if (closed) {
           displayText += '（已截止）';
           isDisabled = true;
-        } else if (lunchKey && data.remaining && typeof data.remaining[lunchKey] === 'number') {
-          const left = data.remaining[lunchKey];
-          displayText += `（剩 ${left}）`;
-          if (left <= 0) isDisabled = true;
+        } else if (bookedKey && data.booked && typeof data.booked[bookedKey] === 'number') {
+          displayText += `（已售 ${data.booked[bookedKey]}）`;
+          // 上限控制：達上限則 disable（不顯示上限數字）
+          if (data.limit && mealName === 'lunch' && data.booked[bookedKey] >= data.limit) isDisabled = true;
+        } else if (bookedKey && mealName === 'lunch') {
+          // Code.gs 未更新時 fallback：用舊 remaining 判斷是否達上限
+          const lk = bookedKey.replace('lunch', '');
+          if (data.remaining && typeof data.remaining[lk] === 'number' && data.remaining[lk] <= 0) isDisabled = true;
         }
         const dis = isDisabled ? ' disabled' : '';
         const cls = isDisabled ? ' item-closed' : '';
@@ -552,15 +556,15 @@ async function loadMenu() {
         : '<span class="no-menu-text">今日無此餐</span>';
     }
 
-    rebuildMeal('breakfast', [{ key: '早餐', prefix: '' }]);
+    rebuildMeal('breakfast', [{ key: '早餐',  prefix: '',      bookedKey: 'breakfast' }]);
     rebuildMeal('lunch', [
-      { key: '中餐A', prefix: 'A 餐：', lunchKey: 'A' },
-      { key: '中餐B', prefix: 'B 餐：', lunchKey: 'B' },
-      { key: '中餐C', prefix: 'C 餐：', lunchKey: 'C' },
+      { key: '中餐A', prefix: 'A 餐：', bookedKey: 'lunchA' },
+      { key: '中餐B', prefix: 'B 餐：', bookedKey: 'lunchB' },
+      { key: '中餐C', prefix: 'C 餐：', bookedKey: 'lunchC' },
     ]);
     rebuildMeal('dinner', [
-      { key: '晚餐A', prefix: 'A 餐：' },
-      { key: '晚餐B', prefix: 'B 餐：' },
+      { key: '晚餐A', prefix: 'A 餐：', bookedKey: 'dinnerA' },
+      { key: '晚餐B', prefix: 'B 餐：', bookedKey: 'dinnerB' },
     ]);
 
     // 現場點餐欄：依當前時段開放或標示「不適用」
@@ -587,12 +591,9 @@ async function loadMenu() {
 
     const hint = document.getElementById('lunchRemaining');
     if (hint) {
-      if (orderable.lunch === false && !isWalkinWindowActive('lunch')) {
-        const t = (data.orderCutoff && data.orderCutoff.lunch) || '10:30';
-        hint.textContent = `午餐進單已於 ${t} 結束`;
-      } else {
-        hint.textContent = data.limit ? `每日上限 ${data.limit} 份` : '';
-      }
+      hint.textContent = (orderable.lunch === false && !isWalkinWindowActive('lunch'))
+        ? `午餐進單已於 ${(data.orderCutoff && data.orderCutoff.lunch) || '10:30'} 結束`
+        : '';
     }
 
     // 菜單重載時重置所有步進器（避免切換日期後份數殘留）
