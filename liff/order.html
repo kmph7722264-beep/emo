@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531g">
+<link rel="stylesheet" href="style.css?v=20260531h">
 <script>
 (function(){
-  var V='20260531g';
+  var V='20260531h';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -120,7 +120,7 @@
       <legend>備註</legend>
       <textarea name="note" rows="3" maxlength="200" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
-        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px">
+        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px" checked>
         🥢 自備餐具（帶自己的餐盒 / 環保餐具）
       </label>
     </fieldset>
@@ -808,7 +808,7 @@ function setWalkinMode(on, windowLabel, windows) {
   document.getElementById('walkinBanner').hidden = !walkinMode;
   const fs = document.getElementById('walkinOptionsFieldset');
   fs.hidden = !walkinMode;
-  document.getElementById('byobCheck').checked  = false;
+  document.getElementById('byobCheck').checked  = true;
   document.getElementById('dineInCheck').checked = walkinMode;
   // walkin 模式：使用者已透過線上訂單完成過個資同意，自動勾選
   const privacyCheck = document.getElementById('privacyCheck');
