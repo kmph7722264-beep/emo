@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531c">
+<link rel="stylesheet" href="style.css?v=20260531d">
 <script>
 (function(){
-  var V='20260531c';
+  var V='20260531d';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -197,6 +197,7 @@
     background: #f0fdf4; border: 1px solid var(--line-green);
     border-radius: 10px; font-size: 14px;
   }
+  .qty-stepper[hidden] { display: none !important; }
   .qty-label { color: var(--line-green-dark); font-weight: 700; min-width: 28px; }
   .qty-dec, .qty-inc {
     width: 34px; height: 34px;
