@@ -241,9 +241,18 @@ $btnOrder.addEventListener('click', () => {
   }
 });
 
-// 初始化
+// 初始化：晚餐截止（16:00）後預設帶入明天
+function defaultMenuDate() {
+  if (new Date().getHours() >= 16) {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return todayStr();
+}
+
 (async () => {
-  $date.value = todayStr();
+  $date.value = defaultMenuDate();
   try {
     await liff.init({ liffId: LIFF_ID });
   } catch (e) { /* 允許非 LIFF 環境使用 */ }

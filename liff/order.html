@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531e">
+<link rel="stylesheet" href="style.css?v=20260531f">
 <script>
 (function(){
-  var V='20260531e';
+  var V='20260531f';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -303,6 +303,7 @@ let walkinWindowData = null; // menu API 回傳的現場點餐時段設定
 let walkinMealActive = null; // 目前在哪一餐的現場點餐時段
 let userProfile = null;      // 已綁定的個人資料 {unit,name,phone}，null=尚未設定
 let profileEditing = false;  // 是否正在修改個人資料
+let lastOrderable = {};      // 最近一次 loadMenu 回傳的 orderable 狀態
 
 function isWalkinWindowActive(mealName) {
   if (!walkinMode || !walkinWindows || !walkinWindows[mealName]) return false;
@@ -426,6 +427,14 @@ async function init() {
 
   await loadMenu();
 
+  // 若無指定日期且今日所有餐均已截止，自動帶入明天
+  if (!dateParam && !lastOrderable.breakfast && !lastOrderable.lunch && !lastOrderable.dinner) {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    dateInput.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    await loadMenu();
+  }
+
   let menuReloadTimer = null;
   function scheduleMenuReload() {
     clearTimeout(menuReloadTimer);
@@ -502,6 +511,7 @@ async function loadMenu() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     const orderable = data.orderable || { breakfast: true, lunch: true, dinner: true };
+    lastOrderable = orderable;
 
     function htmlEsc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
