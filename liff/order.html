@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260530a">
+<link rel="stylesheet" href="style.css?v=20260531a">
 <script>
 (function(){
-  var V='20260530a';
+  var V='20260531a';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -24,20 +24,44 @@
     <h1>雄好竹軒智慧用餐</h1>
 
   <form id="orderForm">
-    <fieldset>
+
+    <!-- ── 個人資料卡（已綁定時顯示，取代重複填寫） ── -->
+    <div id="profileCard" hidden style="
+        display:flex;align-items:center;gap:10px;
+        background:#f0fdf4;border:1px solid #86efac;
+        border-radius:10px;padding:10px 14px;margin-bottom:10px;
+    ">
+      <span style="font-size:24px;flex-shrink:0">👤</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:#047a3a;font-weight:600;margin-bottom:2px">已綁定個人資料</div>
+        <div id="profileDisplay" style="font-size:14px;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      </div>
+      <button type="button" id="profileEditBtn"
+        style="flex-shrink:0;padding:5px 12px;border:1px solid #86efac;border-radius:6px;
+               background:#fff;color:#047a3a;font-size:13px;cursor:pointer">修改</button>
+    </div>
+
+    <fieldset id="profileFieldset">
       <legend>訂購人資訊</legend>
       <div id="walkinBanner" class="msg" hidden style="margin-top:8px">
         🟠 現場點餐模式：中餐不分 A/B/C、不受上限限制、<strong>不發送 LINE 通知與問卷</strong>。
         <div id="walkinWindowInfo" style="font-size:13px;margin-top:4px;color:#7a4400"></div>
       </div>
+      <div id="firstTimeBanner" hidden style="
+          margin:6px 0 10px;padding:8px 12px;border-radius:8px;
+          background:#eef6ff;border:1px solid #93c5fd;
+          font-size:13px;color:#1e40af;line-height:1.5;
+      ">
+        📌 首次使用，請填寫個人資料。<br>資料將綁定至您的 LINE 帳號，<strong>下次訂餐自動帶入</strong>，免再填寫。
+      </div>
       <label>單位 <span class="req">*</span>
-        <input name="unit" required autocomplete="organization">
+        <input name="unit" id="inputUnit" required autocomplete="organization">
       </label>
       <label>訂購人 <span class="req">*</span>
-        <input name="name" required autocomplete="name">
+        <input name="name" id="inputName" required autocomplete="name">
       </label>
-      <label>警用電話 <span class="req">*</span>
-        <input name="phone" type="tel" required autocomplete="tel" inputmode="tel">
+      <label>電話 <span class="req">*</span>
+        <input name="phone" id="inputPhone" type="tel" required autocomplete="tel" inputmode="tel">
       </label>
       <label>訂購日期 <span class="req">*</span>
         <input name="date" type="date" required>
@@ -112,7 +136,7 @@
       <details style="font-size:13px;color:#374151;margin-bottom:8px">
         <summary style="cursor:pointer;color:var(--muted);margin-bottom:4px">查看個人資料保護告知事項</summary>
         <div style="margin-top:8px;padding:10px 12px;background:#f9fafb;border-radius:8px;line-height:1.7">
-          依個人資料保護法，本系統蒐集您的姓名、警用電話及 LINE 帳號，
+          依個人資料保護法，本系統蒐集您的姓名、電話及 LINE 帳號，
           目的為提供雄好竹軒訂餐服務，保存期限為 1 年，不對外提供或移轉。
           如有疑問請洽系統管理員。
         </div>
@@ -274,6 +298,8 @@ let walkinWindows = null; // { breakfast:{start:'HH:MM',stop:'HH:MM'}, ... }
 let submitting = false;   // 防止重複送出
 let walkinWindowData = null; // menu API 回傳的現場點餐時段設定
 let walkinMealActive = null; // 目前在哪一餐的現場點餐時段
+let userProfile = null;      // 已綁定的個人資料 {unit,name,phone}，null=尚未設定
+let profileEditing = false;  // 是否正在修改個人資料
 
 function isWalkinWindowActive(mealName) {
   if (!walkinMode || !walkinWindows || !walkinWindows[mealName]) return false;
@@ -303,6 +329,70 @@ function localDateStr() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// ── 個人資料 UI 控制 ────────────────────────────────────────────
+
+/** 從後端載入個人資料，並更新 UI（隱藏/顯示欄位、顯示摘要卡）。 */
+async function loadUserProfile() {
+  if (!idToken) return;
+  try {
+    const data = await postJson({ action: 'getUserProfile', idToken });
+    if (!data.ok) return;
+    userProfile = data.profile || null;
+  } catch (_) { userProfile = null; }
+  applyProfileUI();
+}
+
+/** 根據 userProfile 狀態切換 UI。 */
+function applyProfileUI() {
+  const card     = document.getElementById('profileCard');
+  const fieldset = document.getElementById('profileFieldset');
+  const display  = document.getElementById('profileDisplay');
+  const banner   = document.getElementById('firstTimeBanner');
+  const privChk  = document.getElementById('privacyCheck');
+
+  if (userProfile && !profileEditing) {
+    // ── 已綁定、非編輯模式：顯示卡片，隱藏輸入欄位
+    card.hidden = false;
+    fieldset.hidden = true;
+    display.textContent = `${userProfile.unit}　${userProfile.name}　${userProfile.phone}`;
+    // 已完成個資同意（首次設定時已勾選），自動勾選
+    if (privChk) privChk.checked = true;
+    // 移除 required（欄位隱藏中，不進表單驗證）
+    ['inputUnit','inputName','inputPhone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.removeAttribute('required');
+    });
+  } else {
+    // ── 未綁定 or 編輯模式：隱藏卡片，顯示輸入欄位
+    card.hidden = true;
+    fieldset.hidden = false;
+    // 首次使用提示
+    if (banner) banner.hidden = !!userProfile; // 編輯時不顯示首次提示
+    // 恢復 required
+    ['inputUnit','inputName','inputPhone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.setAttribute('required', '');
+    });
+    // 編輯時帶入現有值
+    if (userProfile) {
+      const u = document.getElementById('inputUnit');
+      const n = document.getElementById('inputName');
+      const p = document.getElementById('inputPhone');
+      if (u && !u.value) u.value = userProfile.unit;
+      if (n && !n.value) n.value = userProfile.name;
+      if (p && !p.value) p.value = userProfile.phone;
+    }
+  }
+}
+
+/** 儲存（新建 / 更新）個人資料至後端 Users 表。 */
+async function saveUserProfile(unit, name, phone) {
+  try {
+    await postJson({ action: 'saveProfile', idToken, unit, name, phone });
+    userProfile = { unit, name, phone };
+  } catch (_) {}
+}
+
 async function init() {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -310,6 +400,18 @@ async function init() {
     idToken = liff.getIDToken() || '';
   } catch (e) {
     console.warn('LIFF init failed, fallback to anonymous:', e);
+  }
+
+  // ── 初始化時載入個人資料
+  await loadUserProfile();
+
+  // ── 「修改」按鈕：切換為編輯模式
+  const editBtn = document.getElementById('profileEditBtn');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      profileEditing = true;
+      applyProfileUI();
+    });
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -501,6 +603,13 @@ async function onSubmit(ev) {
   const isWalkin        = walkinMode || walkinMealChk;
   delete order.walkinMeal; // 不直接傳此欄位，改轉入對應餐別
 
+  // ── 若已綁定個人資料且非編輯模式，從 userProfile 補齊 unit/name/phone
+  if (userProfile && !profileEditing) {
+    order.unit  = userProfile.unit;
+    order.name  = userProfile.name;
+    order.phone = userProfile.phone;
+  }
+
   // 現場點餐份數處理：填入對應餐別欄位
   if (walkinMealChk && walkinMealActive) {
     const stWM = document.getElementById('qty-walkinMeal');
@@ -556,6 +665,18 @@ async function onSubmit(ev) {
     const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
     const walkinNote = data.walkin ? '（現場點餐，未發送通知）' : '（請於領餐時出示訂單編號）';
     showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
+
+    // ── 儲存個人資料（首次設定 or 修改後）
+    const u = String(order.unit  || '').trim();
+    const n = String(order.name  || '').trim();
+    const p = String(order.phone || '').trim();
+    if (u && n && p && idToken) {
+      const changed = !userProfile ||
+        userProfile.unit !== u || userProfile.name !== n || userProfile.phone !== p;
+      if (changed) await saveUserProfile(u, n, p);
+    }
+    profileEditing = false;
+    applyProfileUI();
 
     // 現場點餐 → 跳大通知顯示訂單編號（因不發 LINE，需此畫面讓客人記下）
     if (data.walkin && data.orderNo) {
