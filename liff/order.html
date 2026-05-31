@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531a">
+<link rel="stylesheet" href="style.css?v=20260531b">
 <script>
 (function(){
-  var V='20260531a';
+  var V='20260531b';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -26,8 +26,8 @@
   <form id="orderForm">
 
     <!-- ── 個人資料卡（已綁定時顯示，取代重複填寫） ── -->
-    <div id="profileCard" hidden style="
-        display:flex;align-items:center;gap:10px;
+    <div id="profileCard" style="
+        display:none;align-items:center;gap:10px;
         background:#f0fdf4;border:1px solid #86efac;
         border-radius:10px;padding:10px 14px;margin-bottom:10px;
     ">
@@ -37,7 +37,7 @@
         <div id="profileDisplay" style="font-size:14px;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
       </div>
       <button type="button" id="profileEditBtn"
-        style="flex-shrink:0;padding:5px 12px;border:1px solid #86efac;border-radius:6px;
+        style="flex-shrink:0;width:auto;padding:5px 12px;border:1px solid #86efac;border-radius:6px;
                background:#fff;color:#047a3a;font-size:13px;cursor:pointer">修改</button>
     </div>
 
@@ -352,7 +352,7 @@ function applyProfileUI() {
 
   if (userProfile && !profileEditing) {
     // ── 已綁定、非編輯模式：顯示卡片，隱藏輸入欄位
-    card.hidden = false;
+    card.style.display = 'flex';
     fieldset.hidden = true;
     display.textContent = `${userProfile.unit}　${userProfile.name}　${userProfile.phone}`;
     // 已完成個資同意（首次設定時已勾選），自動勾選
@@ -364,7 +364,7 @@ function applyProfileUI() {
     });
   } else {
     // ── 未綁定 or 編輯模式：隱藏卡片，顯示輸入欄位
-    card.hidden = true;
+    card.style.display = 'none';
     fieldset.hidden = false;
     // 首次使用提示
     if (banner) banner.hidden = !!userProfile; // 編輯時不顯示首次提示
