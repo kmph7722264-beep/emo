@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531d">
+<link rel="stylesheet" href="style.css?v=20260531e">
 <script>
 (function(){
-  var V='20260531d';
+  var V='20260531e';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -63,9 +63,11 @@
       <label>電話 <span class="req">*</span>
         <input name="phone" id="inputPhone" type="tel" required autocomplete="tel" inputmode="tel">
       </label>
-      <label>訂購日期 <span class="req">*</span>
-        <input name="date" type="date" required>
-      </label>
+    </fieldset>
+
+    <fieldset id="dateFieldset">
+      <legend>訂購日期 <span class="req">*</span></legend>
+      <input name="date" type="date" required style="margin-top:4px">
     </fieldset>
 
     <fieldset>
