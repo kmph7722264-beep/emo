@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="referrer" content="no-referrer">
 <title>每週菜單維護</title>
-<link rel="stylesheet" href="style.css?v=20260531c">
+<link rel="stylesheet" href="style.css?v=20260601a">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 /* ── Week navigation ── */
@@ -109,6 +109,21 @@
 }
 .save-bar button:disabled { opacity: 0.55; }
 
+/* ── Push menu bar ── */
+.push-bar {
+  margin-top: 10px; text-align: center;
+}
+.push-bar button {
+  display: inline-flex; align-items: center; gap: 6px;
+  width: auto; margin: 0; padding: 10px 22px;
+  background: #0d3b66; color: #fff; font-size: 14px; font-weight: 700;
+  border: none; border-radius: 10px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13,59,102,.25);
+  transition: background .15s, opacity .15s;
+}
+.push-bar button:hover:not(:disabled) { background: #1a5276; }
+.push-bar button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Loading skeleton ── */
 .skeleton-card {
   border: 1.5px solid var(--border); border-radius: 12px;
@@ -141,6 +156,10 @@
 
   <div class="save-bar">
     <button type="button" id="btnSaveAll" disabled>💾 無變更可儲存</button>
+  </div>
+
+  <div class="push-bar">
+    <button type="button" id="btnPushMenu">📤 傳送本週菜單至廚房群組</button>
   </div>
 
   <p id="msg" class="msg" hidden></p>
@@ -375,6 +394,27 @@ async function saveAll() {
   );
 }
 
+/* ── 傳送菜單至廚房群組 ── */
+async function pushWeeklyMenu() {
+  const mondayStr = fmtDate(weekStart);
+  const endDate   = new Date(weekStart);
+  endDate.setDate(endDate.getDate() + 4);
+  const label = `${weekStart.getMonth()+1}/${weekStart.getDate()} ～ ${endDate.getMonth()+1}/${endDate.getDate()}`;
+  if (!confirm(`確定將「${label}」的菜單傳送至廚房群組？`)) return;
+
+  const btn = document.getElementById('btnPushMenu');
+  btn.disabled    = true;
+  btn.textContent = '傳送中…';
+  try {
+    const data = await postJson({ action: 'pushWeeklyMenu', idToken, monday: mondayStr });
+    showMsg(data.ok ? `✅ 已傳送 ${label} 菜單至廚房群組` : `❌ 傳送失敗：${data.error}`, !data.ok);
+  } catch (e) {
+    showMsg('❌ 傳送失敗：' + e.message, true);
+  }
+  btn.disabled    = false;
+  btn.textContent = '📤 傳送本週菜單至廚房群組';
+}
+
 /* ── 換週 ── */
 async function changeWeek() {
   if (loading) return;
@@ -451,6 +491,7 @@ async function init() {
     changeWeek();
   });
   document.getElementById('btnSaveAll').addEventListener('click', saveAll);
+  document.getElementById('btnPushMenu').addEventListener('click', pushWeeklyMenu);
   document.getElementById('backBtn').addEventListener('click', e => {
     e.preventDefault();
     if (window.liff && typeof liff.openWindow === 'function') {
