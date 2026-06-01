@@ -76,6 +76,12 @@
 .mc-breakfast .meal-card-header { background: #fffbeb; }
 .mc-lunch     .meal-card-header { background: #f0fdf4; }
 .mc-dinner    .meal-card-header { background: #eff6ff; }
+/* 附餐資訊列 */
+.addon-row {
+  margin-top: 8px; padding: 6px 10px;
+  background: #f0fdf4; border-radius: 6px;
+  font-size: 12px; color: #166534; line-height: 1.6;
+}
 /* 底部訂餐按鈕 */
 .order-btn-wrap { margin-top: 20px; }
 </style>
@@ -180,6 +186,14 @@ async function loadMenu() {
       </div>`;
     }).join('');
 
+    const lunchSoup  = menu['中餐湯品'] || '';
+    const lunchFruit = menu['中餐水果'] || '季節性水果';
+    const lunchAddonParts = [];
+    if (lunchSoup)  lunchAddonParts.push(`🍲 湯品：${lunchSoup}`);
+    if (lunchFruit) lunchAddonParts.push(`🍑 水果：${lunchFruit}`);
+    const lunchAddonHtml = lunchAddonParts.length
+      ? `<div class="addon-row">附餐｜${lunchAddonParts.join('　')}</div>` : '';
+
     html += `
     <div class="meal-card mc-lunch">
       <div class="meal-card-header">
@@ -188,6 +202,7 @@ async function loadMenu() {
       </div>
       <div class="meal-card-body">
         <div class="lunch-grid">${lunchItems}</div>
+        ${lunchAddonHtml}
         ${!isPast && !isFuture ? `<div class="remain-text" style="margin-top:6px">結單時間 ${orderCutoff.lunch}　每餐上限 40 份</div>` : ''}
       </div>
     </div>`;
@@ -205,6 +220,15 @@ async function loadMenu() {
         </div>
       </div>`;
     }).join('');
+
+    const dinnerSoup  = menu['晚餐湯品'] || '';
+    const dinnerFruit = menu['晚餐水果'] || '季節性水果';
+    const dinnerAddonParts = [];
+    if (dinnerSoup)  dinnerAddonParts.push(`🍲 湯品：${dinnerSoup}`);
+    if (dinnerFruit) dinnerAddonParts.push(`🍑 水果：${dinnerFruit}`);
+    const dinnerAddonHtml = dinnerAddonParts.length
+      ? `<div class="addon-row">附餐｜${dinnerAddonParts.join('　')}</div>` : '';
+
     html += `
     <div class="meal-card mc-dinner">
       <div class="meal-card-header">
@@ -213,6 +237,7 @@ async function loadMenu() {
       </div>
       <div class="meal-card-body">
         <div class="lunch-grid">${dinnerItems}</div>
+        ${dinnerAddonHtml}
         ${!isPast && !isFuture ? `<div class="remain-text" style="margin-top:6px">結單時間 ${orderCutoff.dinner}</div>` : ''}
       </div>
     </div>`;

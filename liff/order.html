@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260531k">
+<link rel="stylesheet" href="style.css?v=20260601a">
 <script>
 (function(){
-  var V='20260531k';
+  var V='20260601a';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -84,6 +84,7 @@
       <div class="form-meal-label">中餐</div>
       <div id="sel-lunch" class="order-check-group"></div>
       <small class="field-hint" id="lunchRemaining"></small>
+      <div id="lunch-addon" class="meal-addon-info" hidden></div>
       <div class="qty-stepper" id="qty-lunch" hidden>
         <span class="qty-label">份數</span>
         <button type="button" class="qty-dec">−</button>
@@ -93,6 +94,7 @@
       </div>
       <div class="form-meal-label">晚餐</div>
       <div id="sel-dinner" class="order-check-group"></div>
+      <div id="dinner-addon" class="meal-addon-info" hidden></div>
       <div class="qty-stepper" id="qty-dinner" hidden>
         <span class="qty-label">份數</span>
         <button type="button" class="qty-dec">−</button>
@@ -218,6 +220,12 @@
   }
   .qty-unit { color: #666; font-size: 12px; }
 
+  .meal-addon-info {
+    font-size: 12px; color: #166534;
+    padding: 5px 10px; margin-top: 4px;
+    background: #f0fdf4; border-radius: 6px;
+  }
+  .meal-addon-info[hidden] { display: none !important; }
   .walkin-toast[hidden] { display: none !important; }
   .walkin-toast {
     position: fixed; inset: 0; z-index: 9999;
@@ -566,6 +574,23 @@ async function loadMenu() {
       { key: '晚餐A', prefix: 'A 餐：', bookedKey: 'dinnerA' },
       { key: '晚餐B', prefix: 'B 餐：', bookedKey: 'dinnerB' },
     ]);
+
+    // 中餐 / 晚餐 附餐資訊（湯品 + 水果）
+    function updateAddon(elId, soup, fruit) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      const parts = [];
+      if (soup)  parts.push(`🍲 湯品：${soup}`);
+      if (fruit) parts.push(`🍑 水果：${fruit}`);
+      if (parts.length) {
+        el.textContent = `附餐｜${parts.join('　')}`;
+        el.hidden = false;
+      } else {
+        el.hidden = true;
+      }
+    }
+    updateAddon('lunch-addon',  data.menu['中餐湯品'] || '', data.menu['中餐水果'] || '季節性水果');
+    updateAddon('dinner-addon', data.menu['晚餐湯品'] || '', data.menu['晚餐水果'] || '季節性水果');
 
     // 現場點餐欄：依當前時段開放或標示「不適用」
     walkinWindowData = data.walkinWindow || null;

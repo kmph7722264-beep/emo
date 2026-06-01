@@ -76,8 +76,12 @@
 .tag-la { background: #2563eb; }
 .tag-lb { background: #16a34a; }
 .tag-lc { background: #d97706; }
+.tag-ls { background: #0e7490; }
+.tag-lf { background: #15803d; }
 .tag-da { background: #7c3aed; }
 .tag-db { background: #0891b2; }
+.tag-ds { background: #6d28d9; }
+.tag-df { background: #b45309; }
 
 .meal-inp {
   flex: 1; display: block; width: auto; margin: 0;
@@ -147,8 +151,12 @@
 <datalist id="hist-中餐A"></datalist>
 <datalist id="hist-中餐B"></datalist>
 <datalist id="hist-中餐C"></datalist>
+<datalist id="hist-中餐湯品"></datalist>
+<datalist id="hist-中餐水果"></datalist>
 <datalist id="hist-晚餐A"></datalist>
 <datalist id="hist-晚餐B"></datalist>
+<datalist id="hist-晚餐湯品"></datalist>
+<datalist id="hist-晚餐水果"></datalist>
 
 <script>
 const LIFF_ID  = '2010095803-1ayMPRJ6';
@@ -156,12 +164,16 @@ const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxB
 const ADMIN_URL = 'https://liff.line.me/2010095803-1ayMPRJ6';
 
 const MEAL_DEFS = [
-  { key: '早餐',  label: '早', cls: 'bf', ph: '例：燒餅油條 / 飯糰' },
-  { key: '中餐A', label: 'A',  cls: 'la', ph: '例：滷雞腿便當' },
-  { key: '中餐B', label: 'B',  cls: 'lb', ph: '例：排骨便當' },
-  { key: '中餐C', label: 'C',  cls: 'lc', ph: '例：素食便當' },
-  { key: '晚餐A', label: '晚A', cls: 'da', ph: '例：紅燒牛肉麵' },
-  { key: '晚餐B', label: '晚B', cls: 'db', ph: '例：排骨湯麵' },
+  { key: '早餐',    label: '早',  cls: 'bf', ph: '例：燒餅油條 / 飯糰' },
+  { key: '中餐A',   label: 'A',   cls: 'la', ph: '例：滷雞腿便當' },
+  { key: '中餐B',   label: 'B',   cls: 'lb', ph: '例：排骨便當' },
+  { key: '中餐C',   label: 'C',   cls: 'lc', ph: '例：素食便當' },
+  { key: '中餐湯品', label: '中湯', cls: 'ls', ph: '例：玉米濃湯' },
+  { key: '中餐水果', label: '中果', cls: 'lf', ph: '季節性水果' },
+  { key: '晚餐A',   label: '晚A', cls: 'da', ph: '例：紅燒牛肉麵' },
+  { key: '晚餐B',   label: '晚B', cls: 'db', ph: '例：排骨湯麵' },
+  { key: '晚餐湯品', label: '晚湯', cls: 'ds', ph: '例：味噌湯' },
+  { key: '晚餐水果', label: '晚果', cls: 'df', ph: '季節性水果' },
 ];
 const WEEK_DAYS = ['日','一','二','三','四','五','六'];
 
@@ -280,8 +292,10 @@ async function loadWeekData() {
       const res  = await fetch(`${API_URL}?action=menu&date=${date}`);
       const data = await res.json();
       const menu = (data.ok && data.menu) ? data.menu : {};
+      const FRUIT_FIELDS = ['中餐水果', '晚餐水果'];
       card.querySelectorAll('.meal-inp').forEach(inp => {
-        const v = (menu[inp.dataset.meal] || '');
+        let v = (menu[inp.dataset.meal] || '');
+        if (!v && FRUIT_FIELDS.includes(inp.dataset.meal)) v = '季節性水果';
         inp.value = v;
         inp.dataset.orig = v;
       });
