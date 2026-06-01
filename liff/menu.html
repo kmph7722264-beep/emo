@@ -187,9 +187,11 @@ async function loadMenu() {
     }).join('');
 
     const lunchSoup  = menu['中餐湯品'] || '';
-    const lunchFruit = menu['中餐水果'] || '季節性水果';
+    const lunchFruit = menu['中餐水果'] || '';
+    const lunchDrink = menu['中餐飲品'] || '';
     const lunchAddonParts = [];
     if (lunchSoup)  lunchAddonParts.push(`🍲 湯品：${lunchSoup}`);
+    if (lunchDrink) lunchAddonParts.push(`🥤 飲品：${lunchDrink}`);
     if (lunchFruit) lunchAddonParts.push(`🍑 水果：${lunchFruit}`);
     const lunchAddonHtml = lunchAddonParts.length
       ? `<div class="addon-row">附餐｜${lunchAddonParts.join('　')}</div>` : '';
@@ -222,7 +224,7 @@ async function loadMenu() {
     }).join('');
 
     const dinnerSoup  = menu['晚餐湯品'] || '';
-    const dinnerFruit = menu['晚餐水果'] || '季節性水果';
+    const dinnerFruit = menu['晚餐水果'] || '';
     const dinnerAddonParts = [];
     if (dinnerSoup)  dinnerAddonParts.push(`🍲 湯品：${dinnerSoup}`);
     if (dinnerFruit) dinnerAddonParts.push(`🍑 水果：${dinnerFruit}`);

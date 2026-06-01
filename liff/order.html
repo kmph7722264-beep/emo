@@ -575,12 +575,13 @@ async function loadMenu() {
       { key: '晚餐B', prefix: 'B 餐：', bookedKey: 'dinnerB' },
     ]);
 
-    // 中餐 / 晚餐 附餐資訊（湯品 + 水果）
-    function updateAddon(elId, soup, fruit) {
+    // 中餐 / 晚餐 附餐資訊（湯品 + 飲品 + 水果）
+    function updateAddon(elId, soup, drink, fruit) {
       const el = document.getElementById(elId);
       if (!el) return;
       const parts = [];
       if (soup)  parts.push(`🍲 湯品：${soup}`);
+      if (drink) parts.push(`🥤 飲品：${drink}`);
       if (fruit) parts.push(`🍑 水果：${fruit}`);
       if (parts.length) {
         el.textContent = `附餐｜${parts.join('　')}`;
@@ -589,8 +590,8 @@ async function loadMenu() {
         el.hidden = true;
       }
     }
-    updateAddon('lunch-addon',  data.menu['中餐湯品'] || '', data.menu['中餐水果'] || '季節性水果');
-    updateAddon('dinner-addon', data.menu['晚餐湯品'] || '', data.menu['晚餐水果'] || '季節性水果');
+    updateAddon('lunch-addon',  data.menu['中餐湯品'] || '', data.menu['中餐飲品'] || '', data.menu['中餐水果'] || '');
+    updateAddon('dinner-addon', data.menu['晚餐湯品'] || '', '', data.menu['晚餐水果'] || '');
 
     // 現場點餐欄：依當前時段開放或標示「不適用」
     walkinWindowData = data.walkinWindow || null;

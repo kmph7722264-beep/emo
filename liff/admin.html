@@ -115,9 +115,13 @@
       <input name="中餐湯品" list="hist-中餐湯品" placeholder="例：玉米濃湯">
       <datalist id="hist-中餐湯品"></datalist>
     </label>
-    <label>中餐附果
-      <input name="中餐水果" list="hist-中餐水果" placeholder="季節性水果">
+    <label>中餐水果
+      <input name="中餐水果" list="hist-中餐水果" placeholder="">
       <datalist id="hist-中餐水果"></datalist>
+    </label>
+    <label>中餐飲品
+      <input name="中餐飲品" list="hist-中餐飲品" placeholder="例：無糖綠茶 / 檸檬水">
+      <datalist id="hist-中餐飲品"></datalist>
     </label>
     <label>晚餐 A
       <input name="晚餐A" list="hist-晚餐A" placeholder="例：紅燒牛肉麵">
@@ -132,7 +136,7 @@
       <datalist id="hist-晚餐湯品"></datalist>
     </label>
     <label>晚餐附果
-      <input name="晚餐水果" list="hist-晚餐水果" placeholder="季節性水果">
+      <input name="晚餐水果" list="hist-晚餐水果" placeholder="">
       <datalist id="hist-晚餐水果"></datalist>
     </label>
 
@@ -1076,11 +1080,6 @@ async function loadMenuForDate(date) {
     Object.entries(data.menu).forEach(([k, v]) => {
       const el = document.querySelector(`input[name="${k}"]`);
       if (el) el.value = v;
-    });
-    // 水果欄位預設值（API 未回傳或空值時補預設）
-    ['中餐水果', '晚餐水果'].forEach(key => {
-      const el = document.querySelector(`input[name="${key}"]`);
-      if (el && !el.value) el.value = '季節性水果';
     });
     if (hint) {
       if (data.remaining && typeof data.limit === 'number') {
