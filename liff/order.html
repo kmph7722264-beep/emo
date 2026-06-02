@@ -509,6 +509,26 @@ async function init() {
     if (!anyChecked) stepper.querySelector('.qty-val').textContent = '1';
   });
 
+  // ── Radio 重複點選可取消（記錄 pointerdown 前狀態，click 時判斷）
+  document.getElementById('orderForm').addEventListener('pointerdown', e => {
+    const label = e.target.closest('label.order-check-item');
+    if (!label) return;
+    const radio = label.querySelector('input[type="radio"]');
+    if (!radio || radio.disabled) return;
+    label.dataset.wasChecked = radio.checked ? 'true' : 'false';
+  }, { passive: true });
+
+  document.getElementById('orderForm').addEventListener('click', e => {
+    const label = e.target.closest('label.order-check-item');
+    if (!label) return;
+    const radio = label.querySelector('input[type="radio"]');
+    if (!radio || radio.disabled) return;
+    if (label.dataset.wasChecked === 'true') {
+      radio.checked = false;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
   const adminLink = document.getElementById('adminEntry');
   if (adminLink) {
     adminLink.addEventListener('click', e => {
