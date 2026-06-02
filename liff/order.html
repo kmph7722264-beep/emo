@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好竹軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好竹軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260601a">
+<link rel="stylesheet" href="style.css?v=20260602a">
 <script>
 (function(){
-  var V='20260601a';
+  var V='20260602a';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -94,6 +94,7 @@
       </div>
       <div class="form-meal-label">晚餐</div>
       <div id="sel-dinner" class="order-check-group"></div>
+      <small class="field-hint" id="dinnerRemaining"></small>
       <div id="dinner-addon" class="meal-addon-info" hidden></div>
       <div class="qty-stepper" id="qty-dinner" hidden>
         <span class="qty-label">份數</span>
@@ -226,6 +227,14 @@
     background: #f0fdf4; border-radius: 6px;
   }
   .meal-addon-info[hidden] { display: none !important; }
+  .capacity-full-notice {
+    font-size: 12px; color: #b45309;
+    padding: 4px 10px; margin-bottom: 6px;
+    background: #fffbeb; border-radius: 6px;
+    border: 1px solid #fcd34d;
+  }
+  .order-check-item.item-full { border-color: #f59f00 !important; background: #fffbeb; }
+  .order-check-item.item-full span { color: #92400e; font-weight: 600; }
   .walkin-toast[hidden] { display: none !important; }
   .walkin-toast {
     position: fixed; inset: 0; z-index: 9999;
@@ -302,6 +311,16 @@
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
     const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+
+// 停止受理時間（今日訂單前端補強，後端仍為最終關卡）
+const ORDER_CUTOFF = { breakfast: '08:30', lunch: '13:00', dinner: '18:30' };
+function isPastCutoff(mealName) {
+  const c = ORDER_CUTOFF[mealName];
+  if (!c) return false;
+  const now = new Date();
+  const [h, m] = c.split(':').map(Number);
+  return now.getHours() * 60 + now.getMinutes() >= h * 60 + m;
+}
 
 let idToken = '';
 let walkinMode = false;   // 現場點餐模式：從訂單 QR Code URL 開啟時啟用
@@ -528,13 +547,17 @@ async function loadMenu() {
     function rebuildMeal(mealName, items) {
       const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
-      const closed = orderable[mealName] === false && !isWalkinWindowActive(mealName);
+      const isToday = date === localDateStr();
+      const pastCutoff = isToday && isPastCutoff(mealName);
+      const closed = (orderable[mealName] === false || pastCutoff) && !isWalkinWindowActive(mealName);
       const isRadio = mealName === 'lunch' || mealName === 'dinner';
       const inputType = isRadio ? 'radio' : 'checkbox';
       const parts = [];
+      let validCount = 0, capFullCount = 0;
       for (const { key, prefix, bookedKey } of items) {
         const menuName = data.menu[key] || '';
         if (!menuName) continue;
+        validCount++;
         const baseLabel = (prefix || '') + menuName;
         const val = htmlEsc(baseLabel);
         let displayText = val;
@@ -544,11 +567,13 @@ async function loadMenu() {
           isDisabled = true;
         } else if (bookedKey && data.booked && typeof data.booked[bookedKey] === 'number') {
           displayText += `（已售 ${data.booked[bookedKey]}）`;
-          // 上限控制：達上限則 disable（不顯示上限數字）
-          if (data.limit && mealName === 'lunch' && data.booked[bookedKey] >= data.limit) isDisabled = true;
-        } else if (bookedKey && mealName === 'lunch') {
-          // Code.gs 未更新時 fallback：用舊 remaining 判斷是否達上限
-          const lk = bookedKey.replace('lunch', '');
+          if (data.limit && data.booked[bookedKey] >= data.limit) {
+            isDisabled = true;
+            capFullCount++;
+          }
+        } else if (bookedKey && isRadio) {
+          // Code.gs 未更新時 fallback
+          const lk = bookedKey.replace('lunch', '').replace('dinner', '');
           if (data.remaining && typeof data.remaining[lk] === 'number' && data.remaining[lk] <= 0) isDisabled = true;
         }
         const dis = isDisabled ? ' disabled' : '';
@@ -559,6 +584,18 @@ async function loadMenu() {
           `<span>${displayText}</span></label>`
         );
       }
+
+      // 中餐/晚餐全數額滿 → 自動切換為現場點餐選項
+      if (isRadio && !closed && validCount > 0 && capFullCount >= validCount) {
+        const label = mealName === 'lunch' ? '中餐' : '晚餐';
+        wrap.innerHTML =
+          `<div class="capacity-full-notice">⚠ 本日${label}已達訂購上限，以現場點餐計量</div>` +
+          `<label class="order-check-item item-full">` +
+          `<input type="radio" name="${mealName}" value="現場點餐">` +
+          `<span>現場點餐（現場還剩什麼就吃什麼）</span></label>`;
+        return;
+      }
+
       wrap.innerHTML = parts.length
         ? parts.join('')
         : '<span class="no-menu-text">今日無此餐</span>';
@@ -615,12 +652,14 @@ async function loadMenu() {
       }
     }
 
-    const hint = document.getElementById('lunchRemaining');
-    if (hint) {
-      hint.textContent = (orderable.lunch === false && !isWalkinWindowActive('lunch'))
-        ? `午餐進單已於 ${(data.orderCutoff && data.orderCutoff.lunch) || '10:30'} 結束`
-        : '';
-    }
+    ['lunch', 'dinner'].forEach(meal => {
+      const hint = document.getElementById(meal === 'lunch' ? 'lunchRemaining' : 'dinnerRemaining');
+      if (!hint) return;
+      const isToday = date === localDateStr();
+      const pastCutoff = isToday && isPastCutoff(meal);
+      const isClosed = (orderable[meal] === false || pastCutoff) && !isWalkinWindowActive(meal);
+      hint.textContent = isClosed ? `進單已於 ${ORDER_CUTOFF[meal]} 結束` : '';
+    });
 
     // 菜單重載時重置所有步進器（避免切換日期後份數殘留）
     ['breakfast', 'lunch', 'dinner'].forEach(m => {
