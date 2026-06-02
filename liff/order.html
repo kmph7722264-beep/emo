@@ -496,6 +496,11 @@ async function init() {
   document.getElementById('orderForm').addEventListener('change', e => {
     const inp = e.target;
     const meal = inp.name;
+    // 中/晚餐 checkbox 互斥單選：勾選時取消同群其他選項
+    if (['lunch', 'dinner'].includes(meal) && inp.type === 'checkbox' && inp.checked) {
+      const wrap = document.getElementById(`sel-${meal}`);
+      if (wrap) wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => { if (cb !== inp) cb.checked = false; });
+    }
     // 現場點餐步進器顯隱
     if (meal === 'walkinMeal') {
       const stWM = document.getElementById('qty-walkinMeal');
@@ -575,15 +580,14 @@ async function loadMenu() {
     function htmlEsc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-    // 早餐用 checkbox；中餐/晚餐用 radio（單選）
+    // 全部使用 checkbox；中/晚餐透過 JS 維持互斥單選
     function rebuildMeal(mealName, items) {
       const wrap = document.getElementById(`sel-${mealName}`);
       if (!wrap) return;
       const isToday = date === localDateStr();
       const pastCutoff = isToday && isPastCutoff(mealName);
       const closed = (orderable[mealName] === false || pastCutoff) && !isWalkinWindowActive(mealName);
-      const isRadio = mealName === 'lunch' || mealName === 'dinner';
-      const inputType = isRadio ? 'radio' : 'checkbox';
+      const isLunchDinner = mealName === 'lunch' || mealName === 'dinner';
       const parts = [];
       let validCount = 0, capFullCount = 0;
       for (const { key, prefix, bookedKey } of items) {
@@ -603,7 +607,7 @@ async function loadMenu() {
             isDisabled = true;
             capFullCount++;
           }
-        } else if (bookedKey && isRadio) {
+        } else if (bookedKey && isLunchDinner) {
           // Code.gs 未更新時 fallback
           const lk = bookedKey.replace('lunch', '').replace('dinner', '');
           if (data.remaining && typeof data.remaining[lk] === 'number' && data.remaining[lk] <= 0) isDisabled = true;
@@ -612,18 +616,18 @@ async function loadMenu() {
         const cls = isDisabled ? ' item-closed' : '';
         parts.push(
           `<label class="order-check-item${cls}">` +
-          `<input type="${inputType}" name="${mealName}" value="${val}"${dis}>` +
+          `<input type="checkbox" name="${mealName}" value="${val}"${dis}>` +
           `<span>${displayText}</span></label>`
         );
       }
 
       // 中餐/晚餐全數額滿 → 自動切換為現場點餐選項
-      if (isRadio && !closed && validCount > 0 && capFullCount >= validCount) {
+      if (isLunchDinner && !closed && validCount > 0 && capFullCount >= validCount) {
         const label = mealName === 'lunch' ? '中餐' : '晚餐';
         wrap.innerHTML =
           `<div class="capacity-full-notice">⚠ 本日${label}已達訂購上限，以現場點餐計量</div>` +
           `<label class="order-check-item item-full">` +
-          `<input type="radio" name="${mealName}" value="現場點餐">` +
+          `<input type="checkbox" name="${mealName}" value="現場點餐">` +
           `<span>現場點餐（現場還剩什麼就吃什麼）</span></label>`;
         return;
       }
@@ -947,6 +951,7 @@ async function activateWalkinFromOrder(orderNo) {
     for (const inp of inputs) {
       if (inp.value === meal.suggest && !inp.disabled) {
         inp.checked = true;
+        inp.dispatchEvent(new Event('change', { bubbles: true }));
         break;
       }
     }
@@ -966,7 +971,11 @@ async function activateWalkinFromOrder(orderNo) {
   if (meal.key && meal.suggest) {
     const inputs = document.querySelectorAll(`input[name="${meal.key}"]`);
     for (const inp of inputs) {
-      if (inp.value === meal.suggest && !inp.disabled) { inp.checked = true; break; }
+      if (inp.value === meal.suggest && !inp.disabled) {
+        inp.checked = true;
+        inp.dispatchEvent(new Event('change', { bubbles: true }));
+        break;
+      }
     }
   }
 
