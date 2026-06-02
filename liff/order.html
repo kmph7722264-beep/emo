@@ -235,6 +235,11 @@
   }
   .order-check-item.item-full { border-color: #f59f00 !important; background: #fffbeb; }
   .order-check-item.item-full span { color: #92400e; font-weight: 600; }
+  .order-check-item.item-selected {
+    border-color: var(--line-green, #06c755) !important;
+    background: #f0fdf4;
+  }
+  .order-check-item.item-selected span { color: #047a3a; font-weight: 600; }
   .walkin-toast[hidden] { display: none !important; }
   .walkin-toast {
     position: fixed; inset: 0; z-index: 9999;
@@ -507,6 +512,13 @@ async function init() {
     const anyChecked = wrap && wrap.querySelector('input:checked');
     stepper.hidden = !anyChecked;
     if (!anyChecked) stepper.querySelector('.qty-val').textContent = '1';
+    // 選取高亮：勾選 → 綠底；取消 → 恢復預設
+    if (wrap) {
+      wrap.querySelectorAll('label.order-check-item').forEach(lbl => {
+        const ctrl = lbl.querySelector('input');
+        lbl.classList.toggle('item-selected', !!(ctrl && ctrl.checked));
+      });
+    }
   });
 
   // ── Radio 重複點選可取消（記錄 pointerdown 前狀態，click 時判斷）
