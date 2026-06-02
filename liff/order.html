@@ -588,6 +588,8 @@ async function loadMenu() {
       const pastCutoff = isToday && isPastCutoff(mealName);
       const closed = (orderable[mealName] === false || pastCutoff) && !isWalkinWindowActive(mealName);
       const isLunchDinner = mealName === 'lunch' || mealName === 'dinner';
+      const singleOption = isLunchDinner &&
+        items.filter(({ key }) => !!data.menu[key]).length === 1;
       const parts = [];
       let validCount = 0, capFullCount = 0;
       for (const { key, prefix, bookedKey } of items) {
@@ -603,7 +605,7 @@ async function loadMenu() {
           isDisabled = true;
         } else if (bookedKey && data.booked && typeof data.booked[bookedKey] === 'number') {
           displayText += `（已售 ${data.booked[bookedKey]}）`;
-          if (data.limit && data.booked[bookedKey] >= data.limit) {
+          if (data.limit && data.booked[bookedKey] >= data.limit && !singleOption) {
             isDisabled = true;
             capFullCount++;
           }
