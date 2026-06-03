@@ -123,6 +123,10 @@
       <legend>備註</legend>
       <textarea name="note" rows="3" maxlength="200" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
+        <input type="checkbox" name="takeout" id="takeoutCheck" style="width:20px;height:20px">
+        🛍️ 外帶（餐點打包帶走）
+      </label>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:8px">
         <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px" checked>
         🥢 自備餐具（帶自己的餐盒 / 環保餐具）
       </label>
@@ -718,6 +722,7 @@ async function onSubmit(ev) {
   const fd = new FormData(ev.target);
   const order = Object.fromEntries(fd.entries());
   const byob            = !!fd.get('byob');
+  const takeout         = !!fd.get('takeout');
   const dineIn          = !!fd.get('dineIn');
   const walkinMealChk   = !!fd.get('walkinMeal');
   const isWalkin        = walkinMode || walkinMealChk;
@@ -778,7 +783,7 @@ async function onSubmit(ev) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
-      body: JSON.stringify({ action: 'order', idToken, order, walkin: isWalkin, byob, dineIn }),
+      body: JSON.stringify({ action: 'order', idToken, order, walkin: isWalkin, byob, takeout, dineIn }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
@@ -800,7 +805,7 @@ async function onSubmit(ev) {
 
     // 現場點餐 → 跳大通知顯示訂單編號（因不發 LINE，需此畫面讓客人記下）
     if (data.walkin && data.orderNo) {
-      showWalkinToast(data.orderNo, order, byob, dineIn);
+      showWalkinToast(data.orderNo, order, byob, takeout, dineIn);
     }
 
     ev.target.reset();
@@ -828,14 +833,15 @@ let walkinToastTimer = null;
  * 現場點餐成功大通知：顯示訂單編號 + 訂餐內容 + 自備餐具狀態。
  * 30 秒後自動消失，或點一下消失（此畫面是唯一憑證來源）。
  */
-function showWalkinToast(orderNo, order, byob, dineIn) {
+function showWalkinToast(orderNo, order, byob, takeout, dineIn) {
   document.getElementById('wtOrder').textContent = orderNo;
   const lines = [
     order.breakfast && `早餐：${order.breakfast}`,
     order.lunch     && `中餐：${order.lunch}`,
     order.dinner    && `晚餐：${order.dinner}`,
-    byob   ? '🥢 自備餐具' : '自購餐具',
-    dineIn ? '🍽️ 現場訂餐' : '自購餐具，打包帶走',
+    takeout ? '🛍️ 外帶'      : '',
+    byob    ? '🥢 自備餐具'  : '',
+    dineIn  ? '🍽️ 現場訂餐' : '',
   ].filter(Boolean);
   document.getElementById('wtLines').innerHTML =
     lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
