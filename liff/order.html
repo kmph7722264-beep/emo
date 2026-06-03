@@ -119,25 +119,25 @@
       </div>
     </fieldset>
 
-    <fieldset>
-      <legend>備註</legend>
-      <textarea name="note" rows="3" maxlength="200" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
-      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
-        <input type="checkbox" name="takeout" id="takeoutCheck" style="width:20px;height:20px">
-        🛍️ 外帶（餐點打包帶走）
-      </label>
-      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-top:8px">
-        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px" checked>
-        🥢 自備餐具（帶自己的餐盒 / 環保餐具）
-      </label>
-    </fieldset>
-
     <fieldset id="walkinOptionsFieldset" hidden>
       <legend>現場訂餐選項</legend>
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px">
         <input type="checkbox" name="dineIn" id="dineInCheck" style="width:20px;height:20px">
         🍽️ 現場訂餐
       </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>備註</legend>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <input type="checkbox" name="takeout" id="takeoutCheck" style="width:20px;height:20px">
+        🛍️ 外帶（餐點打包帶走）
+      </label>
+      <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px" checked>
+        🥢 自備餐具（帶自己的餐盒 / 環保餐具）
+      </label>
+      <textarea name="note" rows="3" maxlength="200" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
     </fieldset>
 
     <fieldset id="privacyFieldset">
