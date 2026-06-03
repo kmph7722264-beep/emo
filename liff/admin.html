@@ -22,6 +22,20 @@
   </div>
 
   <div id="adminContent">
+
+  <!-- ▼ 現場點餐儀表板 -->
+  <div id="walkinDashboard" class="wk-dashboard">
+    <div class="wk-header">
+      <span class="wk-title">📊 現場點餐儀表板</span>
+      <span id="wkUpdateTime" class="wk-update-time"></span>
+      <button type="button" id="wkRefreshBtn" class="wk-refresh-btn" title="重新整理">↺</button>
+    </div>
+    <div id="wkMeals" class="wk-meals">
+      <div style="text-align:center;padding:14px;color:#6b7280;font-size:13px">載入中…</div>
+    </div>
+  </div>
+  <!-- ▲ 現場點餐儀表板 -->
+
   <fieldset>
     <legend>當日訂單統計</legend>
     <label>日期
@@ -278,6 +292,90 @@
   }
   .config-row.config-changed .config-input { border-color: #f59e0b; }
   .config-default { font-size: 11px; color: #9ca3af; white-space: nowrap; }
+
+  /* ── 現場點餐儀表板 ───────────────────────────────── */
+  .wk-dashboard {
+    border: 1.5px solid #0d3b66; border-radius: 12px;
+    margin-bottom: 18px; overflow: hidden;
+  }
+  .wk-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; background: #0d3b66; color: #fff;
+  }
+  .wk-title { font-weight: 700; font-size: 14px; flex: 1; }
+  .wk-update-time { font-size: 11px; opacity: 0.75; }
+  .wk-refresh-btn {
+    background: transparent; border: 1px solid rgba(255,255,255,0.4);
+    color: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 15px;
+    transition: background 0.15s;
+  }
+  .wk-refresh-btn:hover { background: rgba(255,255,255,0.15); }
+  .wk-meals { display: flex; flex-direction: column; gap: 10px; padding: 12px 12px; }
+
+  .wk-meal {
+    border: 1.5px solid #e5e7eb; border-radius: 9px; overflow: hidden;
+  }
+  .wk-meal.wk-active {
+    border-color: #06c755;
+    box-shadow: 0 0 0 2px rgba(6,199,85,0.18);
+  }
+  .wk-meal.wk-done { opacity: 0.55; }
+  .wk-meal-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: #f8fafc;
+    font-size: 13px; font-weight: 600; color: #374151;
+  }
+  .wk-meal.wk-active .wk-meal-head { background: #e8f7ee; color: #047a3a; }
+  .wk-meal-time {
+    font-size: 11px; font-weight: normal; margin-left: auto;
+    font-family: ui-monospace, monospace; color: #6b7280;
+  }
+  .wk-meal.wk-active .wk-meal-time { color: #047a3a; }
+  .wk-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 999px;
+  }
+  .wk-badge-active  { background: #06c755; color: #fff; }
+  .wk-badge-done    { background: #e5e7eb; color: #6b7280; }
+  .wk-badge-pending { background: #fef3c7; color: #92400e; }
+
+  .wk-meal-body { padding: 10px 12px; }
+
+  .wk-item-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+  }
+  .wk-item-row:last-child { margin-bottom: 0; }
+  .wk-item-label { font-size: 13px; color: #374151; min-width: 36px; font-weight: 600; }
+  .wk-bar-wrap {
+    flex: 1; height: 16px; background: #e5e7eb;
+    border-radius: 999px; overflow: hidden;
+  }
+  .wk-bar-fill {
+    height: 100%; border-radius: 999px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .wk-bar-safe   { background: #06c755; }
+  .wk-bar-warn   { background: #f59e0b; }
+  .wk-bar-danger { background: #ef4444; }
+
+  .wk-sold-num {
+    font-size: 13px; font-weight: 700; min-width: 54px; text-align: right;
+    font-family: ui-monospace, monospace;
+  }
+  .wk-remain {
+    font-size: 11px; color: #6b7280; min-width: 32px; text-align: right;
+  }
+  .wk-remain.low  { color: #ef4444; font-weight: 700; }
+
+  .wk-simple { text-align: center; padding: 8px 0 4px; }
+  .wk-simple-num { font-size: 32px; font-weight: 800; color: #0d3b66; line-height: 1; }
+  .wk-simple-unit { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+  .wk-total-row {
+    margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb;
+    font-size: 12px; color: #6b7280; display: flex; justify-content: flex-end; gap: 6px;
+  }
+  .wk-total-row strong { color: #374151; }
 </style>
 
 <script>
@@ -362,6 +460,7 @@ async function init() {
 
   scheduleTokenExpiryWarning(idToken);
   startWalkinPolling();
+  startWalkinDashboard();
   document.getElementById('statsBtn').addEventListener('click', () => loadStats());
   document.getElementById('menuLoadBtn').addEventListener('click', () => {
     const d = document.getElementById('menuDate').value;
@@ -402,6 +501,7 @@ async function init() {
   });
   document.getElementById('configLoadBtn').addEventListener('click', loadConfig);
   document.getElementById('configForm').addEventListener('submit', saveConfig);
+  document.getElementById('wkRefreshBtn').addEventListener('click', () => updateWalkinDashboard());
   document.getElementById('usbModeBtn').addEventListener('click', toggleUsbScannerMode);
   usbScannerMode = !!localStorage.getItem('emo_usbMode');
   applyUsbMode();
@@ -1338,6 +1438,136 @@ function showMsg(text, mode) {
  * ========================================================= */
 
 let pickupToastTimer = null;
+
+/* ============================================================
+ * 現場點餐「已售儀表板」（每 30 秒自動更新）
+ * 使用公開 GET API，不需管理員 token
+ * ============================================================ */
+
+const WK_MEAL_META = {
+  breakfast: { label: '🌅 早餐', order: 0 },
+  lunch:     { label: '🍱 中餐', order: 1 },
+  dinner:    { label: '🌙 晚餐', order: 2 },
+};
+
+let _wkDashTimer = null;
+
+function _wkNowHHMM() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function _wkMealStatus(w) {
+  const now = _wkNowHHMM();
+  if (!w || !w.start) return 'pending';
+  if (now >= w.stop)  return 'done';
+  if (now >= w.start) return 'active';
+  return 'pending';
+}
+
+function _wkBarClass(rem, limit) {
+  if (rem <= 5)  return 'wk-bar-danger';
+  if (rem <= Math.round(limit * 0.25)) return 'wk-bar-warn';
+  return 'wk-bar-safe';
+}
+
+function renderWalkinDashboard(data) {
+  const { booked = {}, remaining = {}, limit = 40, walkinWindow = {} } = data;
+  const container = document.getElementById('wkMeals');
+  if (!container) return;
+
+  let html = '';
+  for (const meal of ['breakfast', 'lunch', 'dinner']) {
+    const w = walkinWindow[meal] || {};
+    const status = _wkMealStatus(w);
+    const mealClass = status === 'active' ? 'wk-active' : status === 'done' ? 'wk-done' : '';
+    const badgeMap = {
+      active:  '<span class="wk-badge wk-badge-active">進行中</span>',
+      done:    '<span class="wk-badge wk-badge-done">已結束</span>',
+      pending: '<span class="wk-badge wk-badge-pending">未開始</span>',
+    };
+
+    let bodyHtml = '';
+    if (meal === 'breakfast') {
+      const sold = booked.breakfast || 0;
+      bodyHtml = `<div class="wk-simple">
+        <div class="wk-simple-num">${sold}</div>
+        <div class="wk-simple-unit">份訂單（含線上）</div>
+      </div>`;
+    } else if (meal === 'lunch') {
+      let total = 0;
+      ['A', 'B', 'C'].forEach(k => {
+        const sold = booked[`lunch${k}`] || 0;
+        const rem  = remaining[k] != null ? remaining[k] : Math.max(0, limit - sold);
+        const pct  = Math.min(100, Math.round(sold / limit * 100));
+        const bc   = _wkBarClass(rem, limit);
+        const remClass = rem <= 5 ? 'low' : '';
+        total += sold;
+        bodyHtml += `
+          <div class="wk-item-row">
+            <span class="wk-item-label">${k} 餐</span>
+            <div class="wk-bar-wrap"><div class="wk-bar-fill ${bc}" style="width:${pct}%"></div></div>
+            <span class="wk-sold-num">${sold}/${limit}</span>
+            <span class="wk-remain ${remClass}">餘${rem}</span>
+          </div>`;
+      });
+      bodyHtml += `<div class="wk-total-row">合計已售 <strong>${total} 份</strong></div>`;
+    } else { // dinner
+      const soldA = booked.dinnerA || 0;
+      const soldB = booked.dinnerB || 0;
+      bodyHtml = `
+        <div class="wk-item-row">
+          <span class="wk-item-label">A 餐</span>
+          <span style="flex:1"></span>
+          <span class="wk-sold-num">${soldA} 份</span>
+        </div>
+        <div class="wk-item-row">
+          <span class="wk-item-label">B 餐</span>
+          <span style="flex:1"></span>
+          <span class="wk-sold-num">${soldB} 份</span>
+        </div>
+        <div class="wk-total-row">合計已售 <strong>${soldA + soldB} 份</strong></div>`;
+    }
+
+    html += `
+      <div class="wk-meal ${mealClass}">
+        <div class="wk-meal-head">
+          ${WK_MEAL_META[meal].label}
+          ${badgeMap[status]}
+          <span class="wk-meal-time">${w.start || '--:--'}–${w.stop || '--:--'}</span>
+        </div>
+        <div class="wk-meal-body">${bodyHtml}</div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+async function updateWalkinDashboard() {
+  const btn = document.getElementById('wkRefreshBtn');
+  if (btn) { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
+  try {
+    const today = toDateStr(new Date());
+    const res = await fetch(`${API_URL}?action=menu&date=${today}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '查詢失敗');
+    renderWalkinDashboard(data);
+    const now = new Date();
+    const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    const el = document.getElementById('wkUpdateTime');
+    if (el) el.textContent = `更新 ${t}`;
+  } catch (err) {
+    const c = document.getElementById('wkMeals');
+    if (c) c.innerHTML = `<div style="text-align:center;padding:10px;color:#ef4444;font-size:13px">資料載入失敗：${escapeHtml(err.message)}</div>`;
+  } finally {
+    if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+  }
+}
+
+function startWalkinDashboard() {
+  updateWalkinDashboard();
+  if (_wkDashTimer) clearInterval(_wkDashTimer);
+  _wkDashTimer = setInterval(updateWalkinDashboard, 30000);
+}
 
 /* ============================================================
  * 現場點餐新訂單輪詢（每 5 秒）
