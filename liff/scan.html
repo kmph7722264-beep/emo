@@ -353,33 +353,23 @@ function navigate(dest) {
 }
 
 // ── 策略 A：liff.scanCodeV2()（LINE 接管相機）────────────────
+// 取消或失敗時自動啟動 fallback 相機，不顯示等待畫面，達到「無需點擊」效果
 async function tryScanCodeV2() {
   scanDone = false;
   try {
     const result = await liff.scanCodeV2();
-    if (scanDone) return;   // fallback 已先完成
+    if (scanDone) return;
     const raw = result && result.value ? result.value.trim() : '';
     if (!raw) {
-      // 使用者取消 → 回到等待畫面讓他重試
-      show($wait);
+      // 使用者取消 → 直接啟動 fallback 相機（不顯示等待畫面）
+      startCamFallback();
       return;
     }
     scanDone = true;
     navigate(buildDest(raw));
   } catch (err) {
     if (scanDone) return;
-    const code = err && (err.code || err.message || String(err));
-    // 使用者主動取消（CANCEL / USER_CANCEL）
-    if (/cancel/i.test(code)) {
-      show($wait);
-      return;
-    }
-    // LIFF_NOT_SUPPORT_FEATURE → 裝置/版本不支援 → 啟動 fallback
-    if (/not.*support|unsupport|LIFF_NOT_SUPPORT/i.test(code)) {
-      startCamFallback();
-      return;
-    }
-    // 其他錯誤 → 嘗試 fallback；若也失敗則顯示引導
+    // 任何情況（取消 / 不支援 / 其他錯誤）→ 直接啟動 fallback 相機
     startCamFallback();
   }
 }
@@ -469,7 +459,15 @@ function showGuide(title, desc) {
 // ── 事件 ─────────────────────────────────────────────────────
 btnOpenScan.addEventListener('click', tryScanCodeV2);
 btnSkipScan.addEventListener('click', () => navigate());
-btnCamCancel.addEventListener('click', () => { stopCam(); show($wait); });
+// 取消相機 → 重新嘗試 scanCodeV2；若不支援則重啟 fallback 相機
+btnCamCancel.addEventListener('click', () => {
+  stopCam();
+  if (typeof liff !== 'undefined' && typeof liff.scanCodeV2 === 'function') {
+    tryScanCodeV2();
+  } else {
+    startCamFallback();
+  }
+});
 btnTorch.addEventListener('click', toggleTorch);
 btnRetry.addEventListener('click', () => startCamFallback());
 btnErrSkip.addEventListener('click', () => navigate());
@@ -493,11 +491,9 @@ window.addEventListener('beforeunload', stopCam);
     await liff.init({ liffId });
     if (!liff.isLoggedIn()) { liff.login(); return; }
 
-    // 直接嘗試 scanCodeV2；若不支援則 catch 自動切 fallback
+    // 直接開啟掃描：scanCodeV2 成功 → 掃完即導頁；取消或不支援 → 自動啟動 fallback 相機
+    // 全程無需使用者點擊任何按鈕
     await tryScanCodeV2();
-
-    // scanCodeV2 呼叫後 LINE 接管畫面；若 LINE 版本舊不接管，顯示等待畫面
-    if (!scanDone) show($wait);
 
   } catch (err) {
     showGuide('啟動失敗', 'LIFF 初始化錯誤：' + (err && err.message ? err.message : err));
