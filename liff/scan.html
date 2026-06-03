@@ -457,17 +457,9 @@ function showGuide(title, desc) {
 }
 
 // ── 事件 ─────────────────────────────────────────────────────
-btnOpenScan.addEventListener('click', tryScanCodeV2);
+btnOpenScan.addEventListener('click', startCamFallback);   // 直接開相機
 btnSkipScan.addEventListener('click', () => navigate());
-// 取消相機 → 重新嘗試 scanCodeV2；若不支援則重啟 fallback 相機
-btnCamCancel.addEventListener('click', () => {
-  stopCam();
-  if (typeof liff !== 'undefined' && typeof liff.scanCodeV2 === 'function') {
-    tryScanCodeV2();
-  } else {
-    startCamFallback();
-  }
-});
+btnCamCancel.addEventListener('click', () => { stopCam(); show($wait); });
 btnTorch.addEventListener('click', toggleTorch);
 btnRetry.addEventListener('click', () => startCamFallback());
 btnErrSkip.addEventListener('click', () => navigate());
@@ -476,14 +468,16 @@ btnErrSkip.addEventListener('click', () => navigate());
 window.addEventListener('pagehide', stopCam);
 window.addEventListener('beforeunload', stopCam);
 
-// ── LIFF 初始化 ─ 啟動後立即自動掃描 ──────────────────────
+// ── LIFF 初始化 ─────────────────────────────────────────────
+// 主流程：直接開啟頁面內相機（getUserMedia + jsQR），可靠、不依賴 LINE 版本
+// scanCodeV2 僅作為可選的備用路徑（由「使用 LINE 掃描器」按鈕觸發）
 (async () => {
   show($load);
   try {
-    const params   = new URLSearchParams(location.search);
-    const liffId   = (SCAN_LIFF_ID && !SCAN_LIFF_ID.startsWith('@@'))
-                       ? SCAN_LIFF_ID
-                       : params.get('liffId') || '';
+    const params = new URLSearchParams(location.search);
+    const liffId = (SCAN_LIFF_ID && !SCAN_LIFF_ID.startsWith('@@'))
+                     ? SCAN_LIFF_ID
+                     : params.get('liffId') || '';
     if (!liffId) {
       showGuide('設定尚未完成', '請聯絡管理員，LIFF ID 尚未填入 scan.html。');
       return;
@@ -491,9 +485,8 @@ window.addEventListener('beforeunload', stopCam);
     await liff.init({ liffId });
     if (!liff.isLoggedIn()) { liff.login(); return; }
 
-    // 直接開啟掃描：scanCodeV2 成功 → 掃完即導頁；取消或不支援 → 自動啟動 fallback 相機
-    // 全程無需使用者點擊任何按鈕
-    await tryScanCodeV2();
+    // 直接啟動 fallback 相機（不呼叫 scanCodeV2，避免卡住載入畫面）
+    startCamFallback();
 
   } catch (err) {
     showGuide('啟動失敗', 'LIFF 初始化錯誤：' + (err && err.message ? err.message : err));
