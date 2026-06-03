@@ -1,0 +1,1520 @@
+<head class="selectNone"><style type="text/css" id="pluginCss">:root {
+  --plugin-contextmenu-icon-checkbox: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACwSURBVDhPzZOxDYMwEEUfUTYAeu+BZyATUBiXESMBBUVowwxmGmAGaKIIWQY7osmvfPel99xcJIRYuZBICLF2XWfvg1IUBTd7+Wvu+6HUaj8epqnb7zvoB2mc0NQtWmm7CgPk+QOAYXjblR+QxgmZlIzGMC2zXfsBZ3ZcgOpZ0dQtaZx47bgAff+Cj9lnxwWYlpnRGDIpvXZcACzjmZ0jwLTMlFpRanVq5y9uIbp6zhueuESbUFx5DQAAAABJRU5ErkJggg==);
+  --plugin-default-grayscale-bias-opacity: 0.25;
+  --plugin-font-family: "Microsoft JhengHei UI";
+  --plugin-font-size: 9pt;
+  --plugin-font-weight: normal;
+  --plugin-color: #FFFFFFFF;
+  --plugin-contextmenu-active-color: #FFFFFF0F;
+  --plugin-contextmenu-background-color: #202020FF;
+  --plugin-contextmenu-border-color: #0000001A;
+  --plugin-contextmenu-color: #FFFFFFFF;
+  --plugin-contextmenu-hover-color: #FFFFFF0F;
+  --plugin-contextmenu-hover-text-color: #FFFFFFFF;
+  --plugin-contextmenu-hover-border-color: #FFFFFF12;
+  --plugin-contextmenu-inactive-text-color: #FFFFFF5D;
+  --plugin-contextmenu-separator-color: #FFFFFF15;
+  --plugin-background-color: #202020FF;
+  --plugin-error-border-color: #FF99A4FF;
+  --plugin-inactive-color: #FFFFFF5D;
+  --plugin-link-color: #99EBFFFF;
+  --plugin-link-hover-color: #60CDFFFF;
+  --plugin-link-active-color: #60CDFFFF;
+  --plugin-table-header-color: #FFFFFFFF;
+  --plugin-table-header-background-color: #1C1C1CFF;
+  --plugin-table-border-color: #FFFFFF15;
+  --plugin-highlight-color: #000000FF;
+  --plugin-highlight-background-color: #9184EEFF;
+  --plugin-scrollbar-arrow-background-color: #FFFFFF0F;
+  --plugin-scrollbar-arrow-background-active-color: #FFFFFF15;
+  --plugin-scrollbar-arrow-background-hover-color: #FFFFFF15;
+  --plugin-scrollbar-arrow-color: #FFFFFF8B;
+  --plugin-scrollbar-arrow-active-color: #FFFFFF8B;
+  --plugin-scrollbar-arrow-hover-color: #FFFFFF8B;
+  --plugin-scrollbar-background-color: #FFFFFF00;
+  --plugin-scrollbar-background-hover-color: #3A3A3A4D;
+  --plugin-scrollbar-face-color: #FFFFFF8B;
+  --plugin-scrollbar-face-active-color: #FFFFFF8B;
+  --plugin-scrollbar-face-hover-color: #FFFFFF8B;
+  --plugin-select-option-background-color: #202020FF;
+  --plugin-select-option-color: #FFFFFFFF;
+  --plugin-select-option-checked-background-color: #9184EEFF;
+  --plugin-select-option-checked-border-color: #9184EEFF;
+  --plugin-select-option-checked-foreground-color: #000000FF;
+  --plugin-select-option-hover-background-color: #FFFFFF0F;
+  --plugin-select-option-hover-border-color: #FFFFFF12;
+  --plugin-select-option-hover-foreground-color: #FFFFFFFF;
+  --plugin-select-border-color: #FFFFFF12;
+  --plugin-select-background-color: #FFFFFF0F;
+  --plugin-select-foreground-color: #FFFFFFFF;
+  --plugin-select-hover-border-color: #FFFFFF12;
+  --plugin-select-hover-background-color: #FFFFFF15;
+  --plugin-select-hover-foreground-color: #FFFFFFFF;
+  --plugin-textbox-border-color: #FFFFFF12;
+  --plugin-textbox-background-color: #FFFFFF0F;
+  --plugin-textbox-color: #FFFFFFFF;
+  --plugin-textbox-disabled-background-color: #FFFFFF0B;
+  --plugin-textbox-disabled-border-color: #FFFFFF12;
+  --plugin-textbox-disabled-color: #FFFFFF5D;
+  --plugin-tooltip-text-color: #FFFFFFFF;
+  --plugin-tooltip-background-color: #202020FF;
+  --plugin-tooltip-border-color: #0000001A;
+  --plugin-treeview-content-inactive-selected-background-color: #FFFFFF0F;
+  --plugin-treeview-content-inactive-selected-color: #FFFFFFC8;
+  --plugin-treeview-content-selected-background-color: #9184EEFF;
+  --plugin-treeview-content-selected-color: #000000FF;
+  --plugin-treeview-content-selected-border-color: #9184EEFF;
+  --plugin-treeview-content-background-color: #202020FF;
+  --plugin-treeview-content-color: #FFFFFFFF;
+  --plugin-treeview-content-mouseover-background-color: #FFFFFF0F;
+  --plugin-treeview-content-mouseover-color: #FFFFFFFF;
+  --plugin-scrollbar-up-arrow-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1.95693 5.9989C1.14924 5.9989 0.674785 5.09087 1.13603 4.42784L3.76866 0.64342C4.36545 -0.214452 5.6346 -0.214448 6.23138 0.643422L8.86402 4.42784C9.32526 5.09087 8.8508 5.9989 8.04311 5.9989H1.95693Z' fill='%23FFFFFF8B' /%3E%3C/svg%3E");
+  --plugin-scrollbar-up-arrow-active-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1.95693 5.9989C1.14924 5.9989 0.674785 5.09087 1.13603 4.42784L3.76866 0.64342C4.36545 -0.214452 5.6346 -0.214448 6.23138 0.643422L8.86402 4.42784C9.32526 5.09087 8.8508 5.9989 8.04311 5.9989H1.95693Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-up-arrow-hover-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1.95693 5.9989C1.14924 5.9989 0.674785 5.09087 1.13603 4.42784L3.76866 0.64342C4.36545 -0.214452 5.6346 -0.214448 6.23138 0.643422L8.86402 4.42784C9.32526 5.09087 8.8508 5.9989 8.04311 5.9989H1.95693Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-down-arrow-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1.95693 0C1.14924 0 0.674785 0.90803 1.13603 1.57107L3.76866 5.35548C4.36545 6.21335 5.6346 6.21335 6.23138 5.35548L8.86402 1.57106C9.32526 0.908027 8.8508 0 8.04311 0H1.95693Z' fill='%23FFFFFF8B' /%3E%3C/svg%3E");
+  --plugin-scrollbar-down-arrow-active-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1.95693 0C1.14924 0 0.674785 0.90803 1.13603 1.57107L3.76866 5.35548C4.36545 6.21335 5.6346 6.21335 6.23138 5.35548L8.86402 1.57106C9.32526 0.908027 8.8508 0 8.04311 0H1.95693Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-down-arrow-hover-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1.95693 0C1.14924 0 0.674785 0.90803 1.13603 1.57107L3.76866 5.35548C4.36545 6.21335 5.6346 6.21335 6.23138 5.35548L8.86402 1.57106C9.32526 0.908027 8.8508 0 8.04311 0H1.95693Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-left-arrow-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath d='M4.42784 8.8403C5.09087 9.29871 5.9989 8.82717 5.9989 8.02443V1.9756C5.9989 1.17287 5.09087 0.701325 4.42784 1.15974L0.643422 3.77622C-0.214448 4.36933 -0.214452 5.6307 0.64342 6.22382L4.42784 8.8403Z' fill='%23FFFFFF8B' /%3E%3C/svg%3E");
+  --plugin-scrollbar-left-arrow-active-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath d='M4.42784 8.8403C5.09087 9.29871 5.9989 8.82717 5.9989 8.02443V1.9756C5.9989 1.17287 5.09087 0.701325 4.42784 1.15974L0.643422 3.77622C-0.214448 4.36933 -0.214452 5.6307 0.64342 6.22382L4.42784 8.8403Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-left-arrow-hover-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath d='M4.42784 8.8403C5.09087 9.29871 5.9989 8.82717 5.9989 8.02443V1.9756C5.9989 1.17287 5.09087 0.701325 4.42784 1.15974L0.643422 3.77622C-0.214448 4.36933 -0.214452 5.6307 0.64342 6.22382L4.42784 8.8403Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-right-arrow-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath d='M1.57107 8.8403C0.90803 9.29871 0 8.82717 0 8.02443L0 1.9756C0 1.17287 0.908028 0.701325 1.57106 1.15974L5.35548 3.77622C6.21335 4.36933 6.21335 5.6307 5.35548 6.22382L1.57107 8.8403Z' fill='%23FFFFFF8B' /%3E%3C/svg%3E");
+  --plugin-scrollbar-right-arrow-active-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath d='M1.57107 8.8403C0.90803 9.29871 0 8.82717 0 8.02443L0 1.9756C0 1.17287 0.908028 0.701325 1.57106 1.15974L5.35548 3.77622C6.21335 4.36933 6.21335 5.6307 5.35548 6.22382L1.57107 8.8403Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-scrollbar-right-arrow-hover-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath d='M1.57107 8.8403C0.90803 9.29871 0 8.82717 0 8.02443L0 1.9756C0 1.17287 0.908028 0.701325 1.57106 1.15974L5.35548 3.77622C6.21335 4.36933 6.21335 5.6307 5.35548 6.22382L1.57107 8.8403Z' fill='%23FFFFFFFF' /%3E%3C/svg%3E");
+  --plugin-corner-radius-none: 0;
+  --plugin-corner-radius-s: 2;
+  --plugin-corner-radius-m: 4;
+  --plugin-corner-radius-l: 6;
+  --plugin-corner-radius-xl: 8;
+  --plugin-corner-radius-focus-rect: 6;
+  --plugin-spacing-none: 0;
+  --plugin-spacing-xxxs: 1;
+  --plugin-spacing-xxs: 2;
+  --plugin-spacing-xs-nudge: 3;
+  --plugin-spacing-xs: 4;
+  --plugin-spacing-s-nudge: 6;
+  --plugin-spacing-s: 8;
+  --plugin-spacing-m-nudge: 10;
+  --plugin-spacing-m: 12;
+  --plugin-spacing-l: 16;
+  --plugin-spacing-xl: 20;
+  --plugin-spacing-xxl: 24;
+  --plugin-spacing-xxxl: 32;
+  --plugin-size-content-min-height: 16;
+  --plugin-size-content-min-width: 16;
+  --plugin-size-control-min-height: 24;
+  --plugin-size-control-min-width: 24;
+  --plugin-size-toggle-switch-size: 20;
+  --plugin-size-icon-xxs: 8;
+  --plugin-size-icon-xs: 12;
+  --plugin-size-icon-s: 16;
+  --plugin-size-icon-m: 24;
+  --plugin-size-icon-l: 32;
+  --plugin-size-non-client-control-height: 30;
+  --plugin-size-non-client-control-width: 44;
+  --plugin-stroke-width-none: 0;
+  --plugin-stroke-width-thin: 1;
+  --plugin-stroke-width-thick: 2;
+  --plugin-stroke-width-thicker: 3;
+  --plugin-stroke-width-thickest: 4;
+  --plugin-typography-body-line-height: 20;
+  --plugin-typography-body-large-line-height: 24;
+  --plugin-typography-caption-line-height: 16;
+  --plugin-typography-code-line-height: 20;
+  --plugin-typography-display-line-height: 92;
+  --plugin-typography-subtitle-line-height: 28;
+  --plugin-typography-title-line-height: 36;
+  --plugin-typography-title-large-line-height: 52;
+}
+
+/* CSS file for the plugin's base styles and themes (light / dark / high contrast)
+   Light theme values are used as defaults but CSS variables are used to provide the correct value for the active theme.
+    Example:
+    border-right: 1px solid var(--plugin-background-color, #8591A2);
+
+   The following CSS variables are available to all hosts:
+    --plugin-background-color
+    --plugin-color
+    --plugin-contextmenu-active-color
+    --plugin-contextmenu-background-color
+    --plugin-contextmenu-border-color
+    --plugin-contextmenu-color
+    --plugin-contextmenu-hover-color
+    --plugin-contextmenu-hover-text-color
+    --plugin-contextmenu-icon-checkbox
+    --plugin-contextmenu-inactive-text-color
+    --plugin-contextmenu-separator-color
+    --plugin-error-border-color
+    --plugin-font-family
+    --plugin-font-size
+    --plugin-font-weight
+    --plugin-highlight-background-color
+    --plugin-highlight-color
+    --plugin-inactive-color
+    --plugin-link-color
+    --plugin-link-active-color
+    --plugin-link-hover-color
+    --plugin-scrollbar-arrow-background-color
+    --plugin-scrollbar-arrow-background-active-color
+    --plugin-scrollbar-arrow-background-hover-color
+    --plugin-scrollbar-arrow-color
+    --plugin-scrollbar-arrow-active-color
+    --plugin-scrollbar-arrow-hover-color
+    --plugin-scrollbar-background-color
+    --plugin-scrollbar-face-color
+    --plugin-scrollbar-face-active-color
+    --plugin-scrollbar-face-hover-color
+    --plugin-select-option-background-color
+    --plugin-select-option-color
+    --plugin-select-option-checked-background-color
+    --plugin-select-option-checked-border-color
+    --plugin-select-option-checked-foreground-color
+    --plugin-select-option-hover-background-color
+    --plugin-select-option-hover-border-color
+    --plugin-select-option-hover-foreground-color
+    --plugin-select-border-color
+    --plugin-select-background-color
+    --plugin-select-foreground-color
+    --plugin-select-hover-background-color
+    --plugin-select-hover-border-color
+    --plugin-select-hover-foreground-color
+    --plugin-table-border-color
+    --plugin-table-header-background-color
+    --plugin-table-header-color
+    --plugin-textbox-border-color
+    --plugin-textbox-background-color
+    --plugin-textbox-color
+    --plugin-textbox-disabled-background-color
+    --plugin-textbox-disabled-border-color
+    --plugin-textbox-disabled-color
+    --plugin-treeview-content-background-color
+    --plugin-treeview-content-color
+    --plugin-treeview-content-inactive-selected-color
+    --plugin-treeview-content-mouseover-background-color
+    --plugin-treeview-content-mouseover-color
+    --plugin-treeview-content-inactive-selected-color
+    --plugin-treeview-content-selected-background-color
+    --plugin-treeview-content-selected-border-color
+    --plugin-treeview-content-selected-color
+
+    The following are special values used just for theming scrollbar arrows (they contain a data URL defining an SVG):
+    --plugin-scrollbar-up-arrow-url
+    --plugin-scrollbar-up-arrow-hover-url
+    --plugin-scrollbar-up-arrow-active-url
+    --plugin-scrollbar-down-arrow-url
+    --plugin-scrollbar-down-arrow-hover-url
+    --plugin-scrollbar-down-arrow-active-url
+    --plugin-scrollbar-left-arrow-url
+    --plugin-scrollbar-left-arrow-hover-url
+    --plugin-scrollbar-left-arrow-active-url
+    --plugin-scrollbar-right-arrow-url
+    --plugin-scrollbar-right-arrow-hover-url
+    --plugin-scrollbar-right-arrow-active-url
+
+
+    VS host also has access to all VS themed color key tokens (EnvironmentColors) and category specific tokens.
+    http://msdn.microsoft.com/en-us/library/microsoft.visualstudio.platformui.environmentcolors_properties
+    Please see product documentation for instructions on how to add these tokens to the plugin manifest.
+ */
+
+/* HTML and body styles */
+html, body {
+    font-family: var(--plugin-font-family, "Segoe UI", Arial, sans-serif);
+    font-size: var(--plugin-font-size, 9pt);
+    font-weight: var(--plugin-font-weight, normal);
+    color: var(--plugin-color, #1E1E1E);
+    background-color: var(--plugin-background-color, #F6F6F6);
+}
+
+/* Scroll bars */
+
+::-webkit-scrollbar {
+    width: 18px;
+    height: 18px;
+    background-color: transparent;
+}
+
+/* Hover over the scrollbar */
+::-webkit-scrollbar:hover {
+    background-color: var(--plugin-scrollbar-background-hover-color, #C8C8C833) /* track hover color */
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar:hover::-webkit-scrollbar-corner {
+    background-color: var(--plugin-scrollbar-background-hover-color, #C8C8C833) /* match track hover */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Thumb */
+::-webkit-scrollbar-thumb {
+    background-color: var(--plugin-scrollbar-face-color, #6E6E6E);
+    border: 8px solid transparent; /* make the thumb appears smaller */
+    background-clip: padding-box;
+    border-radius: 9px; /* half of the thickness */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    border: 5px solid transparent; /* make the thumb appears larger */
+}
+
+/* Arrows */
+
+::-webkit-scrollbar-button {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Up arrow */
+
+::-webkit-scrollbar-button:start:decrement:vertical {
+    background-image: var(--plugin-scrollbar-up-arrow-url);
+    background-size: 10px 6px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:start:decrement:vertical:hover {
+    background-image: var(--plugin-scrollbar-up-arrow-hover-url);
+    background-size: 10px 6px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:start:decrement:vertical:active {
+    background-image: var(--plugin-scrollbar-up-arrow-active-url);
+    background-size: 10px 6px;  /* match the SVG intrinsic size */
+}
+
+/* Down arrow */
+
+::-webkit-scrollbar-button:end:increment:vertical {
+    background-image: var(--plugin-scrollbar-down-arrow-url);
+    background-size: 10px 6px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:end:increment:vertical:hover {
+    background-image: var(--plugin-scrollbar-down-arrow-hover-url);
+    background-size: 10px 6px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:end:increment:vertical:active {
+    background-image: var(--plugin-scrollbar-down-arrow-active-url);
+    background-size: 10px 6px;  /* match the SVG intrinsic size */
+}
+
+/* Left arrow */
+
+::-webkit-scrollbar-button:start:decrement:horizontal {
+    background-image: var(--plugin-scrollbar-left-arrow-url);
+    background-size: 6px 10px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:start:decrement:horizontal:hover {
+    background-image: var(--plugin-scrollbar-left-arrow-hover-url);
+    background-size: 6px 10px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:start:decrement:horizontal:active {
+    background-image: var(--plugin-scrollbar-left-arrow-active-url);
+    background-size: 6px 10px;  /* match the SVG intrinsic size */
+}
+
+/* Right arrow */
+
+::-webkit-scrollbar-button:end:increment:horizontal {
+    background-image: var(--plugin-scrollbar-right-arrow-url);
+    background-size: 6px 10px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:end:increment:horizontal:hover {
+    background-image: var(--plugin-scrollbar-right-arrow-hover-url);
+    background-size: 6px 10px;  /* match the SVG intrinsic size */
+}
+
+::-webkit-scrollbar-button:end:increment:horizontal:active {
+    background-image: var(--plugin-scrollbar-right-arrow-active-url);
+    background-size: 6px 10px;  /* match the SVG intrinsic size */
+}
+
+/* Select styles */
+select {
+    color: var(--plugin-select-foreground-color, #1E1E1E);
+    background-color: var(--plugin-select-background-color, #FFFFFF);
+    font: var(--plugin-font-weight, normal) var(--plugin-font-size, 9pt) var(--plugin-font-family, "'Segoe UI', Arial, sans-serif");
+    border: 1px solid var(--plugin-select-border-color, #CCCEDB);
+}
+
+select:hover {
+    color: var(--plugin-select-hover-foreground-color, #1E1E1E);
+    background-color: var(--plugin-select-hover-background-color, #FFFFFF);
+    border: 1px solid var(--plugin-select-hover-border-color, #007ACC);
+}
+
+select[multiple],
+select option {
+    color: var(--plugin-select-option-color, #1E1E1E);
+    background-color: var(--plugin-select-option-background-color, #F6F6F6);
+    /* Add a transparent border so that text does not move around on hover */
+    border: 1px solid transparent;
+}
+
+select option:hover {
+    color: var(--plugin-select-option-hover-foreground-color, #1E1E1E);
+    background-color: var(--plugin-select-option-hover-background-color, #C9DEF5);
+    border: 1px solid var(--plugin-select-option-hover-border-color, #C9DEF5);
+}
+
+select option:checked {
+    color: var(--plugin-select-option-checked-foreground-color, #1E1E1E);
+    background-color: var(--plugin-select-option-checked-background-color, #C9DEF5);
+    border: 1px solid var(--plugin-select-option-checked-border-color, #C9DEF5);
+}
+
+/* Input styles */
+input {
+    font: var(--plugin-font-weight, normal) var(--plugin-font-size, 9pt) var(--plugin-font-family, "'Segoe UI', Arial, sans-serif");
+    color: var(--plugin-textbox-color, #1E1E1E);
+    background-color: var(--plugin-textbox-background-color, #FFFFFF);
+    border: 1px solid var(--plugin-textbox-border-color, #DBDDE6);
+    padding: 0 3px;
+}
+
+input:disabled {
+    color: var(--plugin-textbox-disabled-color, #A2A4A5);
+    background-color: var(--plugin-textbox-disabled-background-color, #FFFFFF);
+    border: 1px solid var(--plugin-textbox-disabled-border-color, #DBDDE6);
+}
+
+input[type="checkbox"],
+input[type="radio"]
+ {
+    border: none;
+    background-color: inherit;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+input[type="file"],
+input[type="image"]
+ {
+    border: none;
+    background-color: inherit;
+    padding: 0;
+}
+
+/* TextArea styles */
+textarea {
+    font-family: var(--plugin-font-family, "Segoe UI"), Arial, sans-serif;
+    font-size: var(--plugin-font-size, 9pt);
+    font-weight: var(--plugin-font-weight, normal);
+    color: var(--plugin-color, #1E1E1E);
+    background-color: var(--plugin-textbox-background-color, #F6F6F6);
+    border: 1px solid var(--plugin-textbox-border-color, #DBDDE6);
+    padding: 0 3px;
+    resize: none;
+}
+
+/* Button styles */
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+    color: #000000;
+    background-image: -ms-linear-gradient(top, #F0F0F0 0%, #E5E5E5 100%);
+    border: 1px solid #ACACAC;
+    font-family: var(--plugin-font-family, "Segoe UI"), Arial, sans-serif;
+    font-size: var(--plugin-font-size, 9pt);
+    font-weight: var(--plugin-font-weight, normal);
+    min-width: 73px;
+    padding: 1px 19px 2px 19px;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover,
+input[type="submit"]:hover {
+    background-image: -ms-linear-gradient(top, #ECF4FC 0%, #DCECFC 100%);
+    border: 1px solid #7EB4EA;
+}
+
+button:focus,
+input[type="button"]:focus,
+input[type="reset"]:focus,
+input[type="submit"]:focus {
+    border: 1px solid #569DE5;
+}
+
+button:active,
+input[type="button"]:active,
+input[type="reset"]:active,
+input[type="submit"]:active {
+    background-image: -ms-linear-gradient(top, #DAECFC 0%, #C4E0FC 100%);
+    border: 1px solid #569DE5;
+}
+
+button[disabled],
+input[type="button"][disabled],
+input[type="reset"][disabled],
+input[type="submit"][disabled] {
+    color: #838383;
+    background: #F4F4F4 none;
+    border: 1px solid #B1B1B2;
+}
+
+/* Other form styles */
+fieldset {
+    border: 1px solid var(--plugin-textbox-border-color, #DBDDE6);
+}
+
+/* Link styles */
+a, a:link, a:visited, a:focus {
+    color: var(--plugin-link-color, #0E70C0);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--plugin-link-hover-color, #0E70C0);
+    text-decoration: underline;
+}
+
+a:active {
+    color: var(--plugin-link-active-color, #0E70C0);
+}
+
+/* Table styles */
+th {
+    color: var(--plugin-table-header-color, #1E1E1E);
+    background-color: var(--plugin-table-header-background-color, #EFEFE2);
+}
+
+td, th {
+    border-color: var(--plugin-table-border-color, #F0F0F0);
+}
+
+/* Disabled styles */
+:disabled {
+    color: var(--plugin-inactive-color, #A2A4A5);
+}
+
+/* Highlight styles
+   Use this class when you have a highlighted item, for example a highlighted row in a grid */
+.plugin-highlight {
+    color: var(--plugin-highlight-color, #FFFFFF);
+    background-color: var(--plugin-highlight-background-color, #3399FF);
+}
+
+/* Tooltip styles
+   This class will be included automatically on all tooltips
+   In VS tooltips aren't, by default, themed, so we just copy
+   the WPF tooltip defaults, which is what VS uses for its tooltips.
+   The one exception is that under system high-contrast themes tooltips
+   are in fact themed, so we use the !HCOnly to indicate we only want
+   our color tokens substituted under high-contrast themes.
+
+   We set its initial display style to none and its initial position
+   to (-500,-500) just to ensure that when we insert it into the document
+   (for measuring) it isn't visible until we have done the layout and
+   calculated its final position.
+*/
+#plugin-vs-tooltip {
+    display: none;
+    position: absolute;
+    top: -500px;
+    left: -500px;
+    -ms-high-contrast-adjust: none;
+    color: var(--plugin-tooltip-text-color, #575757);
+    background-color: var(--plugin-tooltip-background-color, #F1F2F7);
+    border: thin solid var(--plugin-tooltip-border-color, #767676);
+    padding: 4px 5px 3px 5px;
+    line-height: normal;
+    box-sizing: border-box;
+}
+
+#plugin-vs-tooltip > #plugin-vs-tooltip-nested-cell {
+    display: table-cell;
+    vertical-align: middle;
+    -ms-high-contrast-adjust: none;
+    color: var(--plugin-tooltip-text-color, #575757);
+    background-color: var(--plugin-tooltip-background-color, #F1F2F7);
+}
+
+#plugin-vs-tooltip > #plugin-vs-tooltip-nested-cell > #plugin-vs-tooltip-content {
+    -ms-high-contrast-adjust: none;
+    color: var(--plugin-tooltip-text-color, #575757);
+    background-color: var(--plugin-tooltip-background-color, #F1F2F7);
+}
+
+/* Selection styles */
+.selectNone {
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.selectElement {
+    -ms-user-select: element;
+    user-select: auto;
+}
+
+/* Context Menu styles */
+ul.plugin-contextmenu {
+    background-color: var(--plugin-contextmenu-background-color, #e9e8ea);
+    border: thin solid var(--plugin-contextmenu-border-color, #cdd0d6);
+    color: var(--plugin-contextmenu-color, #1E1E1E);
+    padding: 1px 2px 2px 2px;
+    margin: 0;
+    position: absolute;
+    display: none;
+    outline: none;
+    z-index: 100;
+    white-space: nowrap;
+    -ms-high-contrast-adjust: none;
+    line-height: normal;
+}
+
+.plugin-contextmenu .menuitem {
+    display: flex;
+    align-items: center;
+    /* VS context menu max width: https://devdiv.visualstudio.com/DevDiv/_git/VS?path=/src/env/shell/UIInternal/MainWindow/Controls/VsMenuItem.cs&version=GBmain&line=85&lineEnd=92&lineStartColumn=9&lineEndColumn=10&lineStyle=plain&_a=contents */
+    max-width: 660px;
+    cursor: default;
+    outline: none;
+    list-style: none;
+    margin-top: 1px;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+}
+
+.plugin-contextmenu .menuitem:focus {
+    background-color: var(--plugin-contextmenu-hover-color, #f9f9fa);
+    color: var(--plugin-contextmenu-hover-text-color, #1E1E1E);
+    border-color: var(--plugin-contextmenu-hover-border-color);
+}
+
+.plugin-contextmenu .menuitem:active,
+.plugin-contextmenu .active {
+    background-color: var(--plugin-contextmenu-active-color, #f9f9fa);
+    color: var(--plugin-contextmenu-hover-text-color, #1E1E1E);
+    border-color: var(--plugin-highlight-background-color);
+}
+
+.plugin-contextmenu .disabled:hover,
+.plugin-contextmenu .disabled:active,
+.plugin-contextmenu .disabled:focus,
+.plugin-contextmenu .disabled {
+    background-color: var(--plugin-contextmenu-background-color, #e9e8ea);
+    color: var(--plugin-contextmenu-inactive-text-color, #a2a4a5);
+}
+
+.plugin-contextmenu .menuitem .icon {
+    margin: 0 10px 0 6px;
+    background-color: transparent;
+    width: 16px;
+    height: 16px;
+}
+
+.plugin-contextmenu .menuitem .checkbox {
+    background-image: var(--plugin-contextmenu-icon-checkbox, url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJpJREFUeNpi/PbtGwMpgAWIfXx8iFS9ZcsWJgYSAQuctW7tejzqgoIDIQx8Nrx69QqobvKUyciC+DSsXLUSSIaHhROlAWj8/v37HB2dxMTEiNKA1Xh0DR2dHUBHvwIDrMajhBIQJCUmnTp1EmI2VuPRNQDNA5oKNBvIxmo8Fj/ATcVqPLoNEEvwxyALZlziBySnJUZSkzdAgAEAfm84vuieuk0AAAAASUVORK5CYII=));
+}
+
+.plugin-contextmenu .hidden {
+    display: none;
+}
+
+.plugin-contextmenu .disabled {
+    color: var(--plugin-contextmenu-inactive-text-color, #a2a4a5);
+}
+
+.plugin-contextmenu .menuitem .main {
+    padding: 4px 50px 5px 0;
+    margin-right: auto;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.plugin-contextmenu .menuitem .shortcut {
+    min-width: 25px;
+    flex-shrink: 0;
+    padding-right: 25px;
+}
+
+.plugin-contextmenu .menuitem .arrow {
+    overflow: visible;
+}
+
+.plugin-contextmenu .menuitem .arrow:before,
+.plugin-contextmenu .menuitem.disabled:hover .arrow:before,
+.plugin-contextmenu .menuitem.disabled:active .arrow:before,
+.plugin-contextmenu .menuitem.disabled:focus .arrow:before,
+.plugin-contextmenu .menuitem.disabled .arrow:before {
+    content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAHCAYAAADAp4fuAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAFZJREFUeNpiWL5i5X8gYEDGTKdOnmCYOXP2fwYkwAQibt68ztDXP+E/iiAIPHn8iGHChIn/UQSFhIQZCgryGUFsFhAhIyvHUFRYwAg3dMaMWRi2AwQYAAcRMJwq3CX+AAAAAElFTkSuQmCC);
+}
+
+.plugin-contextmenu .menuitem:hover .arrow:before,
+.plugin-contextmenu .menuitem:active .arrow:before,
+.plugin-contextmenu .menuitem:focus .arrow:before,
+.plugin-contextmenu .active .arrow:before {
+    content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAHCAYAAADAp4fuAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAFRJREFUeNpiKNzy6D8QMCBjBoaqM/+DltxGkWACCjOsu/aRwXrmDZASMGCCMY49+spgP/vmfxRBdRF2hoOp6oxwQSs5boYbhTqMMAUM6JaAMECAAQDqqjmrw1gHVwAAAABJRU5ErkJggg==);
+}
+
+.plugin-contextmenu .menuitem[role="separator"] > * {
+    height: 0;
+}
+
+.plugin-contextmenu .menuitem .hr,
+.plugin-contextmenu .menuitem:hover .hr,
+.plugin-contextmenu .menuitem:active .hr,
+.plugin-contextmenu .menuitem:focus .hr,
+.plugin-contextmenu .active .hr {
+    height: 1px;
+    width: 100%;
+    background-color: var(--plugin-contextmenu-separator-color, #cdd0d6);
+    padding: 0;
+}
+</style>
+    <script src="http://scriptedhost.vs/plugin.js" type="text/javascript" class="selectNone"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" class="selectNone">
+    <meta charset="utf-8" class="selectNone">
+    <link rel="stylesheet" href="c:\program files\microsoft visual studio\18\community\common7\ide\commonextensions\microsoft\markdown\Preview\Dependencies\daytona-highlight-dark.css" id="CSSTheme" class="selectNone">
+    <link rel="stylesheet" href=" " id="FontSize" class="selectNone">
+    <script type="text/javascript" src="./DOMPurify/purify.min.js" id="DomPurifyTag" class="selectNone"></script>
+    <script type="text/javascript" src="./daytonaHtmlContextMenu.js" id="HTMLContextMenuScript" class="selectNone"></script>
+    <script type="text/javascript" src="./mermaidJS/mermaid.min.js" class="selectNone"></script>
+    <script type="text/javascript" src="./mermaidScripting/mermaidZoomControls.js" class="selectNone"></script>
+    <script type="text/javascript" src="./mermaidScripting/mermaidRenderer.js" class="selectNone"></script>
+    <!-- Whenever we have a single mermaid diagram on the page, the diagram gets centered on the page, and we enable zoom controls and panning capabilities.
+         If the contents are not just a single mermaid diagram, we dynamically disable this styling.
+         (see ToggleMermaidSingletonStyling in WebViewHost.cs) -->
+    <style id="mermaid-singleton-style" class="selectNone">
+        /* Max-out the dimensions of the document so that the mermaid diagram can be zoomed and panned around the entirety of the preview's screenspace*/
+        html, body {
+            height: 100%; /* By default, the height doesn't take up 100% of the available height */
+            overflow: hidden; /* Don't show scrollbar */
+        }
+
+        #___markdown-content___ {
+            height: 100%;
+        }
+
+        /* The mermaid diagram and zoom controls are wrapped inside a "zoomwrapper" div */
+        #mermaid-diagram-zoomwrapper {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+            user-select: none;
+        }
+
+        #mermaid-diagram-zoomcontrols {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+            /* Zoom-control buttons*/
+            #mermaid-diagram-zoomcontrols button {
+                background: rgba(255, 255, 255, 0.7);
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 16px;
+                cursor: pointer;
+                padding: 4px; /* 4px on all sides */
+                text-align: center;
+                min-width: 30px;
+            }
+
+        #mermaid-diagram-zoomwrapper:hover #mermaid-diagram-zoomcontrols {
+            opacity: 0.8;
+        }
+    </style>
+    <!-- Default styling -->
+    <style class="selectNone">
+        html, body {
+        }
+    </style>
+    <title class="selectNone">Markdown Preview</title>
+    <meta http-equiv="cache-control" content="no-cache" class="selectNone">
+<base href="file://C:/EMO/安裝手冊.md"></head>
+<body class="selectNone">
+    <div id="___markdown-content___" class="selectNone" data-plugin-contextmenu="plugin-contextmenu-2917bd4c-bde3-854f-a14f-3ba21fef5376"><h1 id="emo-v11"><a id="pragma-line-0"></a>EMO 電子點餐系統 — 手把手安裝手冊 (v11)</h1>
+<blockquote id="pragma-line-2">
+<p id="pragma-line-2">適用對象：第一次安裝、不熟悉程式的使用者。
+完成時間：約 80 分鐘（不含等待 GitHub Pages 生效時間；v11 報表設定多約 10 分鐘）。</p>
+<p id="pragma-line-5">全程在電腦瀏覽器操作（建議 Chrome 或 Edge），最後用手機 LINE 測試。</p>
+<p id="pragma-line-7"><strong>v11 重點功能</strong>（首次安裝即內建）：</p>
+<ul id="pragma-line-8">
+<li id="pragma-line-8">每張訂單有專屬編號 <code>YYYYMMDD-NNN</code>，LINE 卡片帶編號與 QR 條碼，領餐時憑編號或掃碼核對</li>
+<li id="pragma-line-9"><strong>早 / 中 / 晚餐各自獨立標記領餐</strong>；管理頁三餐分別統計、可只看未領餐</li>
+<li id="pragma-line-10">菜單可依日期個別維護，<strong>歷史菜單自動保留</strong>；某日未設定的餐別自動沿用最近一日</li>
+<li id="pragma-line-11">中餐 A / B / C 各設每日 40 份上限，超量自動拒收</li>
+<li id="pragma-line-12"><strong>棄單偵測 + 黑名單</strong>：逾時未領自動標棄單；30 天內棄單超過 3 次停權 30 天</li>
+<li id="pragma-line-13"><strong>新訂單通知 push 到一個指定的 LINE 群組</strong>（廚房內部群）— 廚房成員不必逐一加 Bot 好友</li>
+<li id="pragma-line-14"><strong>每餐結單彙整推送（v10）</strong>：早 07:00 / 中 10:30 / 晚 16:00 結單後，每餐自動推送 1 則彙整訊息至廚房群組</li>
+<li id="pragma-line-15"><strong>AuditLog 操作稽核（v9）</strong>：管理員所有動作（標領 / 掃 QR / 取消 / 改菜單）全程紀錄</li>
+<li id="pragma-line-16"><strong>取消訂單軟刪除（v8）</strong>：管理員可手動取消，保留原始資料以利稽核</li>
+<li id="pragma-line-17"><strong>取餐時段 QR 自動判餐別（v7）</strong>：早 07–08 / 中 11:30–12:30 / 晚 16:50–18:00</li>
+<li id="pragma-line-18"><strong>★ v11 統計日報 / 月報自動推送</strong>：
+<ul id="pragma-line-19">
+<li id="pragma-line-19">每日 <strong>18:00</strong>（晚餐領餐時段結束）後 <strong>5 分鐘內</strong>，自動推送當日統計至管理 LINE 群組
+（訂單總計、三餐 訂/領/棄、中餐 A/B/C、領餐率、棄單率、訂購單位 TOP 5）</li>
+<li id="pragma-line-21">每月 <strong>1 日 09:00</strong> 自動結算前月並推送月報摘要
+（工作日數、累計訂單、領餐率、棄單率、單位 TOP 10、棄單紀錄 TOP 5）</li>
+<li id="pragma-line-23">管理頁亦可即時查詢任意日期 / 月份的報表並匯出 Excel</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<hr id="pragma-line-25">
+<h2 id="section"><a id="pragma-line-27"></a>0. 在開始之前，請先準備好</h2>
+<ul id="pragma-line-29" class="contains-task-list">
+<li id="pragma-line-29" class="task-list-item"><input disabled="disabled" type="checkbox"> 一個 <strong>Google 帳號</strong>（Gmail）</li>
+<li id="pragma-line-30" class="task-list-item"><input disabled="disabled" type="checkbox"> 一個 <strong>LINE 帳號</strong>（手機需可正常使用）</li>
+<li id="pragma-line-31" class="task-list-item"><input disabled="disabled" type="checkbox"> 一個 <strong>GitHub 帳號</strong>（沒有的話 5 分鐘可註冊）</li>
+<li id="pragma-line-32" class="task-list-item"><input disabled="disabled" type="checkbox"> 一台電腦，建議使用 <strong>Chrome</strong> 或 <strong>Edge</strong> 瀏覽器</li>
+<li id="pragma-line-33" class="task-list-item"><input disabled="disabled" type="checkbox"> 本專案資料夾 <code>C:\emo\</code>（已建立完成）</li>
+<li id="pragma-line-34" class="task-list-item"><input disabled="disabled" type="checkbox"> 一份<strong>記事本</strong>，等等需要記下幾段 ID / 網址：
+<ul id="pragma-line-35">
+<li id="pragma-line-35">Sheet ID</li>
+<li id="pragma-line-36">LINE_CHANNEL_ID（Login channel）</li>
+<li id="pragma-line-37">LINE_CHANNEL_ACCESS_TOKEN（Messaging API channel）</li>
+<li id="pragma-line-38">訂餐 LIFF ID</li>
+<li id="pragma-line-39">管理 LIFF ID</li>
+<li id="pragma-line-40">GAS Web App <code>/exec</code> 網址</li>
+<li id="pragma-line-41">廚房群組 ID（後段由 Webhook 自動取得，不需手動記）</li>
+</ul>
+</li>
+<li id="pragma-line-42" class="task-list-item"><input disabled="disabled" type="checkbox"> 一個<strong>廚房內部 LINE 群組</strong>（可先建好，至少包含實際接單同仁）</li>
+<li id="pragma-line-43" class="task-list-item"><input disabled="disabled" type="checkbox"> 一個<strong>管理 LINE 群組</strong>（<strong>v11 新增</strong>；用於接收每日 18:00 日報與每月 1 日 09:00 月報；可與廚房群組共用，但建議分群）</li>
+</ul>
+<hr id="pragma-line-45">
+<h1 id="google"><a id="pragma-line-47"></a>第一階段：建立 Google 試算表</h1>
+<p id="pragma-line-49">預估 5 分鐘。這份試算表會自動收到所有訂單。</p>
+<h3 id="step-1-1"><a id="pragma-line-51"></a>Step 1-1　建立試算表</h3>
+<ol id="pragma-line-52">
+<li id="pragma-line-52">用 Chrome 開啟 <a href="https://sheets.google.com">https://sheets.google.com</a></li>
+<li id="pragma-line-53">用 Gmail 帳號登入</li>
+<li id="pragma-line-54">點擊「<strong>＋ 空白</strong>」建立新試算表</li>
+<li id="pragma-line-55">點左上角「未命名的試算表」改名為 <code>EMO 點餐</code></li>
+</ol>
+<h3 id="step-1-2-sheet-id"><a id="pragma-line-57"></a>Step 1-2　複製 Sheet ID（重要！）</h3>
+<ul id="pragma-line-58">
+<li id="pragma-line-58">瀏覽器網址列看起來像：
+<pre><code id="pragma-line-59">https://docs.google.com/spreadsheets/d/1AbCdEfGhIjKl_xxx_xxxxx_1234567890/edit
+                                     └──────────── 這段就是 Sheet ID ───────┘
+</code></pre>
+</li>
+<li id="pragma-line-63">反白複製 <code>/d/</code> 與 <code>/edit</code> 中間那一長串，貼到記事本。</li>
+</ul>
+<hr id="pragma-line-65">
+<h1 id="apps-script"><a id="pragma-line-67"></a>第二階段：建立 Apps Script（後端程式）</h1>
+<p id="pragma-line-69">預估 10 分鐘。Apps Script 是 Google 內建的免費伺服器服務。</p>
+<h3 id="step-2-1-apps-script"><a id="pragma-line-71"></a>Step 2-1　開啟 Apps Script 編輯器</h3>
+<ol id="pragma-line-72">
+<li id="pragma-line-72">在剛建立的 <code>EMO 點餐</code> 試算表內</li>
+<li id="pragma-line-73">上方選單：<strong>擴充功能</strong> → <strong>Apps Script</strong></li>
+<li id="pragma-line-74">會自動跳出新分頁，顯示空白程式編輯器</li>
+</ol>
+<h3 id="step-2-2"><a id="pragma-line-76"></a>Step 2-2　貼上後端程式碼</h3>
+<ol id="pragma-line-77">
+<li id="pragma-line-77">編輯器預設有一段 <code>function myFunction() {}</code>，<strong>全選刪除</strong></li>
+<li id="pragma-line-78">用記事本打開 <code>C:\emo\gas\Code.gs</code>，<strong>全選 → 複製</strong></li>
+<li id="pragma-line-79">回到 Apps Script 編輯器，<strong>貼上</strong></li>
+<li id="pragma-line-80">按下 <strong>Ctrl + S</strong> 儲存</li>
+<li id="pragma-line-81">左側檔案區，把專案名稱（最上方）改為 <code>EMO 點餐後端</code></li>
+</ol>
+<h3 id="step-2-3-appsscript.json"><a id="pragma-line-83"></a>Step 2-3　顯示並貼上 appsscript.json</h3>
+<ol id="pragma-line-84">
+<li id="pragma-line-84">左側點齒輪「<strong>專案設定</strong>」</li>
+<li id="pragma-line-85">勾選「<strong>在編輯器中顯示「appsscript.json」資訊清單檔案</strong>」</li>
+<li id="pragma-line-86">回左側「<strong>編輯器</strong>」，會多一個 <code>appsscript.json</code> 檔案</li>
+<li id="pragma-line-87">點開它，把專案 <code>C:\emo\gas\appsscript.json</code> 的內容<strong>整段取代</strong>進去</li>
+<li id="pragma-line-88">儲存</li>
+</ol>
+<h3 id="step-2-4-step-1-sheet-id"><a id="pragma-line-90"></a>Step 2-4　設定指令碼屬性（Step 1 取得的 Sheet ID 派上用場）</h3>
+<ol id="pragma-line-91">
+<li id="pragma-line-91">左側齒輪「<strong>專案設定</strong>」→ 拉到最下方「<strong>指令碼屬性</strong>」</li>
+<li id="pragma-line-92">點「<strong>新增指令碼屬性</strong>」</li>
+<li id="pragma-line-93">屬性名稱：<code>SHEET_ID</code>；值：剛剛複製的 Sheet ID</li>
+<li id="pragma-line-94">點「<strong>儲存指令碼屬性</strong>」</li>
+<li id="pragma-line-95">（<code>LINE_CHANNEL_ID</code> 與 <code>LINE_CHANNEL_ACCESS_TOKEN</code> 等第三、四階段取得後再回來補）</li>
+</ol>
+<h3 id="step-2-5-3"><a id="pragma-line-97"></a>Step 2-5　執行初始化（會建立 3 個工作表）</h3>
+<ol id="pragma-line-98">
+<li id="pragma-line-98">回到左側「<strong>編輯器</strong>」</li>
+<li id="pragma-line-99">程式碼頂部下拉選單選 <code>setupSheets</code> → 點 <strong>執行</strong> ▶</li>
+<li id="pragma-line-100">第一次會跳「<strong>需要授權</strong>」：
+<ul id="pragma-line-101">
+<li id="pragma-line-101">點「<strong>審查權限</strong>」→ 選擇您的 Google 帳號</li>
+<li id="pragma-line-102">若出現「<strong>Google 尚未驗證這個應用程式</strong>」警告：
+<ul id="pragma-line-103">
+<li id="pragma-line-103">點左下「<strong>進階</strong>」</li>
+<li id="pragma-line-104">點「<strong>前往 EMO 點餐後端（不安全）</strong>」</li>
+<li id="pragma-line-105">點「<strong>允許</strong>」</li>
+</ul>
+</li>
+<li id="pragma-line-106"><strong>解釋</strong>：這是您自己寫的程式不在 Google 公開市集，警告屬正常。</li>
+</ul>
+</li>
+<li id="pragma-line-107">執行成功後，回到試算表分頁，下方會多出 3 個工作表分頁：
+<ul id="pragma-line-108">
+<li id="pragma-line-108"><code>Orders</code>（20 欄：時間戳記／單位／訂購人／警用電話／訂購日期／早餐／中餐便當／晚餐便當／備註／LINE userId／訂單編號／<strong>早餐已領／早餐領餐時間／中餐已領／中餐領餐時間／晚餐已領／晚餐領餐時間／早餐棄單／中餐棄單／晚餐棄單</strong>）</li>
+<li id="pragma-line-109"><code>Menu</code>（4 欄：日期／餐別／餐點名稱／更新時間）</li>
+<li id="pragma-line-110"><code>Admins</code>（3 欄：LINE userId／名稱／備註）</li>
+</ul>
+</li>
+</ol>
+<blockquote id="pragma-line-112">
+<p id="pragma-line-112">💡 訂單編號、各餐領餐狀態、棄單欄位都由系統自動寫入，您不需要手動處理。
+💡 v6 後新訂單通知改用 LINE 群組推播，<strong>不再需要</strong> <code>KitchenStaff</code> 工作表（舊版升級時即使留著也無影響）。</p>
+</blockquote>
+<hr id="pragma-line-115">
+<h1 id="line-login-channel"><a id="pragma-line-117"></a>第三階段：申請 LINE Login Channel</h1>
+<p id="pragma-line-119">預估 10 分鐘。這是讓使用者「用 LINE 帳號進入點餐頁」用的。</p>
+<h3 id="step-3-1-line-developers"><a id="pragma-line-121"></a>Step 3-1　登入 LINE Developers</h3>
+<ol id="pragma-line-122">
+<li id="pragma-line-122">開啟 <a href="https://developers.line.biz/console/">https://developers.line.biz/console/</a></li>
+<li id="pragma-line-123">用 LINE 帳號掃 QR Code 或輸入信箱密碼登入</li>
+<li id="pragma-line-124">第一次登入可能會請您填開發者名稱與信箱</li>
+</ol>
+<h3 id="step-3-2-provider"><a id="pragma-line-126"></a>Step 3-2　建立 Provider（如已有可跳過）</h3>
+<ol id="pragma-line-127">
+<li id="pragma-line-127">點「<strong>Create</strong>」→ <strong>Create a new provider</strong></li>
+<li id="pragma-line-128">Provider name：例如 <code>EMO 工作室</code></li>
+<li id="pragma-line-129">點 <strong>Create</strong></li>
+</ol>
+<h3 id="step-3-3-line-login-channel"><a id="pragma-line-131"></a>Step 3-3　建立 LINE Login Channel</h3>
+<ol id="pragma-line-132">
+<li id="pragma-line-132">進入剛建立的 Provider</li>
+<li id="pragma-line-133">點 <strong>Create a new channel</strong> → 選 <strong>LINE Login</strong></li>
+<li id="pragma-line-134">填寫：
+<ul id="pragma-line-135">
+<li id="pragma-line-135">Region：Taiwan</li>
+<li id="pragma-line-136">Channel name：<code>EMO 點餐</code></li>
+<li id="pragma-line-137">Channel description：<code>電子點餐系統</code></li>
+<li id="pragma-line-138">App types：勾選 <strong>Web app</strong></li>
+<li id="pragma-line-139">同意條款 → <strong>Create</strong></li>
+</ul>
+</li>
+<li id="pragma-line-140">進入 channel，找到 <strong>Channel ID</strong>（一串數字，例如 <code>2007123456</code>）</li>
+<li id="pragma-line-141">複製此 ID，貼到記事本，命名 <code>LINE_CHANNEL_ID</code></li>
+</ol>
+<h3 id="step-3-4-channel-id-apps-script"><a id="pragma-line-143"></a>Step 3-4　把 Channel ID 補回 Apps Script</h3>
+<ol id="pragma-line-144">
+<li id="pragma-line-144">回 Apps Script 分頁 → 齒輪「<strong>專案設定</strong>」→「<strong>指令碼屬性</strong>」</li>
+<li id="pragma-line-145"><strong>新增</strong>：屬性 <code>LINE_CHANNEL_ID</code>，值為上一步的 Channel ID</li>
+<li id="pragma-line-146">儲存</li>
+</ol>
+<hr id="pragma-line-148">
+<h1 id="line-messaging-api-channel"><a id="pragma-line-150"></a>第四階段：申請 LINE Messaging API Channel（推播用）</h1>
+<p id="pragma-line-152">預估 10 分鐘。這是訂單成立後<strong>自動發 LINE 訊息</strong>給訂購人與廚房用的。</p>
+<p id="pragma-line-154">⚠️ <strong>必須與 Step 3 的 Login Channel 在同一個 Provider 底下</strong>，否則 userId 不通。</p>
+<h3 id="step-4-1-provider-channel"><a id="pragma-line-156"></a>Step 4-1　回 Provider 建立第二個 channel</h3>
+<ol id="pragma-line-157">
+<li id="pragma-line-157">點上方麵包屑回到 Provider 頁</li>
+<li id="pragma-line-158"><strong>Create a new channel</strong> → 選 <strong>Messaging API</strong></li>
+<li id="pragma-line-159">填寫：
+<ul id="pragma-line-160">
+<li id="pragma-line-160">Channel name：<code>EMO 點餐機器人</code></li>
+<li id="pragma-line-161">Channel description：<code>訂單通知</code></li>
+<li id="pragma-line-162">Category / Subcategory：選最接近「餐飲」的選項</li>
+<li id="pragma-line-163">同意條款 → <strong>Create</strong></li>
+</ul>
+</li>
+</ol>
+<h3 id="step-4-2-channel-access-token"><a id="pragma-line-165"></a>Step 4-2　取得 Channel Access Token</h3>
+<ol id="pragma-line-166">
+<li id="pragma-line-166">進入剛建立的 Messaging API channel</li>
+<li id="pragma-line-167">上方分頁切到「<strong>Messaging API</strong>」</li>
+<li id="pragma-line-168">拉到頁面最下方 <strong>Channel access token</strong></li>
+<li id="pragma-line-169">點「<strong>Issue</strong>」按鈕（如果寫 Reissue 也是一樣）</li>
+<li id="pragma-line-170">產生一段很長的字串（約 170 字元），<strong>全選複製</strong></li>
+<li id="pragma-line-171">貼到記事本，命名 <code>LINE_CHANNEL_ACCESS_TOKEN</code></li>
+</ol>
+<h3 id="step-4-3-apps-script"><a id="pragma-line-173"></a>Step 4-3　補進 Apps Script 指令碼屬性</h3>
+<ol id="pragma-line-174">
+<li id="pragma-line-174">回 Apps Script → 齒輪「專案設定」→ 指令碼屬性</li>
+<li id="pragma-line-175"><strong>新增</strong>：屬性 <code>LINE_CHANNEL_ACCESS_TOKEN</code>，值為剛剛的 token</li>
+<li id="pragma-line-176">儲存</li>
+<li id="pragma-line-177">此時三個屬性應齊全：
+<ul id="pragma-line-178">
+<li id="pragma-line-178">✅ <code>SHEET_ID</code></li>
+<li id="pragma-line-179">✅ <code>LINE_CHANNEL_ID</code></li>
+<li id="pragma-line-180">✅ <code>LINE_CHANNEL_ACCESS_TOKEN</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="step-4-4-oa-manager-webhook"><a id="pragma-line-182"></a>Step 4-4　OA Manager 三項設定（自動回覆 / 允許加群 / Webhook）</h3>
+<ol id="pragma-line-183">
+<li id="pragma-line-183">還在 Messaging API 分頁，找到 <strong>Auto-reply messages</strong> 區塊 → 點 <strong>Edit</strong></li>
+<li id="pragma-line-184">會跳到 <a href="https://manager.line.biz/">LINE Official Account Manager</a> → 進入對應 OA</li>
+<li id="pragma-line-185">左側 <strong>設定 → 回應設定</strong>，做以下三件事：
+<ul id="pragma-line-186">
+<li id="pragma-line-186"><strong>「自動回應訊息」</strong> → <strong>停用</strong>（避免群組被罐頭訊息洗版）</li>
+<li id="pragma-line-187"><strong>「加入群組或多人聊天」</strong> → <strong>開啟 ON</strong> ⚠️ <strong>本版必設</strong>，否則 Bot 被邀進廚房群會立刻自動退出</li>
+<li id="pragma-line-188"><strong>「Webhook」</strong> → <strong>開啟 ON</strong>（第八階段會用到，先打開備著）</li>
+</ul>
+</li>
+<li id="pragma-line-189">「歡迎訊息」可保留預設，或改為：「歡迎光臨，您將透過此帳號收到訂單通知。」</li>
+<li id="pragma-line-190">儲存</li>
+</ol>
+<h3 id="step-4-5-bot"><a id="pragma-line-192"></a>Step 4-5　記下 Bot 的加好友連結（僅訂購人需要）</h3>
+<ul id="pragma-line-193">
+<li id="pragma-line-193">Messaging API 分頁上方有 <strong>Basic ID</strong>（<code>@xxxxxxxx</code>）或 <strong>QR code</strong></li>
+<li id="pragma-line-194">截圖或記下，<strong>訂購人必須先加此 Bot 為好友</strong>才會收到自己的訂單確認推播</li>
+<li id="pragma-line-195">v6 後<strong>廚房成員不必個別加 Bot</strong>，新訂單通知會發到群組</li>
+</ul>
+<hr id="pragma-line-197">
+<h1 id="github-pages"><a id="pragma-line-199"></a>第五階段：把網頁上傳到 GitHub Pages（免費託管）</h1>
+<p id="pragma-line-201">預估 15 分鐘（含等 Pages 生效）。</p>
+<h3 id="step-5-1-github"><a id="pragma-line-203"></a>Step 5-1　建立 GitHub 帳號（已有可跳過）</h3>
+<ol id="pragma-line-204">
+<li id="pragma-line-204"><a href="https://github.com/signup">https://github.com/signup</a></li>
+<li id="pragma-line-205">完成註冊、信箱驗證</li>
+</ol>
+<h3 id="step-5-2-repository"><a id="pragma-line-207"></a>Step 5-2　建立 Repository</h3>
+<ol id="pragma-line-208">
+<li id="pragma-line-208">登入後右上角「<strong>＋</strong>」→ <strong>New repository</strong></li>
+<li id="pragma-line-209">Repository name：<code>emo-liff</code></li>
+<li id="pragma-line-210"><strong>Public</strong>（免費版 Pages 需要公開）</li>
+<li id="pragma-line-211">勾選 <strong>Add a README file</strong></li>
+<li id="pragma-line-212"><strong>Create repository</strong></li>
+</ol>
+<h3 id="step-5-3-liff"><a id="pragma-line-214"></a>Step 5-3　上傳 liff 資料夾的檔案</h3>
+<ol id="pragma-line-215">
+<li id="pragma-line-215">進入剛建立的 repo</li>
+<li id="pragma-line-216"><strong>Add file → Upload files</strong></li>
+<li id="pragma-line-217">開啟檔案總管 <code>C:\emo\liff\</code></li>
+<li id="pragma-line-218">將下列檔案<strong>拖曳</strong>到 GitHub 上傳區：
+<ul id="pragma-line-219">
+<li id="pragma-line-219"><code>order.html</code></li>
+<li id="pragma-line-220"><code>admin.html</code></li>
+<li id="pragma-line-221"><code>style.css</code></li>
+<li id="pragma-line-222"><code>preview.html</code>（可選，僅樣式預覽用）</li>
+</ul>
+</li>
+<li id="pragma-line-223">滑到下方 <strong>Commit changes</strong>（保留預設）</li>
+<li id="pragma-line-224">等待上傳完成</li>
+</ol>
+<h3 id="step-5-4-github-pages"><a id="pragma-line-226"></a>Step 5-4　啟用 GitHub Pages</h3>
+<ol id="pragma-line-227">
+<li id="pragma-line-227">Repository 上方 <strong>Settings</strong> → 左側 <strong>Pages</strong></li>
+<li id="pragma-line-228"><strong>Source</strong>：選 <code>Deploy from a branch</code></li>
+<li id="pragma-line-229"><strong>Branch</strong>：選 <code>main</code>，資料夾 <code>/(root)</code> → <strong>Save</strong></li>
+<li id="pragma-line-230">等 1～2 分鐘，頁面頂端會出現：
+<pre><code id="pragma-line-231">Your site is live at https://你的GitHub帳號.github.io/emo-liff/
+</code></pre>
+</li>
+<li id="pragma-line-234">兩個重要網址（記到記事本）：
+<ul id="pragma-line-235">
+<li id="pragma-line-235">訂餐頁：<code>https://你的帳號.github.io/emo-liff/order.html</code></li>
+<li id="pragma-line-236">管理頁：<code>https://你的帳號.github.io/emo-liff/admin.html</code></li>
+</ul>
+</li>
+<li id="pragma-line-237">用瀏覽器先打開測試是否能載入。會看到「LIFF 初始化失敗」是<strong>正常的</strong>，因為還沒填 LIFF ID。</li>
+</ol>
+<hr id="pragma-line-239">
+<h1 id="liff-app"><a id="pragma-line-241"></a>第六階段：建立兩個 LIFF App</h1>
+<p id="pragma-line-243">預估 5 分鐘。</p>
+<h3 id="step-6-1-line-login-channel-liff"><a id="pragma-line-245"></a>Step 6-1　回 LINE Login Channel 加入 LIFF</h3>
+<ol id="pragma-line-246">
+<li id="pragma-line-246">回 LINE Developers → 進入 <strong>Login Channel</strong>（注意：<strong>不是</strong> Messaging API channel）</li>
+<li id="pragma-line-247">上方分頁切到 <strong>LIFF</strong></li>
+<li id="pragma-line-248">點 <strong>Add</strong></li>
+</ol>
+<h3 id="step-6-2-liff"><a id="pragma-line-250"></a>Step 6-2　建立「訂餐」LIFF</h3>
+<ul id="pragma-line-251">
+<li id="pragma-line-251">LIFF app name：<code>EMO 訂餐</code></li>
+<li id="pragma-line-252">Size：<strong>Full</strong></li>
+<li id="pragma-line-253">Endpoint URL：貼上 Step 5-4 的訂餐頁網址</li>
+<li id="pragma-line-254">Scopes：勾 <strong>profile</strong>、<strong>openid</strong></li>
+<li id="pragma-line-255">Bot link feature：<strong>On (Aggressive)</strong> — 讓使用者進入時自動提示加 Bot 好友</li>
+<li id="pragma-line-256">Scan QR：可不勾</li>
+<li id="pragma-line-257"><strong>Add</strong></li>
+</ul>
+<p id="pragma-line-259">加入後產生一組 <strong>LIFF ID</strong>（格式：<code>1234567890-AbcdEfgh</code>），複製到記事本，命名「訂餐 LIFF ID」。</p>
+<h3 id="step-6-3-liff"><a id="pragma-line-261"></a>Step 6-3　建立「管理」LIFF</h3>
+<p id="pragma-line-262">重複 Step 6-2，但：</p>
+<ul id="pragma-line-263">
+<li id="pragma-line-263">name：<code>EMO 管理</code></li>
+<li id="pragma-line-264">Endpoint URL：貼上管理頁網址</li>
+<li id="pragma-line-265"><strong>Scan QR：⚠️ 必須勾選 ✅</strong>（v5.1 起，管理員領餐時掃 QR 條碼會用到）</li>
+</ul>
+<p id="pragma-line-267">複製產生的 LIFF ID，命名「管理 LIFF ID」。</p>
+<p id="pragma-line-269">⚠️ 注意：兩個 LIFF ID <strong>不一樣</strong>，等等填入網頁時不要弄混。</p>
+<hr id="pragma-line-271">
+<h1 id="gas-web-app-id"><a id="pragma-line-273"></a>第七階段：部署 GAS Web App，並把 ID 填入網頁</h1>
+<p id="pragma-line-275">預估 5 分鐘。</p>
+<h3 id="step-7-1-apps-script"><a id="pragma-line-277"></a>Step 7-1　部署 Apps Script</h3>
+<ol id="pragma-line-278">
+<li id="pragma-line-278">回 Apps Script 編輯器</li>
+<li id="pragma-line-279">右上 <strong>部署</strong> → <strong>新增部署作業</strong></li>
+<li id="pragma-line-280">左側齒輪 → 選 <strong>網頁應用程式</strong></li>
+<li id="pragma-line-281">填寫：
+<ul id="pragma-line-282">
+<li id="pragma-line-282">說明：<code>v1</code></li>
+<li id="pragma-line-283">執行身分：<strong>我</strong></li>
+<li id="pragma-line-284">存取權：<strong>所有人</strong></li>
+</ul>
+</li>
+<li id="pragma-line-285">點 <strong>部署</strong></li>
+<li id="pragma-line-286">若跳授權，按 Step 2-5 流程允許</li>
+<li id="pragma-line-287">完成後會顯示一個網址：
+<pre><code id="pragma-line-288">https://script.google.com/macros/s/AKfycb.../exec
+</code></pre>
+</li>
+<li id="pragma-line-291">複製到記事本，命名「GAS Web App 網址」</li>
+</ol>
+<h3 id="step-7-2-order.html"><a id="pragma-line-293"></a>Step 7-2　修改 order.html</h3>
+<ol id="pragma-line-294">
+<li id="pragma-line-294">用記事本或 VS Code 開啟 <code>C:\emo\liff\order.html</code></li>
+<li id="pragma-line-295">找到開頭的兩行：
+<pre><code id="pragma-line-296" class="language-js">const LIFF_ID = '__PASTE_LIFF_ID__';
+const API_URL = '__PASTE_GAS_WEBAPP_URL__';
+</code></pre>
+</li>
+<li id="pragma-line-300">將 <code>__PASTE_LIFF_ID__</code> 替換為 <strong>訂餐 LIFF ID</strong></li>
+<li id="pragma-line-301">將 <code>__PASTE_GAS_WEBAPP_URL__</code> 替換為 <strong>GAS Web App 網址</strong></li>
+<li id="pragma-line-302">儲存</li>
+</ol>
+<h3 id="step-7-3-admin.html"><a id="pragma-line-304"></a>Step 7-3　修改 admin.html</h3>
+<ul id="pragma-line-305">
+<li id="pragma-line-305">同 7-2，但 LIFF ID 替換為 <strong>管理 LIFF ID</strong>（API_URL 與 order.html 相同）</li>
+</ul>
+<h3 id="step-7-4-github"><a id="pragma-line-307"></a>Step 7-4　重新上傳到 GitHub</h3>
+<ol id="pragma-line-308">
+<li id="pragma-line-308">回 GitHub repo</li>
+<li id="pragma-line-309">點開 <code>order.html</code> → 右上鉛筆圖示 ✏️ 編輯</li>
+<li id="pragma-line-310">整段刪除，貼上修改後的內容</li>
+<li id="pragma-line-311">滑到下方 <strong>Commit changes</strong></li>
+<li id="pragma-line-312">同樣處理 <code>admin.html</code></li>
+<li id="pragma-line-313">等 1～2 分鐘 Pages 重新生效</li>
+</ol>
+<h3 id="step-7-5-exec-messaging-api-webhook"><a id="pragma-line-315"></a>Step 7-5　把 /exec 網址回填到 Messaging API Webhook</h3>
+<ol id="pragma-line-316">
+<li id="pragma-line-316">回 <a href="https://developers.line.biz/console/">LINE Developers Console</a> → 你的 <strong>Messaging API channel</strong></li>
+<li id="pragma-line-317">上方 <strong>Messaging API</strong> 分頁</li>
+<li id="pragma-line-318"><strong>Webhook URL</strong> 填 Step 7-1 的 GAS <code>/exec</code> 網址</li>
+<li id="pragma-line-319"><strong>Use webhook</strong> 確認是 <strong>開啟</strong>（Step 4-4 已經先開好）</li>
+<li id="pragma-line-320">按 <strong>Verify</strong>：回 200 最佳；非 200 通常也能用，下一階段實測</li>
+</ol>
+<hr id="pragma-line-322">
+<h1 id="section-1"><a id="pragma-line-324"></a>第八階段：設定管理員與廚房群組</h1>
+<p id="pragma-line-326">預估 5 分鐘。</p>
+<h3 id="step-8-1-line-userid"><a id="pragma-line-328"></a>Step 8-1　取得您自己的 LINE userId</h3>
+<ol id="pragma-line-329">
+<li id="pragma-line-329">手機開 LINE</li>
+<li id="pragma-line-330">用 LINE 的「行動條碼掃描」掃 LIFF 的 QR Code
+<ul id="pragma-line-331">
+<li id="pragma-line-331">QR Code 位置：LINE Developers → Login Channel → LIFF 分頁 → 點開「訂餐 LIFF」右邊有 QR</li>
+</ul>
+</li>
+<li id="pragma-line-332">第一次會要求 LINE 登入授權 → <strong>允許</strong></li>
+<li id="pragma-line-333">進入訂餐頁後，<strong>隨便填一筆測試訂單送出</strong>（單位:測試, 訂購人:測試, 警用電話:0900-000-000, 日期:今天）</li>
+<li id="pragma-line-334">回電腦上的試算表 → <code>Orders</code> 工作表</li>
+<li id="pragma-line-335">看最右欄 <code>LINE userId</code>，那一串 <code>U...</code> 開頭的 33 字元就是您的 userId</li>
+<li id="pragma-line-336">複製</li>
+</ol>
+<h3 id="step-8-2"><a id="pragma-line-338"></a>Step 8-2　登錄管理員</h3>
+<ol id="pragma-line-339">
+<li id="pragma-line-339">切到 <code>Admins</code> 工作表</li>
+<li id="pragma-line-340">第 2 列填入：
+| A 欄: LINE userId | B 欄: 名稱 | C 欄: 備註 |
+|---|---|---|
+| Uxxxxxxxxxxxxxxxx... | 您的名字 | 主管理員 |</li>
+</ol>
+<h3 id="step-8-3-line-groupid"><a id="pragma-line-345"></a>Step 8-3　設定廚房 LINE 群組（取得 groupId）</h3>
+<p id="pragma-line-347">v6 後新訂單通知統一發到一個指定群組，廚房成員不必個別加 Bot 好友。</p>
+<ol id="pragma-line-349">
+<li id="pragma-line-349"><strong>建立或選定廚房內部群組</strong>（Step 0 已準備），把實際接單同仁加入</li>
+<li id="pragma-line-350"><strong>邀請 Bot 進群組</strong>：群組設定 → 邀請 → 搜尋 Bot 名稱或 Basic ID（<code>@xxxx</code>）</li>
+<li id="pragma-line-351"><strong>確認 Bot 留在群組沒有自動退出</strong>
+<ul id="pragma-line-352">
+<li id="pragma-line-352">若秒退 → Step 4-4 的「允許加入群組或多人聊天」沒開，回去確認</li>
+</ul>
+</li>
+<li id="pragma-line-353"><strong>群內隨便發一則訊息</strong>（任何成員都可以、內容不拘）</li>
+<li id="pragma-line-354">回 Apps Script 編輯器
+<ul id="pragma-line-355">
+<li id="pragma-line-355">函式下拉選 <strong><code>debugKitchenGroupConfig</code></strong> → 點 ▶ 執行</li>
+<li id="pragma-line-356">看下方執行記錄應顯示：
+<pre><code id="pragma-line-357">LINE_KITCHEN_GROUP_ID    : Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+LINE_CHANNEL_ACCESS_TOKEN: 已設定
+</code></pre>
+</li>
+</ul>
+</li>
+<li id="pragma-line-361">groupId（C 開頭 33 字元）出現就成功，<strong>屬性已自動寫入</strong>，不需要手動貼</li>
+<li id="pragma-line-362"><strong>測試群組推播</strong>：函式下拉選 <strong><code>testKitchenGroupPush</code></strong> → ▶ 執行
+<ul id="pragma-line-363">
+<li id="pragma-line-363">廚房群組應立刻收到一則「📣 EMO 系統測試訊息 …」</li>
+<li id="pragma-line-364">執行記錄顯示 <code>testKitchenGroupPush → HTTP 200</code></li>
+</ul>
+</li>
+</ol>
+<blockquote id="pragma-line-366">
+<p id="pragma-line-366">🛠 完成後，可回 LINE Developers Console 把 <strong>Use webhook</strong> 切回關閉，避免群組閒聊持續打到 GAS（屬性已寫入後新事件會被略過，留著也無害）。
+🛠 若想換群組：刪除指令碼屬性 <code>LINE_KITCHEN_GROUP_ID</code>、重開 Webhook、把 Bot 邀請到新群、新群內發一則訊息即可重新捕捉。</p>
+</blockquote>
+<hr id="pragma-line-369">
+<h1 id="section-2"><a id="pragma-line-371"></a>第九階段：完整測試</h1>
+<p id="pragma-line-373">預估 10 分鐘。</p>
+<h3 id="step-9-1"><a id="pragma-line-375"></a>Step 9-1　管理員測試</h3>
+<ol id="pragma-line-376">
+<li id="pragma-line-376">手機 LINE 掃「<strong>管理</strong>」LIFF 的 QR Code 進入</li>
+<li id="pragma-line-377">應看到「管理員後台」+ 訂單統計區 + 領餐快速查詢區 + 餐點維護表單</li>
+<li id="pragma-line-378">在「每日餐點維護」：
+<ul id="pragma-line-379">
+<li id="pragma-line-379">「適用日期」預設今天</li>
+<li id="pragma-line-380">把五個餐別填入（例：早餐=飯糰、中餐 A=滷雞腿便當…）→ <strong>儲存當日菜單</strong></li>
+<li id="pragma-line-381">出現綠色「已更新 YYYY-MM-DD 的菜單」訊息 ✅</li>
+</ul>
+</li>
+<li id="pragma-line-382"><strong>預先設定明天的菜單</strong>（驗證多日菜單）：
+<ul id="pragma-line-383">
+<li id="pragma-line-383">把「適用日期」改成<strong>明天</strong> → 按「<strong>載入該日菜單</strong>」</li>
+<li id="pragma-line-384">表單會自動帶入今天的菜單作為基底（fallback 機制）</li>
+<li id="pragma-line-385">改其中一項（例：中餐 A 改成「明日測試 A」）→ <strong>儲存當日菜單</strong></li>
+</ul>
+</li>
+<li id="pragma-line-386">「當日訂單統計」：選<strong>今天</strong>日期 → <strong>查詢</strong>
+<ul id="pragma-line-387">
+<li id="pragma-line-387">應看到 9 格統計卡片（總筆數 / 早餐 / 晚餐 / 中餐 A / 中餐 B / 中餐 C / <strong>早餐已領 X/Y</strong> / <strong>中餐已領 X/Y</strong> / <strong>晚餐已領 X/Y</strong>）</li>
+<li id="pragma-line-388">Step 8 的測試訂單應出現在明細，含<strong>訂單編號徽章</strong>與<strong>三列三餐 meal-row</strong>（各自獨立的未領 / 已領狀態）</li>
+</ul>
+</li>
+</ol>
+<h3 id="step-9-2"><a id="pragma-line-390"></a>Step 9-2　訂餐端測試</h3>
+<ol id="pragma-line-391">
+<li id="pragma-line-391">手機 LINE 掃「<strong>訂餐</strong>」LIFF 的 QR Code</li>
+<li id="pragma-line-392">確認下拉選單裡顯示剛剛設定的餐點名稱（<strong>且切換日期到明天時，中餐 A 顯示「明日測試 A」</strong>）</li>
+<li id="pragma-line-393">切回今天，填寫並送出訂單</li>
+<li id="pragma-line-394">觀察：
+<ul id="pragma-line-395">
+<li id="pragma-line-395">✅ 網頁顯示「訂單已送出，感謝您！　您的訂單編號：YYYYMMDD-NNN（請於領餐時出示）」</li>
+<li id="pragma-line-396">✅ 您（訂購人）的 LINE 收到「✅ 訂單已收到」綠色卡片，<strong>頂端含訂單編號徽章與 QR</strong></li>
+<li id="pragma-line-397">✅ <strong>廚房群組</strong>收到「🍱 新訂單」橘色卡片，<strong>含訂單編號</strong>（不是個別 DM 給廚房人員）</li>
+<li id="pragma-line-398">✅ 試算表 <code>Orders</code> 多出一筆，K 欄寫入訂單編號、L / N / P 三個「已領」欄為 <code>FALSE</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="step-9-3"><a id="pragma-line-400"></a>Step 9-3　領餐功能測試</h3>
+<ol id="pragma-line-401">
+<li id="pragma-line-401">回管理 LIFF（強制重新整理） → 「當日訂單統計」重新查詢今天</li>
+<li id="pragma-line-402">找到剛剛 Step 9-2 送的測試訂單（橘色「未領」徽章）</li>
+<li id="pragma-line-403">點「<strong>標記已領</strong>」按鈕
+<ul id="pragma-line-404">
+<li id="pragma-line-404">✅ 卡片底色由琥珀變綠</li>
+<li id="pragma-line-405">✅ 徽章變「已領 ✓」、按鈕變「取消已領」</li>
+<li id="pragma-line-406">✅ 上方對應餐別的「已領 X/Y」統計即時 +1（早 / 中 / 晚三組獨立計）</li>
+</ul>
+</li>
+<li id="pragma-line-407">試「<strong>領餐快速查詢</strong>」：
+<ul id="pragma-line-408">
+<li id="pragma-line-408">在輸入框打 Step 9-2 收到的訂單編號（例 <code>20260519-001</code>） → Enter</li>
+<li id="pragma-line-409">應顯示該單卡片（綠色已領狀態）</li>
+</ul>
+</li>
+<li id="pragma-line-410">切到 <code>Orders</code> 工作表
+<ul id="pragma-line-411">
+<li id="pragma-line-411">L 欄該列應為 <code>TRUE</code></li>
+<li id="pragma-line-412">M 欄該列應有時間戳</li>
+</ul>
+</li>
+</ol>
+<h3 id="step-9-4"><a id="pragma-line-414"></a>Step 9-4　如有任一步失敗</h3>
+<ul id="pragma-line-415">
+<li id="pragma-line-415">翻到最後一章「常見問題排查」對照</li>
+</ul>
+<hr id="pragma-line-417">
+<h1 id="v11-v11"><a id="pragma-line-419"></a>第十階段：發布給使用者（與 v11 同階段；先做 v11 設定再發布更佳）</h1>
+<h3 id="step-10-1-qr-code"><a id="pragma-line-421"></a>Step 10-1　產生訂餐 QR Code</h3>
+<ul id="pragma-line-422">
+<li id="pragma-line-422">訂餐 LIFF 短網址格式：<code>https://liff.line.me/&lt;訂餐 LIFF ID&gt;</code></li>
+<li id="pragma-line-423">例：<code>https://liff.line.me/1234567890-AbcdEfgh</code></li>
+<li id="pragma-line-424">用 <a href="https://www.qr-code-generator.com">https://www.qr-code-generator.com</a> 等工具產生 QR 圖檔</li>
+</ul>
+<h3 id="step-10-2"><a id="pragma-line-426"></a>Step 10-2　現場貼立牌建議內容</h3>
+<pre><code id="pragma-line-427">歡迎光臨！線上點餐請掃描下方 QR Code
+
+  [大 QR Code]
+
+⚠ 第一次使用提示：
+1. 用 LINE 掃 QR
+2. 同意 LINE 帳號授權
+3. 加入「EMO 點餐機器人」好友（會自動跳出）
+4. 即可開始訂餐，送出後 LINE 會收到訂單通知
+</code></pre>
+<h3 id="step-10-3"><a id="pragma-line-439"></a>Step 10-3　管理員平日操作</h3>
+<ul id="pragma-line-440">
+<li id="pragma-line-440"><strong>每日菜單維護</strong>：進入「管理」LIFF → 適用日期選今日 → 載入該日菜單 → 修改 → 儲存
+<ul id="pragma-line-441">
+<li id="pragma-line-441">可預先把未來幾天的菜單一次設好（每天分別儲存）</li>
+<li id="pragma-line-442">未修改的日期會自動沿用最近一個更早日期的菜單，不用每天重設</li>
+</ul>
+</li>
+<li id="pragma-line-443"><strong>領餐管理</strong>：每日領餐時段
+<ul id="pragma-line-444">
+<li id="pragma-line-444">客人來領餐 → 在「領餐快速查詢」輸入訂單編號 → 確認單號 → 「標記已領」</li>
+<li id="pragma-line-445">或者：在「當日訂單統計」勾「只看未領餐」→ 逐筆對人 → 點「標記已領」</li>
+<li id="pragma-line-446">收尾時看「未領餐」格數字 = 0 表示全部處理完</li>
+</ul>
+</li>
+<li id="pragma-line-447"><strong>訂單查閱</strong>：任何時候可查當日訂單統計；試算表也可直接打開查看，所有訂單即時同步</li>
+</ul>
+<hr id="pragma-line-449">
+<h1 id="v11"><a id="pragma-line-451"></a>第十一階段：v11 統計日報 / 月報自動推送設定</h1>
+<p id="pragma-line-453">預估 10 分鐘。此階段需在第八階段（廚房群組）設定完後再做。</p>
+<h2 id="step-11-1-line"><a id="pragma-line-455"></a>Step 11-1　準備管理 LINE 群組</h2>
+<ol id="pragma-line-457">
+<li id="pragma-line-457">建立或選定一個<strong>管理 LINE 群組</strong>（建議與廚房群組分群，避免廚房同仁看到內部統計）</li>
+<li id="pragma-line-458">把實際需要看日報 / 月報的人員加入（管理員、主管、單位幹部等）</li>
+<li id="pragma-line-459"><strong>邀請 Bot 進管理群組</strong>：群組設定 → 邀請 → 搜尋 Bot 名稱或 Basic ID（<code>@xxxx</code>）</li>
+<li id="pragma-line-460"><strong>確認 Bot 留在群組沒有自動退出</strong>（與第八階段一樣，OA Manager「允許加入群組」必須開啟）</li>
+</ol>
+<h2 id="step-11-2-id"><a id="pragma-line-462"></a>Step 11-2　取得管理群組 ID</h2>
+<blockquote id="pragma-line-464">
+<p id="pragma-line-464">廚房群組 ID 已自動寫入 <code>LINE_KITCHEN_GROUP_ID</code>（第八階段）。<br>
+此步要再抓一個新的 groupId 寫入 <code>LINE_ADMIN_GROUP_ID</code>。</p>
+</blockquote>
+<p id="pragma-line-467"><strong>作法 A（推薦，最省事）</strong>：管理群組與廚房群組合併使用同一個</p>
+<ul id="pragma-line-469">
+<li id="pragma-line-469">若您打算用同一個 LINE 群組同時收「廚房接單通知」與「管理日報 / 月報」，<strong>不必做任何事</strong></li>
+<li id="pragma-line-470">GAS 在找管理群組時，會先看 <code>LINE_ADMIN_GROUP_ID</code>；沒設定就退而使用 <code>LINE_KITCHEN_GROUP_ID</code></li>
+<li id="pragma-line-471">直接跳到 Step 11-3</li>
+</ul>
+<p id="pragma-line-473"><strong>作法 B（分群推薦）</strong>：管理群組與廚房群組分開</p>
+<ol id="pragma-line-475">
+<li id="pragma-line-475">回 LINE Developers Console → Messaging API channel</li>
+<li id="pragma-line-476"><strong>Webhook URL</strong> 仍為 <code>/exec</code> 網址</li>
+<li id="pragma-line-477"><strong>Use webhook</strong> 暫時切回 <strong>開啟</strong></li>
+<li id="pragma-line-478">在<strong>管理群組</strong>內隨便發一則訊息</li>
+<li id="pragma-line-479">回 Apps Script 編輯器，函式下拉選 <strong><code>debugKitchenGroupConfig</code></strong> → ▶ 執行
+<ul id="pragma-line-480">
+<li id="pragma-line-480"><strong>若顯示「廚房群組 ID 已設定」，但新群組無法自動寫入</strong>，因為 webhook 設計只在屬性未設時寫一次。請改用作法 C 手動填入。</li>
+</ul>
+</li>
+</ol>
+<p id="pragma-line-482"><strong>作法 C（最可靠）</strong>：手動填入 <code>LINE_ADMIN_GROUP_ID</code></p>
+<ol id="pragma-line-484">
+<li id="pragma-line-484">用[作法 B 1～4 步]觸發 webhook，到 Apps Script「執行記錄」找最近一筆 <code>Webhook group/room ids received but property already set; ignoring: [{...,"id":"Cxxxx..."}]</code></li>
+<li id="pragma-line-485">複製 <code>C</code> 開頭的 33 字元 groupId</li>
+<li id="pragma-line-486">至 Apps Script 齒輪「<strong>專案設定 → 指令碼屬性</strong>」</li>
+<li id="pragma-line-487"><strong>新增</strong>：屬性名稱 <code>LINE_ADMIN_GROUP_ID</code>，值為剛剛的 groupId</li>
+<li id="pragma-line-488">儲存</li>
+</ol>
+<h2 id="step-11-3-trigger"><a id="pragma-line-490"></a>Step 11-3　建立日報 / 月報自動推送 trigger</h2>
+<ol id="pragma-line-492">
+<li id="pragma-line-492">回 Apps Script 編輯器</li>
+<li id="pragma-line-493">函式下拉選 <strong><code>setupV11ReportTrigger</code></strong> → ▶ 執行</li>
+<li id="pragma-line-494">第一次會跳授權，按之前流程允許</li>
+<li id="pragma-line-495">執行記錄應顯示：<code>已建立每 5 分鐘執行 checkAndSendDueReports 的 trigger（v11 日報 / 月報自動推送）</code></li>
+<li id="pragma-line-496">左側「<strong>觸發條件</strong>」可看到新增的 <code>checkAndSendDueReports</code> time-based 觸發</li>
+</ol>
+<h2 id="step-11-4"><a id="pragma-line-498"></a>Step 11-4　測試日報推送</h2>
+<ol id="pragma-line-500">
+<li id="pragma-line-500">函式下拉選 <strong><code>testDailyReportPush</code></strong> → ▶ 執行（<strong>參數欄留空</strong>，預設今天）</li>
+<li id="pragma-line-501">執行記錄顯示：<code>OK: 已推送 YYYY-MM-DD 日報到管理群組</code></li>
+<li id="pragma-line-502"><strong>管理群組</strong>應立刻收到一則「📊 EMO 日報 (YYYY-MM-DD)」純文字訊息</li>
+<li id="pragma-line-503">訊息內容應包含：訂單總計、三餐 訂 / 領 / 棄、中餐 A / B / C、領餐率、棄單率、訂購單位 TOP 5</li>
+</ol>
+<h2 id="step-11-5"><a id="pragma-line-505"></a>Step 11-5　測試月報推送</h2>
+<ol id="pragma-line-507">
+<li id="pragma-line-507">函式下拉選 <strong><code>testMonthlyReportPush</code></strong> → ▶ 執行（<strong>參數欄留空</strong>，預設上個月）</li>
+<li id="pragma-line-508">執行記錄顯示：<code>OK: 已推送 YYYY-MM 月報到管理群組</code></li>
+<li id="pragma-line-509"><strong>管理群組</strong>應收到一則「📊 EMO 月報 (YYYY-MM)」純文字訊息</li>
+</ol>
+<blockquote id="pragma-line-511">
+<p id="pragma-line-511">💡 若想指定月份手動測試：執行 <code>testMonthlyReportPush</code> 時參數欄填 <code>2026-04</code></p>
+</blockquote>
+<h2 id="step-11-6"><a id="pragma-line-513"></a>Step 11-6　日常自動觸發確認</h2>
+<ul id="pragma-line-515">
+<li id="pragma-line-515"><strong>日報</strong>：每日 18:00 之後 5 分鐘內，trigger 會自動推送當日日報
+<ul id="pragma-line-516">
+<li id="pragma-line-516">鎖鍵 <code>DAILY_REPORT_SENT_{date}</code> 確保每日只送 1 次</li>
+<li id="pragma-line-517">失敗不寫鍵，下次 5 分鐘 trigger 自動重試</li>
+</ul>
+</li>
+<li id="pragma-line-518"><strong>月報</strong>：每月 1 日 09:00 之後 5 分鐘內，trigger 會自動推送<strong>前月</strong>月報
+<ul id="pragma-line-519">
+<li id="pragma-line-519">鎖鍵 <code>MONTHLY_REPORT_SENT_{yyyy-MM}</code> 確保每月只送 1 次</li>
+</ul>
+</li>
+<li id="pragma-line-520">若要強制重送：執行 <code>clearReportSentFlag()</code>（清今日日報 + 上月月報鎖鍵）後等下次 trigger，或直接跑 <code>testDailyReportPush / testMonthlyReportPush</code></li>
+</ul>
+<h2 id="step-11-7"><a id="pragma-line-522"></a>Step 11-7　收尾</h2>
+<ul id="pragma-line-524">
+<li id="pragma-line-524">若作法 B / C 期間打開了 Webhook，請回 LINE Console 把 <strong>Use webhook</strong> 切回<strong>關閉</strong>（避免群組閒聊持續打到 GAS）</li>
+<li id="pragma-line-525">把測試訊息從管理群組撤回（可選）</li>
+</ul>
+<hr id="pragma-line-527">
+<h1 id="section-3"><a id="pragma-line-529"></a>常見問題排查</h1>
+<h3 id="q1-line"><a id="pragma-line-531"></a>Q1：送出訂單後<strong>沒收到 LINE 確認推播</strong></h3>
+<ul id="pragma-line-532">
+<li id="pragma-line-532">☐ 您加 Bot 為好友了嗎？（未加好友就收不到）</li>
+<li id="pragma-line-533">☐ <code>LINE_CHANNEL_ACCESS_TOKEN</code> 屬性是否填對？（最容易少貼或多空格）</li>
+<li id="pragma-line-534">☐ Apps Script → 左側「執行記錄」是否有 <code>LINE push failed</code> 字樣？點開看詳情</li>
+</ul>
+<h3 id="q2"><a id="pragma-line-536"></a>Q2：管理頁顯示「<strong>無管理員權限</strong>」</h3>
+<ul id="pragma-line-537">
+<li id="pragma-line-537">☐ <code>Admins</code> 工作表的 userId 是否與您本人 userId 完全一致？（注意大小寫）</li>
+<li id="pragma-line-538">☐ userId 是否在 A 欄（第一欄）？</li>
+<li id="pragma-line-539">☐ 第 1 列是表頭，您的資料應該從<strong>第 2 列</strong>開始</li>
+</ul>
+<h3 id="q3"><a id="pragma-line-541"></a>Q3：訂餐頁下拉選單<strong>只有「不訂購」選項</strong></h3>
+<ul id="pragma-line-542">
+<li id="pragma-line-542">☐ 管理員是否已透過管理頁設定當日餐點？</li>
+<li id="pragma-line-543">☐ 直接打開 <code>Menu</code> 工作表，B 欄是否有餐點名稱？</li>
+</ul>
+<h3 id="q4"><a id="pragma-line-545"></a>Q4：統計查詢顯示「無管理員權限」</h3>
+<ul id="pragma-line-546">
+<li id="pragma-line-546">同 Q2</li>
+</ul>
+<h3 id="q5"><a id="pragma-line-548"></a>Q5：<strong>廚房群組沒收到新訂單通知</strong></h3>
+<ul id="pragma-line-549">
+<li id="pragma-line-549">☐ Apps Script「執行記錄」最新一筆是否有 <code>New-order group push failed</code>？訊息會指出原因</li>
+<li id="pragma-line-550">☐ 在編輯器跑 <code>debugKitchenGroupConfig</code> 確認 <code>LINE_KITCHEN_GROUP_ID</code> 已設定</li>
+<li id="pragma-line-551">☐ 跑 <code>testKitchenGroupPush</code> 是否回 HTTP 200？
+<ul id="pragma-line-552">
+<li id="pragma-line-552"><strong>HTTP 401</strong> → <code>LINE_CHANNEL_ACCESS_TOKEN</code> 失效，重新 Issue 並更新屬性</li>
+<li id="pragma-line-553"><strong>HTTP 400 / bot is not a member</strong> → Bot 已被踢出群組，重新邀請</li>
+</ul>
+</li>
+<li id="pragma-line-554">☐ Bot 還在群組裡嗎？（被踢出就收不到）</li>
+<li id="pragma-line-555">☐ 若想換群組 → 刪屬性、重開 Webhook、重邀 Bot、群內發訊息</li>
+</ul>
+<h3 id="q6-admin.html"><a id="pragma-line-557"></a>Q6：修改 admin.html 後，<strong>瀏覽器看不到更新</strong></h3>
+<ul id="pragma-line-558">
+<li id="pragma-line-558">強制重新整理：<strong>Ctrl + F5</strong></li>
+<li id="pragma-line-559">GitHub Pages 生效有 1～2 分鐘延遲</li>
+<li id="pragma-line-560">確認您是修改後<strong>重新上傳到 GitHub</strong>，不是只改本機檔案</li>
+</ul>
+<h3 id="q7gas"><a id="pragma-line-562"></a>Q7：GAS 程式改了之後<strong>沒生效</strong></h3>
+<ul id="pragma-line-563">
+<li id="pragma-line-563">Apps Script 改程式後必須 <strong>重新部署版本</strong>：
+<ul id="pragma-line-564">
+<li id="pragma-line-564">右上「<strong>部署 → 管理部署作業</strong>」</li>
+<li id="pragma-line-565">點現有部署右上角鉛筆 ✏️</li>
+<li id="pragma-line-566">「版本」選 <strong>新版本</strong> → 填說明 → <strong>部署</strong></li>
+</ul>
+</li>
+<li id="pragma-line-567">✅ <strong>API_URL 不會變</strong>，不需要再改 HTML</li>
+<li id="pragma-line-568">⚠️ <strong>千萬不要點「新增部署作業」</strong> — 那會給你一條全新的 /exec 網址，前端 LIFF 就連不到了。日常更新永遠用「<strong>編輯既有部署 + 新版本</strong>」。詳見 <code>更新手冊.md</code> A 章。</li>
+</ul>
+<h3 id="q8liff-liff-init-failed-invalid-liffid"><a id="pragma-line-570"></a>Q8：LIFF 開啟時跳 <code>LIFF init failed: invalid liffId</code></h3>
+<ul id="pragma-line-571">
+<li id="pragma-line-571">您填的 LIFF ID 不對。</li>
+<li id="pragma-line-572">注意：訂餐 LIFF ID ≠ 管理 LIFF ID，兩個檔案要填各自的。</li>
+</ul>
+<h3 id="q9-20260515-2026-05-15"><a id="pragma-line-574"></a>Q9：試算表的 <code>訂購日期</code>欄看起來像 <code>2026/05/15</code> 而不是 <code>2026-05-15</code>，統計查不到</h3>
+<ul id="pragma-line-575">
+<li id="pragma-line-575">Google 試算表可能自動格式化日期。</li>
+<li id="pragma-line-576">解法：選取 D 欄 → 上方功能表「<strong>格式 → 數值 → 純文字</strong>」，再請使用者重新送一筆訂單測試。</li>
+<li id="pragma-line-577">或：保留試算表顯示格式不動，後端會自動正規化日期比對（已內建）。</li>
+</ul>
+<h3 id="q10"><a id="pragma-line-579"></a>Q10：要新增 / 移除管理員</h3>
+<ul id="pragma-line-580">
+<li id="pragma-line-580">直接編輯試算表 <code>Admins</code> 工作表即可，<strong>不需要</strong>重新部署 GAS，下次呼叫即時生效</li>
+</ul>
+<h3 id="q10-1"><a id="pragma-line-582"></a>Q10-1：要新增 / 移除廚房接單同仁</h3>
+<ul id="pragma-line-583">
+<li id="pragma-line-583">v6 後接單同仁是「LINE 群組成員」概念，<strong>直接在群組裡踢出 / 邀請即可</strong></li>
+<li id="pragma-line-584">群組本身不變、<code>LINE_KITCHEN_GROUP_ID</code> 不變，新訂單通知就會自動發給目前群裡的所有成員</li>
+</ul>
+<h3 id="q11"><a id="pragma-line-586"></a>Q11：訂購人說「沒收到訂單編號」</h3>
+<ul id="pragma-line-587">
+<li id="pragma-line-587">☐ 是否最近才升級 / 上線？訂購人可能是 GitHub Pages 快取的舊頁面 → 請對方 LIFF 右上 ⋯ → 重新載入</li>
+<li id="pragma-line-588">☐ 訂單編號<strong>永遠會生成並寫入 Sheet 的 K 欄</strong>，畫面沒顯示只是前端問題；可請對方先到 LINE 看 Flex 卡片頂端的編號徽章</li>
+</ul>
+<h3 id="q12"><a id="pragma-line-590"></a>Q12：訂餐頁切換日期，菜單卻沒變</h3>
+<ul id="pragma-line-591">
+<li id="pragma-line-591">這是預期的 <strong>fallback 行為</strong>：該日若未設定，會自動沿用最近一個更早日期的菜單</li>
+<li id="pragma-line-592">若想讓某日顯示空白或不同菜單，請到管理頁「每日餐點維護」→ 「適用日期」選該日 → <strong>明確儲存</strong>該日菜單</li>
+</ul>
+<h3 id="q13"><a id="pragma-line-594"></a>Q13：管理頁明細中有些訂單<strong>沒有訂單編號徽章</strong></h3>
+<ul id="pragma-line-595">
+<li id="pragma-line-595">通常出現在從舊版升級的情境；新安裝不會發生</li>
+<li id="pragma-line-596">若您是新安裝就看到這狀況，到 <code>Orders</code> 工作表確認該列 K 欄是否為空。若為空，到 Apps Script 執行 <code>migrateToV3</code> 一次補回</li>
+</ul>
+<h3 id="q14-1v11"><a id="pragma-line-598"></a>Q14-1：v11 日報 / 月報沒送出</h3>
+<ul id="pragma-line-599">
+<li id="pragma-line-599">☐ Apps Script 「執行記錄」是否有 <code>Daily report push failed</code> / <code>Monthly report push failed</code>？</li>
+<li id="pragma-line-600">☐ 跑 <code>debugKitchenGroupConfig</code>：<code>LINE_KITCHEN_GROUP_ID</code> 是否設定？（fallback 來源）</li>
+<li id="pragma-line-601">☐ 若設了 <code>LINE_ADMIN_GROUP_ID</code>，Bot 是否還在管理群組裡？被踢出就送不出</li>
+<li id="pragma-line-602">☐ <code>LINE_CHANNEL_ACCESS_TOKEN</code> 是否仍有效？跑 <code>testKitchenGroupPush</code> 驗證 token 還活著</li>
+<li id="pragma-line-603">☐ 跑 <code>testDailyReportPush</code>（忽略鎖鍵）若 OK 表示 token / groupId 都對，問題是 trigger 沒觸發 → 「觸發條件」確認 <code>checkAndSendDueReports</code> 仍存在</li>
+<li id="pragma-line-604">☐ 若鎖鍵被誤設導致同日不會再送，跑 <code>clearReportSentFlag()</code> 清除</li>
+</ul>
+<h3 id="q14-2v11"><a id="pragma-line-606"></a>Q14-2：v11 日報想換 / 取消推送</h3>
+<ul id="pragma-line-607">
+<li id="pragma-line-607">換群組：刪 <code>LINE_ADMIN_GROUP_ID</code> → 重設新 groupId（重做 Step 11-2）</li>
+<li id="pragma-line-608">暫停推送：「觸發條件」→ 找 <code>checkAndSendDueReports</code> → 右側 ⋮ → <strong>刪除</strong>
+<ul id="pragma-line-609">
+<li id="pragma-line-609">重新啟用：再跑一次 <code>setupV11ReportTrigger</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="q15"><a id="pragma-line-611"></a>Q15：菜單想要「強制把某日設為不供應某餐別」</h3>
+<ul id="pragma-line-612">
+<li id="pragma-line-612">在管理頁「每日餐點維護」→ 適用日期選該日 → 把該餐別欄位<strong>清空</strong> → 儲存當日菜單</li>
+<li id="pragma-line-613">系統會在 Menu 工作表寫入該日該餐別為空字串（不再 fallback）</li>
+<li id="pragma-line-614">訂餐頁該餐別會自動消失於下拉選單</li>
+</ul>
+<hr id="pragma-line-616">
+<h1 id="section-4"><a id="pragma-line-618"></a>維護與備份建議</h1>
+<ul id="pragma-line-620">
+<li id="pragma-line-620"><strong>每月備份</strong>：試算表 → <strong>檔案</strong> → <strong>下載</strong> → <strong>Excel (.xlsx)</strong>，存到本機</li>
+<li id="pragma-line-621"><strong>換 Bot</strong>：重新核發 Access Token，更新 GAS 指令碼屬性 <code>LINE_CHANNEL_ACCESS_TOKEN</code> 即可，<strong>不需重新部署</strong></li>
+<li id="pragma-line-622"><strong>要查歷史訂單</strong>：直接打開試算表 <code>Orders</code> 工作表查詢、篩選、樞紐分析
+<ul id="pragma-line-623">
+<li id="pragma-line-623">K 欄訂單編號可作為唯一識別；L 欄「已領餐」可篩選未領訂單回查</li>
+</ul>
+</li>
+<li id="pragma-line-624"><strong>要匯出某日訂單給廚房</strong>：在 <code>Orders</code> 工作表用上方「資料 → 建立篩選器」依日期篩選，列印或複製貼到 Word</li>
+<li id="pragma-line-625"><strong>歷史菜單追溯</strong>：<code>Menu</code> 工作表保留所有日期的菜單紀錄；要看某日歷史菜單，用 A 欄篩日期即可</li>
+</ul>
+<hr id="pragma-line-627">
+<h1 id="section-5"><a id="pragma-line-629"></a>附錄：檢查清單（按順序勾選）</h1>
+<ul id="pragma-line-631" class="contains-task-list">
+<li id="pragma-line-631" class="task-list-item"><input disabled="disabled" type="checkbox"> 1. 建立 <code>EMO 點餐</code> 試算表，記下 Sheet ID</li>
+<li id="pragma-line-632" class="task-list-item"><input disabled="disabled" type="checkbox"> 2. Apps Script 貼入 <code>Code.gs</code> + <code>appsscript.json</code></li>
+<li id="pragma-line-633" class="task-list-item"><input disabled="disabled" type="checkbox"> 3. 設定 <code>SHEET_ID</code> 指令碼屬性</li>
+<li id="pragma-line-634" class="task-list-item"><input disabled="disabled" type="checkbox"> 4. 執行 <code>setupSheets</code>，3 個工作表自動建立（Orders / Menu / Admins）</li>
+<li id="pragma-line-635" class="task-list-item"><input disabled="disabled" type="checkbox"> 5. 建立 LINE Login Channel，記下 Channel ID</li>
+<li id="pragma-line-636" class="task-list-item"><input disabled="disabled" type="checkbox"> 6. 設定 <code>LINE_CHANNEL_ID</code> 指令碼屬性</li>
+<li id="pragma-line-637" class="task-list-item"><input disabled="disabled" type="checkbox"> 7. 建立 LINE Messaging API Channel，發 Access Token</li>
+<li id="pragma-line-638" class="task-list-item"><input disabled="disabled" type="checkbox"> 8. 設定 <code>LINE_CHANNEL_ACCESS_TOKEN</code> 指令碼屬性</li>
+<li id="pragma-line-639" class="task-list-item"><input disabled="disabled" type="checkbox"> 9. OA Manager：關閉自動回應、<strong>開啟「允許加入群組」</strong>、開啟 Webhook</li>
+<li id="pragma-line-640" class="task-list-item"><input disabled="disabled" type="checkbox"> 10. 建立 GitHub repo <code>emo-liff</code>，上傳 liff/ 檔案</li>
+<li id="pragma-line-641" class="task-list-item"><input disabled="disabled" type="checkbox"> 11. 啟用 GitHub Pages，記下兩個網址</li>
+<li id="pragma-line-642" class="task-list-item"><input disabled="disabled" type="checkbox"> 12. 建立兩個 LIFF（訂餐、管理），記下 LIFF ID</li>
+<li id="pragma-line-643" class="task-list-item"><input disabled="disabled" type="checkbox"> 13. 部署 GAS Web App，記下 /exec 網址</li>
+<li id="pragma-line-644" class="task-list-item"><input disabled="disabled" type="checkbox"> 14. 修改 <code>order.html</code>、<code>admin.html</code> 填入 ID</li>
+<li id="pragma-line-645" class="task-list-item"><input disabled="disabled" type="checkbox"> 15. 重新上傳到 GitHub</li>
+<li id="pragma-line-646" class="task-list-item"><input disabled="disabled" type="checkbox"> 16. Webhook URL 回填 /exec</li>
+<li id="pragma-line-647" class="task-list-item"><input disabled="disabled" type="checkbox"> 17. 取得自己 userId，登錄 <code>Admins</code></li>
+<li id="pragma-line-648" class="task-list-item"><input disabled="disabled" type="checkbox"> 18. 廚房群組邀請 Bot、群內發訊息 → <code>LINE_KITCHEN_GROUP_ID</code> 自動寫入</li>
+<li id="pragma-line-649" class="task-list-item"><input disabled="disabled" type="checkbox"> 19. <code>testKitchenGroupPush</code> 測試成功（HTTP 200，群組收到訊息）</li>
+<li id="pragma-line-650" class="task-list-item"><input disabled="disabled" type="checkbox"> 20. 端對端測試：訂單成立、訂購人收到含編號 + QR 的 Flex 卡片</li>
+<li id="pragma-line-651" class="task-list-item"><input disabled="disabled" type="checkbox"> 21. 端對端測試：廚房群組收到「🍱 新訂單」卡片</li>
+<li id="pragma-line-652" class="task-list-item"><input disabled="disabled" type="checkbox"> 22. 端對端測試：管理頁三餐 meal-row 各自「標記已領」、9 格統計即時更新</li>
+<li id="pragma-line-653" class="task-list-item"><input disabled="disabled" type="checkbox"> 23. 端對端測試：管理頁可預設明日菜單，訂餐頁切換日期會看到對應菜單</li>
+<li id="pragma-line-654" class="task-list-item"><input disabled="disabled" type="checkbox"> 24. <strong>v11：管理 LINE 群組邀請 Bot</strong>（或沿用廚房群組）</li>
+<li id="pragma-line-655" class="task-list-item"><input disabled="disabled" type="checkbox"> 25. <strong>v11：設定 <code>LINE_ADMIN_GROUP_ID</code> 指令碼屬性</strong>（若管理群與廚房群分開）</li>
+<li id="pragma-line-656" class="task-list-item"><input disabled="disabled" type="checkbox"> 26. <strong>v11：執行 <code>setupV11ReportTrigger</code></strong>，建立每 5 分鐘日報 / 月報 trigger</li>
+<li id="pragma-line-657" class="task-list-item"><input disabled="disabled" type="checkbox"> 27. <strong>v11：<code>testDailyReportPush</code> 測試成功</strong>（管理群收到「📊 EMO 日報」訊息）</li>
+<li id="pragma-line-658" class="task-list-item"><input disabled="disabled" type="checkbox"> 28. <strong>v11：<code>testMonthlyReportPush</code> 測試成功</strong>（管理群收到「📊 EMO 月報」訊息）</li>
+<li id="pragma-line-659" class="task-list-item"><input disabled="disabled" type="checkbox"> 29. 在 LINE Console 把 Webhook 切回關閉（可選）</li>
+<li id="pragma-line-660" class="task-list-item"><input disabled="disabled" type="checkbox"> 30. 印出 QR Code 立牌</li>
+<li id="pragma-line-661" class="task-list-item"><input disabled="disabled" type="checkbox"> 31. 完成 🎉</li>
+</ul>
+</div>
+
+<div id="plugin-contextmenu-container" class="selectNone"><ul id="plugin-contextmenu-2917bd4c-bde3-854f-a14f-3ba21fef5376" class="plugin-contextmenu" data-plugin-is-contextmenu="true" style="display: none;"><li class="menuitem disabled" tabindex="1" role="menuitem" id="Copy" data-plugin-contextmenu-item-type="command" aria-disabled="true"><img class="icon" style="visibility: hidden;"><div class="main">Copy</div></li><li class="menuitem" tabindex="2" role="menuitem" id="Save" data-plugin-contextmenu-item-type="command"><img class="icon" style="visibility: hidden;"><div class="main">Save As HTML... </div></li><li class="menuitem" tabindex="3" role="menuitem" id="Print" data-plugin-contextmenu-item-type="command"><img class="icon" style="visibility: hidden;"><div class="main">Print HTML...</div></li></ul></div></body>

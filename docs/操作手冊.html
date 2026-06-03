@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>EMO 電子點餐系統 — 操作手冊 (v5)</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 18mm 16mm;
+  }
+  html, body {
+    font-family: "Microsoft JhengHei UI", "Microsoft JhengHei", "PingFang TC",
+                 "Noto Sans CJK TC", "Noto Sans TC", "Segoe UI", sans-serif;
+    color: #1a1a1a;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    background: #fff;
+    margin: 0;
+  }
+  .cover {
+    page-break-after: always;
+    padding: 60mm 0 0 0;
+    text-align: center;
+  }
+  .cover h1 {
+    font-size: 28pt;
+    margin: 0 0 8mm 0;
+    color: #0d3b66;
+    border: none;
+  }
+  .cover .sub {
+    font-size: 14pt;
+    color: #4b5d72;
+    margin-bottom: 30mm;
+  }
+  .cover .meta {
+    font-size: 10.5pt;
+    color: #6b7280;
+    line-height: 2;
+  }
+  .toc {
+    page-break-after: always;
+  }
+  .toc h2 { margin-top: 0; }
+  .toc ol { padding-left: 1.4em; }
+  .toc li { margin: 0.25em 0; }
+  h1 {
+    font-size: 18pt;
+    color: #0d3b66;
+    border-bottom: 2pt solid #0d3b66;
+    padding-bottom: 4pt;
+    margin: 14pt 0 10pt 0;
+    page-break-before: always;
+    page-break-after: avoid;
+  }
+  h1:first-of-type, .cover h1, .toc h1 { page-break-before: auto; }
+  h2 {
+    font-size: 14pt;
+    color: #1f4e79;
+    border-left: 4pt solid #1f4e79;
+    padding-left: 8pt;
+    margin: 18pt 0 8pt 0;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    color: #2c3e50;
+    margin: 14pt 0 6pt 0;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 11pt;
+    color: #2c3e50;
+    margin: 10pt 0 4pt 0;
+    page-break-after: avoid;
+  }
+  p { margin: 4pt 0; }
+  ul, ol { margin: 4pt 0 4pt 0; padding-left: 1.6em; }
+  li { margin: 2pt 0; }
+  ul.checklist { list-style: none; padding-left: 1.2em; }
+  ul.checklist li::before {
+    content: "☐ ";
+    color: #6b7280;
+    margin-right: 4pt;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8pt 0;
+    font-size: 10pt;
+    page-break-inside: auto;
+  }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  th, td {
+    border: 0.5pt solid #b6bdc6;
+    padding: 4pt 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #e8eef5;
+    color: #0d3b66;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) td {
+    background: #f7f9fc;
+  }
+  code {
+    font-family: "Consolas", "Cascadia Mono", "Courier New", monospace;
+    background: #f0f2f5;
+    color: #b3261e;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 9.5pt;
+  }
+  pre {
+    background: #f5f7fa;
+    border: 0.5pt solid #d3d8df;
+    border-radius: 4pt;
+    padding: 8pt 10pt;
+    font-size: 9.5pt;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  blockquote {
+    border-left: 3pt solid #f59e0b;
+    background: #fffaf0;
+    margin: 8pt 0;
+    padding: 6pt 10pt;
+    color: #3b2f12;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 2pt 0; }
+  .note {
+    border-left: 3pt solid #2563eb;
+    background: #eff4fb;
+    padding: 6pt 10pt;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+  }
+  .warn {
+    border-left: 3pt solid #dc2626;
+    background: #fdecec;
+    padding: 6pt 10pt;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+  }
+  hr {
+    border: none;
+    border-top: 0.5pt dashed #b6bdc6;
+    margin: 14pt 0;
+  }
+  a { color: #0d3b66; text-decoration: none; }
+  strong { color: #0d3b66; }
+  .role-tag {
+    display: inline-block;
+    background: #0d3b66;
+    color: #fff;
+    border-radius: 10pt;
+    padding: 1pt 8pt;
+    font-size: 9pt;
+    margin-right: 4pt;
+  }
+  .footer-note {
+    margin-top: 24pt;
+    padding-top: 8pt;
+    border-top: 0.5pt solid #b6bdc6;
+    color: #6b7280;
+    font-size: 9.5pt;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 封面 ===================== -->
+<section class="cover">
+  <h1>EMO 電子點餐系統</h1>
+  <div class="sub">操 作 手 冊（v11）</div>
+  <div class="meta">
+    <div>適用對象：訂餐者 / 管理者 / 廚房接單人員 / 管理通知接收人</div>
+    <div>對應系統版本：v11（含每日 18:00 統計日報、每月 1 日 09:00 月報自動推送至管理 LINE 群組）</div>
+    <div>文件日期：2026-05-21</div>
+  </div>
+</section>
+
+<!-- ===================== 目錄 ===================== -->
+<section class="toc">
+  <h2>目錄</h2>
+  <ol>
+    <li>第一部分　訂餐者操作
+      <ol>
+        <li>第一次使用前的準備</li>
+        <li>送出一筆訂單</li>
+        <li>訂單編號的用途</li>
+        <li>中餐 A/B/C 售完怎麼辦</li>
+        <li><strong>進單結單時間（v5 新增）</strong></li>
+        <li>預訂明天 / 之後幾天的餐</li>
+        <li>訂單送出後想修改 / 取消</li>
+        <li><strong>棄單規則與停權規則（v5 新增）</strong></li>
+        <li>訂餐者常見問題</li>
+      </ol>
+    </li>
+    <li>第二部分　管理者操作
+      <ol>
+        <li>進入管理頁</li>
+        <li>每日餐點維護</li>
+        <li>當日訂單統計</li>
+        <li>領餐標記（v4 重點）</li>
+        <li>領餐快速查詢</li>
+        <li>中餐 A/B/C 每日上限</li>
+        <li>直接編輯試算表（進階）</li>
+        <li>取得新成員的 LINE userId</li>
+        <li><strong>棄單與停權（v5 新增）</strong></li>
+        <li>每月維護建議</li>
+        <li><strong>統計日報 / 月報查詢與匯出（v11 新增）</strong></li>
+      </ol>
+    </li>
+    <li>第三部分　廚房接單人員
+      <ol>
+        <li>第一次使用</li>
+        <li>接單通知</li>
+        <li>沒收到通知怎麼辦</li>
+        <li>暫停接單通知</li>
+        <li><strong>每餐結單彙整訊息（v10 新增）</strong></li>
+      </ol>
+    </li>
+    <li><strong>第四部分　管理 LINE 群組收件人（v11 新增）</strong>
+      <ol>
+        <li>您會收到什麼</li>
+        <li>收到後可以做什麼</li>
+        <li>沒收到訊息怎麼辦</li>
+        <li>想加 / 退管理群組</li>
+      </ol>
+    </li>
+    <li>附錄 A　角色快查表</li>
+    <li>附錄 B　常見錯誤訊息對照</li>
+    <li>附錄 C　日常一日流程（管理員視角）</li>
+  </ol>
+  <div class="note">
+    本手冊說明<strong>日常使用方式</strong>，不含安裝部署。安裝請見《安裝手冊》；版本升級請見《更新手冊》。
+  </div>
+</section>
+
+<!-- ===================== 第一部分 ===================== -->
+<h1>第一部分　訂餐者操作</h1>
+
+<h2>1.1 第一次使用前的準備（只需做一次）</h2>
+
+<ol>
+  <li>
+    <strong>加 EMO 點餐 Bot 為 LINE 好友</strong>
+    <ul>
+      <li>掃描單位提供的 Bot QR Code，或點開好友邀請連結</li>
+      <li>加好友後不需傳任何訊息，<strong>只是為了讓系統能把訂單通知推給您</strong></li>
+      <li>⚠️ 若沒加好友，訂單仍會成立，但您<strong>收不到 LINE 確認卡片</strong></li>
+    </ul>
+  </li>
+  <li>
+    <strong>第一次進入訂餐頁</strong>
+    <ul>
+      <li>用 LINE 掃描現場貼出的「訂餐 QR Code」</li>
+      <li>第一次會跳「允許 LINE 帳號授權」→ 按 <strong>允許</strong></li>
+      <li>之後再進入就直接顯示訂餐畫面，不會再問</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="note">
+  💡 訂餐網址固定為 <code>https://liff.line.me/&lt;訂餐 LIFF ID&gt;</code>。建議<strong>用 LINE 內建瀏覽器開啟</strong>，外部瀏覽器無法登入。
+</div>
+
+<h2>1.2 送出一筆訂單</h2>
+
+<p>進入訂餐頁後，依下列欄位填寫：</p>
+
+<table>
+  <thead>
+    <tr><th>欄位</th><th style="width:8%;text-align:center">必填</th><th>說明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>單位</td><td style="text-align:center">✅</td><td>您所屬部門 / 分隊（例：第一勤務組）</td></tr>
+    <tr><td>訂購人</td><td style="text-align:center">✅</td><td>您的姓名</td></tr>
+    <tr><td>警用電話</td><td style="text-align:center">✅</td><td>內線或聯絡電話</td></tr>
+    <tr><td>訂購日期</td><td style="text-align:center">✅</td><td><strong>預設今天</strong>；可改成隔日或之後日期預訂</td></tr>
+    <tr><td>早餐</td><td style="text-align:center">選填</td><td>下拉選單僅顯示<strong>該日</strong>已上架的早餐</td></tr>
+    <tr><td>中餐便當</td><td style="text-align:center">選填</td><td>A / B / C 三選一，<strong>每餐每日上限 40 份</strong>；剩餘量會顯示在欄位下方</td></tr>
+    <tr><td>晚餐便當</td><td style="text-align:center">選填</td><td>同早餐</td></tr>
+    <tr><td>備註</td><td style="text-align:center">選填</td><td>特殊需求、過敏、辣度等</td></tr>
+  </tbody>
+</table>
+
+<p>按 <strong>送出訂單</strong> 後：</p>
+
+<ol>
+  <li>畫面出現綠字：「訂單已送出，感謝您！　您的訂單編號：<code>YYYYMMDD-NNN</code>（請於領餐時出示）」</li>
+  <li>幾秒內 LINE 會收到「✅ 訂單已收到」綠色卡片，<strong>頂端有訂單編號徽章</strong></li>
+  <li>表單會自動清空，可立即為下一位同仁再送一筆</li>
+</ol>
+
+<div class="warn">
+  ⚠️ <strong>每送一筆是一個獨立訂單</strong>。若一人要點多餐多日，請逐筆送出。
+</div>
+
+<h2>1.3 訂單編號的用途</h2>
+
+<p>格式：<code>YYYYMMDD-NNN</code>（例如 <code>20260519-007</code>）</p>
+<ul>
+  <li><code>YYYYMMDD</code> = 訂購日期</li>
+  <li><code>NNN</code> = 該日第幾筆訂單（從 001 起跳）</li>
+</ul>
+
+<p><strong>領餐時請出示此編號</strong>（LINE 卡片上即可看到），管理員會憑此編號核對並標記領餐狀態。</p>
+
+<h3>QR 條碼（v5.1 新增）</h3>
+
+<p>LINE 訂單確認卡片<strong>頂端</strong>會附上<strong>訂單編號 QR Code</strong>：</p>
+<ul>
+  <li>領餐時把手機畫面亮出 → 管理員用 LIFF 內建相機<strong>直接掃描</strong>即可帶入編號，免唸出長串數字</li>
+  <li>即使您看不到 QR（網路問題、舊版 LINE），改用編號口頭告知也可</li>
+  <li>QR 內容就是訂單編號文字本身，不含任何隱私資訊</li>
+</ul>
+
+<blockquote>編號永久寫入試算表，事後查帳、對單都靠它。</blockquote>
+
+<h2>1.4 中餐 A/B/C 售完怎麼辦</h2>
+
+<p>下拉選單會顯示 <code>（剩 N）</code>：</p>
+<ul>
+  <li>剩餘量 &gt; 0：可正常選</li>
+  <li>剩餘量 = 0：該選項變灰、無法點選</li>
+  <li>想吃的便當售完了：請改選其他餐別，或聯絡管理員確認是否能加單</li>
+</ul>
+
+<h2>1.5 進單結單時間 ⏰</h2>
+
+<p>每日三餐的<strong>訂單最晚截止時間</strong>：</p>
+
+<table>
+  <thead>
+    <tr><th>餐別</th><th>進單結單時間</th><th>取餐時段</th><th>棄單時間（領餐 deadline）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>早餐</td><td><strong>07:00</strong></td><td>07:00–08:00</td><td>08:00</td></tr>
+    <tr><td>午餐（A/B/C）</td><td><strong>10:30</strong></td><td>11:30–12:30</td><td>12:30</td></tr>
+    <tr><td>晚餐</td><td><strong>16:00</strong></td><td>16:50–18:00</td><td>18:00</td></tr>
+  </tbody>
+</table>
+
+<ul>
+  <li>訂購日期 = <strong>今天</strong> 且 過了該餐結單時間 → 該餐選項變灰、不可選；強制送出會收到「當日進單已結束」訊息</li>
+  <li>訂購日期 = <strong>未來日期</strong> → 全部時段都可以訂（cutoff 還沒到）</li>
+  <li>訂購日期 = <strong>過去日期</strong> → 一律拒收（cutoff 早過了）</li>
+</ul>
+
+<div class="note">
+  💡 v7 起：<strong>棄單時間 = 取餐時段結束</strong>，語意統一為「領餐時段結束仍未領 → 棄單」。早餐結單 07:00 之後即進入取餐時段。
+</div>
+
+<h2>1.6 預訂明天 / 之後幾天的餐</h2>
+
+<p>把「訂購日期」改成未來日期 → 下拉選單會自動切換成<strong>該日的菜單</strong>。</p>
+<ul>
+  <li>若該日管理員尚未設定 → 系統自動沿用最近一個有設定的日期作為菜單</li>
+  <li>若某餐別不供應該日 → 該選項不會出現</li>
+</ul>
+
+<h2>1.7 訂單送出後想修改 / 取消</h2>
+
+<p>訂餐頁<strong>不提供</strong>自助修改功能。請：</p>
+<ol>
+  <li>紀錄您的訂單編號（送出後 LINE 通知卡片底部會再提醒一次）</li>
+  <li>直接聯絡管理員 → 由管理員到試算表手動修正或刪除該列</li>
+  <li>如已誤訂，建議<strong>愈早通知愈好</strong>（廚房可能已備餐；逾時未取消會被計為棄單，詳見 1.7）</li>
+</ol>
+
+<div class="note">
+  💡 v5 起，訂購人收到的 LINE 確認卡片底部會固定附上「需修改 / 取消請聯絡管理員」與棄單時間規則，方便您隨時翻看。
+</div>
+
+<h2>1.8 棄單規則與停權規則 ⚠️</h2>
+
+<p>為避免空訂無人領餐造成廚餘浪費，系統自動執行下列規則：</p>
+
+<h3>棄單判定（系統自動偵測，無需管理員操作）</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:18%">餐別</th><th>棄單時間（= 取餐時段結束）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>早餐</td><td>訂購日當日 <strong>08:00</strong> 過後仍<strong>未領、未取消</strong></td></tr>
+    <tr><td>午餐（A/B/C）</td><td>訂購日當日 <strong>12:30</strong> 過後仍<strong>未領、未取消</strong></td></tr>
+    <tr><td>晚餐</td><td>訂購日當日 <strong>18:00</strong> 過後仍<strong>未領、未取消</strong></td></tr>
+  </tbody>
+</table>
+
+<ul>
+  <li>一張訂單若同時點了早、中、晚，<strong>各餐獨立判定</strong>：只有沒去領的那餐被計為棄單</li>
+  <li>系統每 10 分鐘自動掃描一次，依訂購日期 + 時段時間判斷</li>
+  <li>已標記領餐後又被取消 → 若已過時段，下次掃描仍會被判為棄單</li>
+</ul>
+
+<h3>停權規則</h3>
+
+<div class="warn">
+  <strong>過去 30 天內棄單超過 3 次</strong>（即第 4 次棄單發生時）→ <strong>立刻停止線上訂餐 30 天</strong>。
+</div>
+
+<ul>
+  <li>解封日 = 「最新一次棄單時間」+ 30 天</li>
+  <li>期間若您再嘗試下單，畫面會顯示：
+    <blockquote>您最近 30 天內已棄單 N 次（規定超過 3 次即停權），線上訂餐已暫停至 YYYY-MM-DD。如有疑問請聯絡管理員。</blockquote>
+  </li>
+  <li>停權期間請改用現場登記方式，或聯絡管理員代訂</li>
+</ul>
+
+<h3>避免棄單的建議</h3>
+<ul>
+  <li>確認當日確實會用餐再下單</li>
+  <li>改變主意或臨時有事，<strong>請在用餐時段前聯絡管理員取消</strong></li>
+  <li>若已知會晚到，可請管理員預留並先標記領餐</li>
+</ul>
+
+<h2>1.9 訂餐者常見問題</h2>
+
+<h3>Q1：送出後沒收到 LINE 卡片？</h3>
+<ul>
+  <li>您加 Bot 好友了嗎？沒加就收不到推播</li>
+  <li>試算表的訂單還是會成立（管理員可從 Sheet 確認）</li>
+  <li>解法：補加 Bot 好友 → 下一筆訂單會正常收到通知</li>
+</ul>
+
+<h3>Q2：畫面顯示「載入菜單失敗」？</h3>
+<ul>
+  <li>通常是網路問題或當日菜單尚未設定</li>
+  <li>重新整理頁面（LIFF 右上 ⋯ → 重新載入）</li>
+  <li>仍不行請通知管理員</li>
+</ul>
+
+<h3>Q3：訂單編號沒出現在畫面上？</h3>
+<ul>
+  <li>多半是看到舊版快取頁面 → LIFF 右上 ⋯ → 重新載入</li>
+  <li>即使畫面沒顯示，編號<strong>已寫入試算表 K 欄</strong>，LINE 卡片上也看得到</li>
+</ul>
+
+<h3>Q4：填到一半 LINE 跳掉？</h3>
+<ul>
+  <li>重新開啟 LIFF 即可，填寫內容<strong>不會自動保留</strong>，需重填</li>
+  <li>建議資料較長時先在備忘錄寫好再貼上</li>
+</ul>
+
+<h3>Q5：訂餐頁某餐選項變灰，旁邊寫「（已截止）」？</h3>
+<ul>
+  <li>該餐當日結單時間已過（早 07:00 / 午 10:30 / 晚 16:00）</li>
+  <li>解法：把「訂購日期」改成明天 → 該選項會恢復可點</li>
+</ul>
+
+<h3>Q6：送出時顯示「當日進單已結束」？</h3>
+<ul>
+  <li>同 Q5；中午後試圖訂今天的午餐就會看到</li>
+  <li>改選明天即可正常下單</li>
+</ul>
+
+<h3>Q7：送出訂單時顯示「線上訂餐已暫停至 YYYY-MM-DD」？</h3>
+<ul>
+  <li>您過去 30 天內棄單已超過 3 次，依規定停權 30 天</li>
+  <li>期間請改用現場登記或聯絡管理員代訂</li>
+  <li>待解封日（畫面顯示）之後即可正常使用</li>
+  <li>若認為判定有誤，請聯絡管理員到試算表查 <code>Orders</code> 工作表 R/S/T 三欄（早/中/晚餐棄單）</li>
+</ul>
+
+<!-- ===================== 第二部分 ===================== -->
+<h1>第二部分　管理者操作</h1>
+
+<h2>2.1 進入管理頁</h2>
+
+<ul>
+  <li>網址：<code>https://liff.line.me/&lt;管理 LIFF ID&gt;</code></li>
+  <li>建議用 LINE 內建瀏覽器開啟</li>
+  <li>進入後需通過白名單驗證：您的 LINE userId 須在試算表 <code>Admins</code> 工作表中</li>
+  <li>顯示「無管理員權限」代表 userId 沒在白名單 → 請主要管理員協助加入</li>
+</ul>
+
+<p>管理頁畫面由上到下分為四區：</p>
+<ol>
+  <li><strong>當日訂單統計</strong>（含訂單明細與領餐標記）</li>
+  <li><strong>領餐快速查詢</strong>（憑訂單編號逐筆對單用）</li>
+  <li><strong>每日餐點維護</strong></li>
+  <li>「回訂餐頁」連結</li>
+</ol>
+
+<h2>2.2 每日餐點維護</h2>
+
+<p>這是您<strong>每天最常做的事</strong>。</p>
+
+<h3>平日操作流程</h3>
+<ol>
+  <li><strong>適用日期</strong>：預設今天；要設定未來日期就直接改</li>
+  <li>點 <strong>載入該日菜單</strong>
+    <ul>
+      <li>該日已有資料 → 帶入既有菜單供修改</li>
+      <li>該日尚無資料 → 系統會把<strong>最近一個更早日期</strong>的菜單帶進來作為基底</li>
+    </ul>
+  </li>
+  <li>修改五個欄位（早餐 / 中餐 A/B/C / 晚餐）
+    <ul>
+      <li><strong>欄位留空</strong> = 該餐別當日<strong>不供應</strong>，訂餐頁下拉選單會自動隱藏該項</li>
+      <li>例：今天沒有 C 餐 → 「中餐 C」欄清空 → 訂餐頁只剩 A、B</li>
+    </ul>
+  </li>
+  <li>按 <strong>儲存當日菜單</strong>
+    <ul>
+      <li>出現綠字「已更新 YYYY-MM-DD 的菜單」即成功</li>
+    </ul>
+  </li>
+  <li>上方小字「當日已訂｜A x／B x／C x（上限 40）」顯示<strong>該日中餐已被訂走的份數</strong>，可即時掌握剩餘量</li>
+</ol>
+
+<h3>從歷史菜單快速選（v9 新增）</h3>
+<p>每個輸入欄都附<strong>歷史菜單下拉</strong>，過去用過的所有名稱都會出現在裡面，<strong>最近使用的排最前</strong>。</p>
+<ul>
+  <li><strong>點輸入欄</strong> → 跳出該餐別的歷史菜名下拉清單，直接點選即可填入</li>
+  <li><strong>打字過濾</strong> → 例如打「滷」，下拉會即時縮到只剩含「滷」的選項</li>
+  <li><strong>想用新菜名</strong> → 直接輸入新名稱，不必選下拉</li>
+  <li><strong>儲存後</strong> → 新輸入的菜名會立刻加入下拉，下次可直接點選</li>
+</ul>
+<div class="note">
+  💡 歷史是依「餐別」分開的：早餐欄只看到歷史早餐、中餐 A 只看到歷史中餐 A，避免混淆。<br>
+  💡 歷史菜單<strong>永久保留</strong>在 <code>Menu</code> 工作表，永遠不會自動清理（每天每餐別一列，可到試算表查歷史紀錄）。
+</div>
+
+<h3>預先排好整週菜單</h3>
+<ol>
+  <li>把日期切到明天 → 載入 → 修改 → 儲存</li>
+  <li>重複到週六、週日</li>
+  <li>每天獨立保存，<strong>歷史不會被覆寫</strong></li>
+</ol>
+
+<h3>重要規則</h3>
+<ul>
+  <li><strong>同一日期 + 同一餐別</strong>會覆蓋既有資料；不同日期完全獨立</li>
+  <li><strong>某日未設定的餐別自動沿用最近一個更早日期</strong>（fallback 行為）
+    <ul>
+      <li>例：上週五早餐是「飯糰」，本週一早餐未設定 → 訂餐頁本週一早餐顯示「飯糰」</li>
+      <li>想讓某日「明確不供應某餐」：把該欄清空後儲存（會寫入空字串，<strong>不再 fallback</strong>）</li>
+    </ul>
+  </li>
+  <li>修改菜單<strong>不影響已送出的訂單</strong></li>
+</ul>
+
+<h2>2.3 當日訂單統計</h2>
+
+<h3>查詢</h3>
+<ol>
+  <li><strong>日期</strong>：預設今天</li>
+  <li>點 <strong>查詢</strong></li>
+</ol>
+
+<h3>看 9 格統計卡片</h3>
+<table>
+  <thead>
+    <tr><th style="width:30%">區塊</th><th>意義</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>總筆數</td><td>該日訂單列數（一人多餐算一筆）</td></tr>
+    <tr><td>早餐 / 中餐 A / 中餐 B / 中餐 C / 晚餐</td><td>各餐別<strong>訂購份數</strong></td></tr>
+    <tr><td>早餐已領 <code>x/y</code></td><td>早餐已領 x 份 / 訂購 y 份</td></tr>
+    <tr><td>中餐已領 <code>x/y</code></td><td>中餐 A+B+C 合計已領 x 份 / 訂購 y 份</td></tr>
+    <tr><td>晚餐已領 <code>x/y</code></td><td>同上</td></tr>
+  </tbody>
+</table>
+
+<blockquote>
+  三個「已領」欄位是 v4 起的新設計：<strong>早 / 中 / 晚分開計算</strong>。常見情境：早餐都領完了、中餐還有兩單沒來拿、晚餐還沒到領餐時間。
+</blockquote>
+
+<h3>看訂單明細</h3>
+<ul>
+  <li>折疊區「訂單明細 (N 筆)」可展開逐筆檢視</li>
+  <li>每張訂單卡片：
+    <ul>
+      <li><strong>左上角</strong>：訂單編號（深藍徽章）</li>
+      <li><strong>右側</strong>：單位 ｜ 訂購人 ｜ 電話</li>
+      <li><strong>三列餐點</strong>（早 / 午 / 晚）：餐名 + 已領狀態徽章 + 標記按鈕</li>
+      <li>有備註會在下方以淺色塊顯示</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>只看未領餐</h3>
+<ul>
+  <li>勾選 <strong>只看未領餐</strong> → 列表只顯示「<strong>任一餐尚未領</strong>」的訂單</li>
+  <li>用途：收餐尾聲時，把這個過濾打開就一眼看到誰還沒來</li>
+</ul>
+
+<h2>2.4 領餐標記（v4 重點功能）</h2>
+
+<p>每張訂單卡片上<strong>每餐都有獨立的「標記已領／取消已領」按鈕</strong>：</p>
+<ul>
+  <li>點 <strong>標記已領</strong> → 該餐徽章變綠「已領 ✓」、按鈕變「取消已領」、時間戳記寫入試算表</li>
+  <li>點 <strong>取消已領</strong> → 還原為「未領」狀態，時間戳清空</li>
+  <li>上方 9 格統計<strong>即時更新</strong>，不需重新查詢</li>
+</ul>
+
+<h3>兩種典型操作模式</h3>
+
+<p><strong>模式 A：客人來櫃台領餐 → 用「領餐快速查詢」</strong></p>
+<ol>
+  <li>客人出示 LINE 卡片或唸出訂單編號</li>
+  <li>在「訂單編號」輸入框輸入（例 <code>20260519-007</code>）→ Enter</li>
+  <li>該訂單卡片顯示在下方，含三列餐點</li>
+  <li>對應領的餐別點 <strong>標記已領</strong></li>
+  <li>換下一位客人 → 編號欄位<strong>手動清空</strong>後輸入新編號（不會自動清，方便核對前一單）</li>
+</ol>
+
+<p><strong>模式 B：批次發餐 → 用訂單明細列表</strong></p>
+<ol>
+  <li>在「當日訂單統計」展開明細</li>
+  <li>勾「只看未領餐」</li>
+  <li>逐筆對人 → 點 <strong>標記已領</strong></li>
+  <li>全部處理完，未領數字應歸 0</li>
+</ol>
+
+<h2>2.5 領餐快速查詢</h2>
+
+<p>獨立區塊（在訂單統計與菜單維護中間）：</p>
+<ul>
+  <li>用途：櫃台領餐時，<strong>不必先查詢統計、不必展開明細</strong>，直接打編號就帶出該單</li>
+  <li>輸入框支援 <strong>Enter 直接送出</strong></li>
+  <li>找不到會紅字提示「查無此單」</li>
+  <li>找到後與明細卡片功能相同：可逐餐標記領餐</li>
+</ul>
+
+<div class="note">💡 訂單卡片<strong>最下方會顯示每餐的領餐時間戳</strong>，可用來核對是否重複領餐。</div>
+
+<h3>📷 掃描 QR 條碼（v5.1 新增）</h3>
+
+<p>按下「<strong>📷 掃描 QR</strong>」按鈕，會跳出 LINE 內建相機掃描器：</p>
+<ol>
+  <li>對準訂購人 LINE 卡片頂端的 QR Code</li>
+  <li>掃描成功後<strong>自動帶入訂單編號</strong>並立即查詢</li>
+  <li>該單顯示後，點對應餐別的「標記已領」即可</li>
+</ol>
+
+<div class="warn">
+  ⚠️ <strong>首次使用前</strong>：需請當初部署系統的人到 LINE Developers Console 把 <strong>管理 LIFF</strong> 的「<strong>Scan QR</strong>」開關打開（一次性設定）。<br>
+  若按鈕跳「此 LINE 版本不支援 QR 掃描」，請更新 LINE App 至最新版（iOS 10.13+ / Android 10.16+）。
+</div>
+
+<h2>2.6 中餐 A/B/C 每日上限與進單結單時間</h2>
+<ul>
+  <li>中餐每餐預設 <strong>40 份 / 天</strong>；訂滿後訂餐頁該選項變灰、無法選
+    <ul>
+      <li>想調整：見《安裝手冊》後台屬性 <code>LUNCH_DAILY_LIMIT</code>（如未設則為 40）</li>
+      <li>想<strong>單日加開</strong>：目前<strong>沒有後台介面</strong>，需手動到 GAS 改常數或重新部署</li>
+    </ul>
+  </li>
+  <li>三餐進單結單時間（v5）：早 <strong>07:00</strong> / 午 <strong>10:30</strong> / 晚 <strong>16:00</strong>
+    <ul>
+      <li>過此時間後，訂餐頁該餐選項自動變灰</li>
+      <li>規則寫在 <code>Code.gs</code> 的 <code>ORDER_CUTOFF</code> 常數中；要調整就改該常數並重新部署 GAS</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>2.7 直接編輯試算表（進階）</h2>
+
+<p>管理頁能做的事大多在 LINE LIFF 內完成，但下列情境建議直接打開 Google Sheet：</p>
+
+<table>
+  <thead>
+    <tr><th>情境</th><th style="width:18%">工作表</th><th>操作</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>新增管理員</td><td><code>Admins</code></td><td>新增一列，A 欄填 LINE userId、B 欄名字、C 欄備註</td></tr>
+    <tr><td>移除管理員</td><td><code>Admins</code></td><td>刪除整列</td></tr>
+    <tr><td>新增 / 移除廚房接單人員</td><td>（LINE 群組）</td><td>v6 起新訂單通知統一發到群組 — 直接邀請 / 踢出群組成員即可</td></tr>
+    <tr><td>修正客人打錯的單位 / 電話</td><td><code>Orders</code></td><td>找到該列直接改 B/C/D 欄</td></tr>
+    <tr><td>取消整筆訂單</td><td><code>Orders</code></td><td>刪除整列（一旦刪除無法復原，建議先用顏色標記）</td></tr>
+    <tr><td>對帳 / 月結</td><td><code>Orders</code></td><td>用「資料 → 建立篩選器」依日期、單位、訂購人篩選</td></tr>
+    <tr><td>查歷史菜單</td><td><code>Menu</code></td><td>A 欄篩日期即可</td></tr>
+  </tbody>
+</table>
+
+<blockquote>修改 <code>Admins</code> <strong>不需要重新部署 GAS</strong>，下次有人呼叫時即時生效。</blockquote>
+
+<h2>2.8 取得新成員的 LINE userId</h2>
+
+<p>要把人加進 <code>Admins</code> 前，必須先拿到他的 LINE userId（<code>U</code> 開頭的 33 字元）：</p>
+
+<p><strong>方法一（推薦）</strong></p>
+<ol>
+  <li>請對方加 Bot 好友</li>
+  <li>請對方用「訂餐」LIFF 送一筆<strong>測試訂單</strong>（單位、姓名打「測試」即可）</li>
+  <li>打開 <code>Orders</code> 工作表 → 最後幾列 → J 欄（LINE userId）</li>
+  <li>複製貼到對應的白名單工作表</li>
+  <li>測試完成後可刪除這筆測試訂單</li>
+</ol>
+
+<p><strong>方法二</strong>：請對方點開管理 LIFF 一次（會被拒絕），到 GAS「執行記錄」找到該 userId。</p>
+
+<h2>2.9 棄單與停權（v5）</h2>
+
+<p>系統會自動執行棄單偵測與訂餐者停權，<strong>管理員平日不需手動操作</strong>；本節說明判定邏輯與例外處理。</p>
+
+<h3>棄單自動判定</h3>
+<ul>
+  <li>每 10 分鐘 trigger 掃描一次</li>
+  <li>條件：訂單某餐 = 已訂購 + 未領 + 未棄單 + 訂購日期當日已過該餐 cutoff 時間</li>
+  <li>cutoff（v7：對齊取餐時段結束）：早餐 08:00 / 午餐 12:30 / 晚餐 18:00（試算表時區，預設 Asia/Taipei）</li>
+  <li>偵測完寫入 <code>Orders</code> 工作表的 <strong>R / S / T 欄</strong>（早/中/晚餐棄單，TRUE / FALSE）</li>
+</ul>
+
+<div class="warn">
+  ⚠️ 若新部署或剛升級到 v5，請到 Apps Script 編輯器執行一次 <code>setupAbandonmentTrigger</code> 建立 trigger，否則棄單欄不會自動更新。
+</div>
+
+<h3>停權自動判定</h3>
+<ul>
+  <li>在使用者<strong>下單當下</strong>即時計算</li>
+  <li>規則：過去 30 天內棄單次數 &gt; 3 → 自動拒收新訂單</li>
+  <li>解封日 = 最新一次棄單時間 + 30 天</li>
+  <li>後端回覆訊息會顯示停權原因與解封日，前端訂餐頁直接顯示</li>
+</ul>
+
+<h3>管理員例外處理</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:42%">情境</th><th>處理方式</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>訂購人因公事無法領餐，不該記為棄單</td><td>到 <code>Orders</code> 工作表找到該列，把對應的 R / S / T 欄改回 <code>FALSE</code></td></tr>
+    <tr><td>訂購人申訴停權判定有誤</td><td>同上，把該人累計到 3 次以上的棄單記錄改為 <code>FALSE</code>，下次下單即放行</td></tr>
+    <tr><td>想提前解封</td><td>找出該人最近一筆棄單，把對應的 R/S/T 欄改 <code>FALSE</code>（或直接刪除該列）</td></tr>
+    <tr><td>想查某人棄單紀錄</td><td><code>Orders</code> 工作表，J 欄篩該人 userId、R/S/T 欄篩 <code>TRUE</code></td></tr>
+    <tr><td>想暫停整個棄單機制</td><td>Apps Script → trigger 頁面 → 移除 <code>markAbandonedOrders</code> 即可（不影響既有資料）</td></tr>
+  </tbody>
+</table>
+
+<h3>試算表 Orders 欄位對照（v5）</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:14%">欄位</th><th>名稱</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>A</td><td>時間戳記</td></tr>
+    <tr><td>B</td><td>單位</td></tr>
+    <tr><td>C</td><td>訂購人</td></tr>
+    <tr><td>D</td><td>警用電話</td></tr>
+    <tr><td>E</td><td>訂購日期</td></tr>
+    <tr><td>F</td><td>早餐</td></tr>
+    <tr><td>G</td><td>中餐便當</td></tr>
+    <tr><td>H</td><td>晚餐便當</td></tr>
+    <tr><td>I</td><td>備註</td></tr>
+    <tr><td>J</td><td>LINE userId</td></tr>
+    <tr><td>K</td><td>訂單編號</td></tr>
+    <tr><td>L / M</td><td>早餐已領 / 早餐領餐時間</td></tr>
+    <tr><td>N / O</td><td>中餐已領 / 中餐領餐時間</td></tr>
+    <tr><td>P / Q</td><td>晚餐已領 / 晚餐領餐時間</td></tr>
+    <tr><td><strong>R / S / T</strong></td><td><strong>早餐棄單 / 中餐棄單 / 晚餐棄單</strong>（v5 新增）</td></tr>
+  </tbody>
+</table>
+
+<h2>2.10 每月維護建議</h2>
+<ol>
+  <li><strong>月底備份試算表</strong>
+    <ul>
+      <li>試算表 → <strong>檔案 → 下載 → Microsoft Excel (.xlsx)</strong></li>
+      <li>存到本機 / 雲端，檔名含當月份（例 <code>EMO-2026-05.xlsx</code>）</li>
+    </ul>
+  </li>
+  <li><strong>舊訂單瘦身</strong>（半年以上）
+    <ul><li>不建議直接刪，可另開「Orders_2025」工作表搬過去封存</li></ul>
+  </li>
+  <li><strong>檢查廚房群組成員</strong>：離職人員是否已退出群組</li>
+  <li><strong>檢查管理員名單</strong>：是否有交接需要更新</li>
+  <li><strong>v11 月報核對</strong>：每月 1 日 09:00 後檢查管理群是否收到上月月報；如未收到，依《更新手冊》F-10 排查</li>
+</ol>
+
+<h2>2.11 統計日報 / 月報查詢與匯出（v11 新增）</h2>
+
+<p>v11 起，系統自動於 <strong>每日 18:00 後 5 分鐘內</strong> 推送當日日報、<strong>每月 1 日 09:00</strong> 推送前月月報至管理 LINE 群組。
+管理員亦可於管理 LIFF 隨時查詢任意日期 / 月份的報表並匯出 Excel。</p>
+
+<h3>自動推送的時機</h3>
+<table>
+  <thead>
+    <tr><th>報表</th><th>觸發時間</th><th>推送內容</th><th>鎖鍵</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>統計日報</td>
+      <td>每日 <strong>18:00</strong>（晚餐領餐時段結束）後，由 5 分鐘 trigger 偵測推送</td>
+      <td>訂單總計、有效 / 已取消、三餐 訂 / 領 / 棄、中餐 A/B/C、領餐率、棄單率、訂購單位 TOP 5</td>
+      <td><code>DAILY_REPORT_SENT_{date}</code></td>
+    </tr>
+    <tr>
+      <td>月報表</td>
+      <td>每月 <strong>1 日 09:00</strong> 後</td>
+      <td>涵蓋工作日、累計訂單、三餐累計、領餐率、棄單率、單位 TOP 10、棄單紀錄 TOP 5</td>
+      <td><code>MONTHLY_REPORT_SENT_{yyyy-MM}</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>失敗會自動於下次 5 分鐘 trigger 重試；同日 / 同月不會重複送。</blockquote>
+
+<h3>訊息範例（管理群組收到的純文字）</h3>
+<pre><code>📊 EMO 日報 (2026-05-21)
+產出時間 18:02:14
+───────────────
+📈 訂單總計：87 筆（有效 84 / 已取消 3）
+───────────────
+🍱 各餐統計
+  早餐：22 訂 / 21 領 / 1 棄
+  中餐：65 訂 / 63 領 / 2 棄
+    A:28  B:22  C:15
+  晚餐：12 訂 / 12 領 / 0 棄
+───────────────
+✅ 領餐率：96.0%
+⚠ 棄單率：3.0%
+───────────────
+🏢 訂購單位 TOP 5
+  1. 第一勤務組：18 筆
+  2. 行政科：15 筆
+  ...</code></pre>
+
+<h3>管理頁手動查詢（任意日期 / 月份）</h3>
+<ol>
+  <li>進管理 LIFF</li>
+  <li>「報表查詢」區塊（若已整合前端）
+    <ul>
+      <li>選日期 → 「查詢日報」→ 顯示該日統計，可按「📋 複製文字」或「📊 匯出 Excel」</li>
+      <li>選月份 → 「查詢月報」→ 顯示該月統計</li>
+    </ul>
+  </li>
+  <li><strong>若前端未整合</strong>，可用 REST 工具直接 POST 至 <code>/exec</code>：
+    <ul>
+      <li>body：<code>{"action":"getDailyReport","date":"2026-05-21"}</code></li>
+      <li>body：<code>{"action":"getMonthlyReport","yyyyMm":"2026-04"}</code></li>
+      <li>回傳 JSON 含 <code>stat</code>（結構化資料）與 <code>text</code>（純文字版）</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>想強制重發日報 / 月報</h3>
+<ol>
+  <li>進 Apps Script 編輯器</li>
+  <li>函式下拉 → <code>clearReportSentFlag</code> → ▶ 執行（清今日日報 + 上月月報鎖鍵）</li>
+  <li>等下一輪 5 分鐘 trigger 自動重送</li>
+  <li>或直接執行 <code>testDailyReportPush</code> / <code>testMonthlyReportPush</code>（忽略鎖鍵立即推送）</li>
+</ol>
+
+<h3>想換管理群組 / 暫停推送</h3>
+<p>詳見《更新手冊》F-10 章節。</p>
+
+<!-- ===================== 第三部分 ===================== -->
+<h1>第三部分　廚房接單人員（v6 群組通知 + v10 結單彙整）</h1>
+
+<p>廚房人員<strong>不需要進管理頁、也不需要個別加 Bot 為好友</strong>。新訂單通知統一發到指定的廚房 LINE 群組。</p>
+
+<h2>3.1 第一次使用</h2>
+<ol>
+  <li>請管理員把您加入廚房 LINE 群組（例：「EMO 廚房接單群」）</li>
+  <li>確認群組成員清單裡有 <strong>EMO 點餐 Bot</strong>（由管理員邀請；若不在請通知管理員處理）</li>
+  <li>之後每筆新訂單會自動在群組推播，您只要看群組就好</li>
+</ol>
+
+<h2>3.2 接單通知</h2>
+<p>每當有人成功送出訂單，群組會收到「🍱 新訂單」橘色 Flex 卡片，包含：</p>
+<ul>
+  <li>訂單編號</li>
+  <li>訂購日期、單位、訂購人、電話</li>
+  <li>訂購的早餐 / 中餐 / 晚餐</li>
+  <li>備註</li>
+</ul>
+
+<blockquote>通知是 LINE 群組 push 推播。若同時多筆訂單可能稍微延遲幾秒，屬正常範圍。</blockquote>
+
+<h2>3.3 群組沒收到通知怎麼辦</h2>
+<p>依序排查：</p>
+<ul class="checklist">
+  <li>Bot 是否還在群組裡？打開群組成員清單確認</li>
+  <li>群組通知是否被靜音？檢查群組右上 ⋯ → 通知設定</li>
+  <li>個人手機 LINE 通知是否被關？檢查手機 LINE App 通知權限</li>
+  <li>請管理員到 Apps Script「執行記錄」看是否有 <code>New-order group push failed</code> 字樣</li>
+</ul>
+
+<h2>3.4 暫停接單通知（休假 / 排假）</h2>
+<ul>
+  <li><strong>個人短期靜音</strong>：群組對話右上 ⋯ → 通知 → 關閉。收假時自行打開，<strong>不需通知管理員</strong></li>
+  <li><strong>長期離職</strong>：通知管理員把您從群組踢出即可</li>
+</ul>
+
+<h2>3.5 每餐結單彙整訊息（v10 新增）</h2>
+<p>除了「每筆下單」的接單通知，廚房群組另會在每餐結單時段收到一則彙整：</p>
+<table>
+  <thead>
+    <tr><th>餐別</th><th>結單時間</th><th>彙整推送時機</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>早餐</td><td>07:00</td><td>07:00 後 5 分鐘內</td></tr>
+    <tr><td>中餐</td><td>10:30</td><td>10:30 後 5 分鐘內</td></tr>
+    <tr><td>晚餐</td><td>16:00</td><td>16:00 後 5 分鐘內</td></tr>
+  </tbody>
+</table>
+<p>彙整訊息為純文字 1 則，內容含：</p>
+<ul>
+  <li>各餐製作量統計（中餐分 A / B / C）</li>
+  <li>訂購人名單（單位、姓名、品項、備註）</li>
+  <li>已取消訂單獨立列出（標明「不需準備」）</li>
+</ul>
+<blockquote>收到彙整訊息後再開工，可避免遺漏臨時加單；個別 push 與彙整 push 兩者並行。</blockquote>
+
+<!-- ===================== 第四部分 (v11) ===================== -->
+<h1>第四部分　管理 LINE 群組收件人（v11 新增）</h1>
+
+<blockquote>此章節給「<strong>只負責看每日日報 / 月報</strong>」的主管或單位代表參考。
+若您同時是管理員，可直接看第二部分 §2.11。</blockquote>
+
+<h2>4.1 您會收到什麼</h2>
+
+<h3>每日 18:00 後 5 分鐘內：📊 EMO 日報</h3>
+<p>純文字訊息，內容包含：</p>
+<ul>
+  <li>訂單總計、有效 / 已取消</li>
+  <li>三餐 訂 / 領 / 棄統計</li>
+  <li>中餐 A / B / C 分項</li>
+  <li><strong>領餐率</strong> ／ <strong>棄單率</strong></li>
+  <li>訂購單位 TOP 5（哪個單位訂得多）</li>
+</ul>
+
+<h3>每月 1 日 09:00 後 5 分鐘內：📊 EMO 月報</h3>
+<p>純文字訊息，內容包含：</p>
+<ul>
+  <li>涵蓋工作日數</li>
+  <li>累計訂單總數</li>
+  <li>三餐累計、中餐 A / B / C</li>
+  <li>領餐率、棄單率</li>
+  <li>訂購單位 TOP 10</li>
+  <li><strong>棄單紀錄 TOP 5</strong>（哪些人棄單最多）</li>
+</ul>
+
+<h2>4.2 收到後可以做什麼</h2>
+<ul>
+  <li><strong>複製到文書工具或 Excel</strong> 做進一步分析（純文字格式，方便貼上）</li>
+  <li>在 LINE 群組就地討論（@相關人員）</li>
+  <li><strong>單位督導</strong>：若某單位棄單率異常，可即時提醒</li>
+  <li><strong>採購規劃</strong>：依當月 A/B/C 比例調整未來菜單配比</li>
+</ul>
+
+<h2>4.3 沒收到訊息怎麼辦</h2>
+<ul class="checklist">
+  <li>群組通知是否被靜音？（群組右上 ⋯ → 通知設定）</li>
+  <li>個人手機 LINE 通知是否關閉？</li>
+  <li>若整個群組都沒收到 → 通知資訊室管理員依《更新手冊》F-10 排查</li>
+</ul>
+
+<h2>4.4 想加 / 退管理群組</h2>
+<ul>
+  <li><strong>加人</strong>：請現有成員邀請加入</li>
+  <li><strong>退群</strong>：自行退出，不需通知管理員</li>
+  <li><strong>想換群組接收</strong>：通知資訊室管理員修改 <code>LINE_ADMIN_GROUP_ID</code></li>
+</ul>
+
+<!-- ===================== 附錄 A ===================== -->
+<h1>附錄 A　角色快查表</h1>
+
+<table>
+  <thead>
+    <tr><th>我是…</th><th>我能做什麼</th><th>我不能做什麼</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>訂餐者</td><td>訂餐、查訂單編號（在 LINE 卡片）、看當日菜單</td><td>自助修改／取消訂單、查別人的單</td></tr>
+    <tr><td>管理者</td><td>管理員能做的所有事 + 訂餐 + <strong>查任意日 / 月報</strong></td><td>（無）</td></tr>
+    <tr><td>廚房人員</td><td>接收新訂單通知 + 每餐彙整推送、訂餐</td><td>進管理後台、改菜單</td></tr>
+    <tr><td><strong>管理通知接收人（v11）</strong></td><td><strong>每日 18:00 自動收到日報、每月 1 日 09:00 自動收到月報</strong>（只看不操作）</td><td>進管理後台</td></tr>
+    <tr><td>訂餐者 + 廚房人員</td><td>訂餐 + 接收新訂單</td><td>進管理後台</td></tr>
+    <tr><td>訂餐者 + 管理者</td><td>全部</td><td>（無）</td></tr>
+  </tbody>
+</table>
+
+<blockquote>一個人可同時擔任多種角色（同一個 LINE userId 出現在 <code>Admins</code> 工作表、且本人也在廚房 LINE 群組裡即可）。
+管理通知接收人是「被加入管理 LINE 群組」的人，不需要寫入 <code>Admins</code>。</blockquote>
+
+<!-- ===================== 附錄 B ===================== -->
+<h1>附錄 B　常見錯誤訊息對照</h1>
+
+<table>
+  <thead>
+    <tr><th style="width:32%">錯誤訊息</th><th style="width:30%">原因</th><th>處理</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>載入菜單失敗</td><td>網路斷線 / GAS 沒回應 / 屬性沒填好</td><td>重新整理；若仍失敗請管理員查 GAS 執行記錄</td></tr>
+    <tr><td>訂單已超過該餐每日上限</td><td>中餐 A/B/C 已達 40 份</td><td>改選其他餐別</td></tr>
+    <tr><td>無管理員權限</td><td>您 userId 未在 <code>Admins</code> 白名單</td><td>請主管理員加入</td></tr>
+    <tr><td>缺少餐別參數</td><td>標記領餐時前端 bug</td><td>重新整理頁面再試</td></tr>
+    <tr><td>此筆訂單無編號，無法標記</td><td>從舊版升級遺漏 K 欄</td><td>管理員執行 <code>migrateToV4</code> 函式補回</td></tr>
+    <tr><td>LIFF init failed: invalid liffId</td><td><code>order.html</code> 或 <code>admin.html</code> 內 LIFF ID 填錯</td><td>對照安裝手冊 Step 7-2、7-3 重填</td></tr>
+    <tr><td>線上訂餐已暫停至 YYYY-MM-DD</td><td>該 userId 過去 30 天棄單超過 3 次（v5 黑名單）</td><td>待解封日；或管理員到 <code>Orders</code> 工作表清除棄單標記</td></tr>
+    <tr><td>當日進單已結束 / 訂購日期已過</td><td>該餐 cutoff 已過（早 07:00 / 午 10:30 / 晚 16:00），或訂購日期是過去</td><td>改選未來日期</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================== 附錄 C ===================== -->
+<h1>附錄 C　日常一日流程（管理員視角）</h1>
+
+<h3>上班後</h3>
+<ul class="checklist">
+  <li>進管理 LIFF → 確認今日菜單已設定（如未設定，立即補上）</li>
+  <li>預先把明天菜單也設好（避免明早忘記）</li>
+</ul>
+
+<h3>訂餐截止前</h3>
+<ul class="checklist">
+  <li>查當日訂單統計 → 確認筆數合理</li>
+  <li>必要時通知廚房預估份數</li>
+  <li>中餐 A/B/C 若有上限疑慮，提早觀察「當日已訂」小字提示</li>
+</ul>
+
+<h3>領餐時段（早 07:00–08:00 / 午 11:30–12:30 / 晚 16:50–18:00）</h3>
+<ul class="checklist">
+  <li>進管理 LIFF → 「領餐快速查詢」按「📷 掃描 QR」</li>
+  <li>客人出示 LINE 確認卡片上的 QR → 掃描 → 系統依當下時間自動標領該餐
+    <ul>
+      <li>✅ 綠 toast「領取完成」= 成功</li>
+      <li>⚠️ 黃 toast「已於 HH:mm 領取」= 已領過，不再重標</li>
+      <li>❌ 紅 toast「沒訂購該餐 / 不在取餐時段」= 改用下方手動按鈕標領</li>
+    </ul>
+  </li>
+  <li>補單情境（沒帶手機、QR 模糊、時段外領）→ 用「手動標記三餐」按鈕補登</li>
+  <li>全部結束後檢查三個「已領 x/y」是否 x = y</li>
+</ul>
+
+<h3>下班前</h3>
+<ul class="checklist">
+  <li>確認當日「未領餐」=0；如有遺留，記錄並聯絡訂餐者</li>
+  <li>（v11）<strong>18:00 後 5 分鐘內</strong>：管理 LINE 群組會自動收到當日日報 — 確認有收到，內容無異常</li>
+  <li>（每月一次）下載試算表備份</li>
+</ul>
+
+<h3>每月 1 日</h3>
+<ul class="checklist">
+  <li>（v11）<strong>09:00 後 5 分鐘內</strong>：管理 LINE 群組會自動收到前月月報 — 確認有收到</li>
+  <li>月底 / 月初核對棄單 TOP 名單，必要時與單位督導反映</li>
+</ul>
+
+<div class="footer-note">
+  文件版本：對應系統 v7 ｜ 文件日期：2026-05-20<br>
+  若系統有升級，請見《更新手冊》；安裝相關請見《安裝手冊》。
+</div>
+
+</body>
+</html>

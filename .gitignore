@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py
+*.pyc
+
+# 生成的圖檔與 PDF（本地產出，不入版控）
+*.png
+*.pdf
+*.jpg
+
+# GAS 原始碼（不放 GitHub Pages）
+gas/
+
+# 教學文件原始檔（本地使用）
+*.html.bak
+*.md
+
+# Office 文件
+*.pptx
+*.docx
+*.xlsx
+
+# 本地截圖與備份
+screenshots/
+docs/backup/
+
+# IDE
+.idea/
