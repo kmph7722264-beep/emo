@@ -123,8 +123,8 @@
 
   <!-- Tab -->
   <div class="tab-bar">
-    <button class="tab-btn active" data-tab="today">當日訂單</button>
-    <button class="tab-btn" data-tab="history">歷史訂單</button>
+    <button class="tab-btn active" data-tab="all">全部訂單</button>
+    <button class="tab-btn" data-tab="survey">待填問卷</button>
   </div>
 
   <div id="listContent">
@@ -138,11 +138,9 @@
 const LIFF_ID  = '2010095803-3unJvtGw';
 const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
 
-let idToken = '';
-let curTab  = 'today';
-
-// 各 tab 的資料快取；null 表示尚未載入
-const cache = { today: null, history: null };
+let idToken   = '';
+let allOrders = [];
+let curTab    = 'all';
 
 const $list = document.getElementById('listContent');
 const $msg  = document.getElementById('msg');
@@ -168,11 +166,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     curTab = btn.dataset.tab;
-    if (cache[curTab] !== null) {
-      render();          // 已快取 → 直接顯示，不重新查詢
-    } else {
-      loadOrders(curTab); // 首次切換才去 API 取資料
-    }
+    render();
   });
 });
 
@@ -201,10 +195,9 @@ function renderOrder(o) {
 
   const footerHtml = o.cancelled ? '' : (() => {
     if (o.surveyed) return `<div class="oc-footer"><div class="survey-done">✅ 已填寫用餐回饋問卷，謝謝！</div></div>`;
-    const _td = new Date();
-    const todayStr = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`;
-    if (o.date > todayStr) return '';
-    if (o.date < todayStr) return `<div class="oc-footer"><div class="survey-done" style="background:#f3f4f6;color:var(--muted)">無待填問卷</div></div>`;
+    const oDate = new Date(o.date);
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (oDate > today) return '';
     return `<div class="oc-footer">
       <button class="btn-survey" data-order="${o.orderNo}" onclick="openSurvey(this)">
         📝 填寫用餐回饋問卷
@@ -229,13 +222,18 @@ function renderOrder(o) {
 }
 
 function render() {
-  const list = cache[curTab] || [];
-  const emptyMsg = curTab === 'today' ? '今日尚無訂單' : '查無歷史訂單';
+  let list = allOrders;
+  if (curTab === 'survey') {
+    const today = new Date(); today.setHours(0,0,0,0);
+    list = allOrders.filter(o =>
+      !o.cancelled && !o.surveyed && new Date(o.date) <= today
+    );
+  }
   if (!list.length) {
     $list.innerHTML = `
       <div class="empty-state">
-        <div class="ei">📭</div>
-        <p>${emptyMsg}</p>
+        <div class="ei">${curTab === 'survey' ? '✅' : '📭'}</div>
+        <p>${curTab === 'survey' ? '目前沒有待填的問卷，感謝您！' : '尚無訂單紀錄'}</p>
       </div>`;
     return;
   }
@@ -267,27 +265,30 @@ async function openSurvey(btn) {
   }
 }
 
-// ── 載入訂單（依 tab 分別查詢並快取）────────────────────────
-async function loadOrders(tab) {
+// ── 載入訂單 ─────────────────────────────────────────────────
+async function loadOrders() {
   $list.innerHTML = '<div class="loading-spin"><div class="spin"></div></div>';
   $msg.hidden = true;
   try {
-    const limit = tab === 'today' ? 10 : 50;
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getMyOrders', idToken, filter: tab, limit }),
+      body: JSON.stringify({ action: 'getMyOrders', idToken, limit: 50 }),
     });
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || '伺服器回傳錯誤');
-    cache[tab] = data.orders || [];
-    const label = tab === 'today' ? '當日' : '歷史';
-    showMsg(`✅ ${label}訂單查詢完成，共 ${cache[tab].length} 筆`, 'ok');
+    if (!data.ok) throw new Error(data.error);
+    allOrders = data.orders || [];
+    // URL 帶 survey=1 → 預設開啟「待填問卷」Tab
+    if (new URLSearchParams(location.search).get('survey') === '1') {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === 'survey');
+      });
+      curTab = 'survey';
+    }
     render();
   } catch (e) {
-    cache[tab] = null; // 查詢失敗，不快取，下次可重試
     $list.innerHTML = '';
-    showMsg('載入訂單失敗：' + e.message, 'err');
+    showMsg('載入失敗：' + e.message);
   }
 }
 
@@ -303,10 +304,11 @@ async function loadOrders(tab) {
       return;
     }
   } catch (e) {
-    showMsg('LIFF 初始化失敗：' + e);
+    $list.innerHTML = '';
+    showMsg('LIFF 初始化失敗：' + e.message, 'err');
     return;
   }
-  loadOrders('today'); // 預設載入當日訂單
+  loadOrders();
 })();
 </script>
 </body>
