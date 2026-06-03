@@ -218,7 +218,7 @@
       <button type="button" id="byobBtn" class="byob-btn">🥢 自備餐具</button>
       <button type="button" id="takeoutBtn" class="takeout-btn" hidden>🛍️ 外帶</button>
     </div>
-    <div class="pickup-toast-hint">點背景 / 按 Esc 關閉（10 秒後自動關閉）</div>
+    <div class="pickup-toast-hint" id="ptHint">點背景 / 按 Esc 關閉</div>
   </div>
 </div>
 
@@ -241,7 +241,7 @@
   }
   .pickup-toast-card.err  { border-top-color: #d23f3f; }
   .pickup-toast-card.warn { border-top-color: #d49a00; }
-  .pickup-toast-card.info { border-top-color: #0d3b66; }
+  .pickup-toast-card.info { border-top-color: #f59e0b; }
   .pickup-toast-icon  { font-size: 56px; line-height: 1; margin-bottom: 8px; }
   .pickup-toast-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
   .pickup-toast-order {
@@ -250,7 +250,7 @@
   }
   .pickup-toast-card.err  .pickup-toast-order { color: #b3261e; }
   .pickup-toast-card.warn .pickup-toast-order { color: #8a6500; }
-  .pickup-toast-card.info .pickup-toast-order { color: #0d3b66; }
+  .pickup-toast-card.info .pickup-toast-order { color: #d97706; font-size: 52px; }
   .pickup-toast-lines  { font-size: 16px; color: #1a1a1a; line-height: 1.7; margin-bottom: 12px; }
   .pickup-toast-lines div { margin: 2px 0; }
   /* .pickup-toast-actions 已在下方 .byob-btn 區塊統一定義 */
@@ -1471,7 +1471,8 @@ const WK_MEAL_META = {
   dinner:    { label: '🌙 晚餐', order: 2 },
 };
 
-let _wkDashTimer = null;
+let _wkDashTimer  = null;
+let _mealPrices   = { breakfast: 50, lunch: 75, dinner: 70 }; // 從 API 動態更新
 
 function _wkNowHHMM() {
   const d = new Date();
@@ -1643,6 +1644,7 @@ async function updateWalkinDashboard() {
       postJson({ action: 'stats', idToken, date: today }).catch(() => null),
     ]);
     if (!menuData.ok) throw new Error(menuData.error || '查詢失敗');
+    if (menuData.prices) _mealPrices = menuData.prices; // 更新餐價
     const breakdown = (statsData && statsData.ok)
       ? computeWalkinBreakdown(statsData.orders)
       : null;
@@ -1687,26 +1689,31 @@ async function pollWalkinOrders() {
   } catch (_) { /* 輪詢失敗靜默，下次繼續 */ }
 }
 
+/**
+ * 現場點餐新訂單大通知 — 自助付款模式。
+ * 最大字顯示「應付金額」，管理員無需任何額外操作，20 秒自動關閉。
+ */
 function showNewWalkinToast(o) {
-  const byobLine  = o.byob   ? '🥢 自備餐具' : '自購餐具';
-  const dineInLine = o.dineIn ? '🍽️ 現場用餐' : '自購餐具，打包帶走';
-  const meals = [
-    o.breakfast ? `早：${o.breakfast}` : '',
-    o.lunch     ? `中：${o.lunch}`     : '',
-    o.dinner    ? `晚：${o.dinner}`    : '',
-  ].filter(Boolean);
+  const p = _mealPrices || {};
+  let total = 0;
+  const mealLines = [];
+  if (o.breakfast) { const price = p.breakfast || 0; total += price; mealLines.push(`早餐 ${price} 元　${o.breakfast}`); }
+  if (o.lunch)     { const price = p.lunch     || 0; total += price; mealLines.push(`中餐 ${price} 元　${o.lunch}`); }
+  if (o.dinner)    { const price = p.dinner    || 0; total += price; mealLines.push(`晚餐 ${price} 元　${o.dinner}`); }
+
   showPickupToast({
     status: 'info',
-    title: '🟠 新現場訂單',
-    orderNo: o.orderNo,
+    title: '💰 請自行付款',
+    orderNo: total > 0 ? `${total} 元` : o.orderNo,  // 大字顯示金額
     lines: [
-      `${o.unit || ''}　${maskName(o.name || '')}`.trim(),
-      byobLine,
-      dineInLine,
-      ...meals,
+      `訂單 ${o.orderNo}　${`${o.unit || ''}　${maskName(o.name || '')}`.trim()}`,
+      ...mealLines,
+      o.takeout ? '🛍️ 外帶' : '',
+      o.byob    ? '🥢 自備餐具' : '',
+      o.dineIn  ? '🍽️ 現場用餐' : '',
     ].filter(Boolean),
     beep: true,
-    forceDuration: 5000,
+    forceDuration: 20000,
   });
 }
 
