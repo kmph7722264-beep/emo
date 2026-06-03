@@ -134,7 +134,7 @@
         🛍️ 外帶（餐點打包帶走）
       </label>
       <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px" checked>
+        <input type="checkbox" name="byob" id="byobCheck" style="width:20px;height:20px">
         🥢 自備餐具（帶自己的餐盒 / 環保餐具）
       </label>
       <textarea name="note" rows="3" maxlength="200" placeholder="貼心叮嚀...例如:因勤務晚點取餐，改以便當外帶..."></textarea>
@@ -917,7 +917,7 @@ function setWalkinMode(on, windowLabel, windows) {
   document.getElementById('walkinBanner').hidden = !walkinMode;
   const fs = document.getElementById('walkinOptionsFieldset');
   fs.hidden = !walkinMode;
-  document.getElementById('byobCheck').checked  = true;
+  document.getElementById('byobCheck').checked  = false;
   document.getElementById('dineInCheck').checked = walkinMode;
   // walkin 模式：使用者已透過線上訂單完成過個資同意，自動勾選
   const privacyCheck = document.getElementById('privacyCheck');
