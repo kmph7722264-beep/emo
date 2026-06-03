@@ -299,17 +299,23 @@
     margin-bottom: 18px; overflow: hidden;
   }
   .wk-header {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px;
     padding: 9px 14px; background: #0d3b66; color: #fff;
   }
-  .wk-title { font-weight: 700; font-size: 14px; flex: 1; }
-  .wk-update-time { font-size: 11px; opacity: 0.75; }
-  .wk-refresh-btn {
-    background: transparent; border: 1px solid rgba(255,255,255,0.4);
-    color: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 15px;
-    transition: background 0.15s;
+  .wk-title {
+    font-weight: 700; font-size: 14px; flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .wk-refresh-btn:hover { background: rgba(255,255,255,0.15); }
+  .wk-update-time { font-size: 11px; opacity: 0.75; white-space: nowrap; flex-shrink: 0; }
+  /* button.wk-refresh-btn 特異性高於全域 button，覆蓋 width:100%/background:green */
+  button.wk-refresh-btn {
+    display: inline-block; width: auto; flex-shrink: 0;
+    margin-top: 0; padding: 3px 10px;
+    background: transparent; border: 1px solid rgba(255,255,255,0.45);
+    color: #fff; border-radius: 6px; font-size: 16px; font-weight: normal; line-height: 1;
+    cursor: pointer; transition: background 0.15s;
+  }
+  button.wk-refresh-btn:hover:not(:disabled) { background: rgba(255,255,255,0.18); }
   .wk-meals { display: flex; flex-direction: column; gap: 10px; padding: 12px 12px; }
 
   .wk-meal {
