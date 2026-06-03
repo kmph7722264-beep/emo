@@ -170,6 +170,23 @@
     </div>
   </fieldset>
 
+  <fieldset id="configSection">
+    <legend>⚙️ 系統設定</legend>
+    <p class="hint">所有時段與規則設定，修改後立即生效（下次請求即套用）。時間格式：HH:mm；上限/天數輸入整數。</p>
+    <div class="btn-row">
+      <button type="button" id="configLoadBtn" class="secondary">載入目前設定</button>
+    </div>
+    <div id="configResult" hidden>
+      <form id="configForm">
+        <div id="configFields"></div>
+        <div class="btn-row" style="margin-top:12px">
+          <button type="submit" id="configSaveBtn">儲存設定</button>
+        </div>
+      </form>
+    </div>
+    <p id="configMsg" class="msg" hidden></p>
+  </fieldset>
+
   <p id="msg" class="msg" hidden></p>
   <p class="footer"><a href="#" id="orderEntry">回訂餐頁</a></p>
   </div>
@@ -239,6 +256,28 @@
     color: #047a3a; font-size: 13px; font-weight: 600; text-align: center;
   }
   #usbModeBtn.active { background: #e8f5e9 !important; color: #047a3a !important; border-color: #06c755 !important; }
+  /* 系統設定面板 */
+  .config-group { margin-bottom: 16px; }
+  .config-group-label {
+    font-size: 12px; font-weight: 700; color: #0d3b66;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 4px 0 6px; border-bottom: 1px solid #e5e7eb; margin-bottom: 8px;
+  }
+  .config-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 6px; margin-bottom: 4px;
+    border: 1px solid transparent; transition: background 0.15s;
+  }
+  .config-row:hover { background: #f9fafb; }
+  .config-row.config-changed { background: #fffbeb; border-color: #f59e0b; }
+  .config-label { flex: 1; font-size: 13px; color: #374151; }
+  .config-input {
+    width: 90px; font-size: 14px; padding: 5px 8px;
+    border: 1px solid var(--border); border-radius: 6px;
+    text-align: center; font-family: ui-monospace, monospace;
+  }
+  .config-row.config-changed .config-input { border-color: #f59e0b; }
+  .config-default { font-size: 11px; color: #9ca3af; white-space: nowrap; }
 </style>
 
 <script>
@@ -361,6 +400,8 @@ async function init() {
     document.getElementById('auditDate').value = '';
     loadAuditLog();
   });
+  document.getElementById('configLoadBtn').addEventListener('click', loadConfig);
+  document.getElementById('configForm').addEventListener('submit', saveConfig);
   document.getElementById('usbModeBtn').addEventListener('click', toggleUsbScannerMode);
   usbScannerMode = !!localStorage.getItem('emo_usbMode');
   applyUsbMode();
@@ -782,6 +823,140 @@ function renderAuditList(data, date, actionFilter) {
         <div>${resultHtml}</div>
       </div>`;
   }).join('');
+}
+
+// ── 系統設定面板 ─────────────────────────────────────────────────────
+
+const CONFIG_GROUP_LABELS = {
+  '中餐上限':   ['LUNCH_DAILY_LIMIT'],
+  '結單時間':   ['ORDER_CUTOFF_BREAKFAST','ORDER_CUTOFF_LUNCH','ORDER_CUTOFF_DINNER'],
+  '取餐時窗':   ['PICKUP_WINDOW_BREAKFAST_START','PICKUP_WINDOW_BREAKFAST_END','PICKUP_WINDOW_LUNCH_START','PICKUP_WINDOW_LUNCH_END','PICKUP_WINDOW_DINNER_START','PICKUP_WINDOW_DINNER_END'],
+  '棄單截止':   ['ABANDONMENT_CUTOFF_BREAKFAST','ABANDONMENT_CUTOFF_LUNCH','ABANDONMENT_CUTOFF_DINNER'],
+  '現場點餐時窗':['WALKIN_WINDOW_BREAKFAST_START','WALKIN_WINDOW_BREAKFAST_STOP','WALKIN_WINDOW_LUNCH_START','WALKIN_WINDOW_LUNCH_STOP','WALKIN_WINDOW_DINNER_START','WALKIN_WINDOW_DINNER_STOP'],
+  '停權規則':   ['BLOCKLIST_THRESHOLD','BLOCKLIST_WINDOW_DAYS','BLOCKLIST_DURATION_DAYS'],
+  '速率限制':   ['RATE_WINDOW_MINUTES','RATE_MAX_REQUESTS'],
+};
+
+const CONFIG_NICE_NAMES = {
+  LUNCH_DAILY_LIMIT:             '中餐每日上限（份）',
+  ORDER_CUTOFF_BREAKFAST:        '早餐結單時間',
+  ORDER_CUTOFF_LUNCH:            '中餐結單時間',
+  ORDER_CUTOFF_DINNER:           '晚餐結單時間',
+  PICKUP_WINDOW_BREAKFAST_START: '早餐取餐開始',
+  PICKUP_WINDOW_BREAKFAST_END:   '早餐取餐結束',
+  PICKUP_WINDOW_LUNCH_START:     '中餐取餐開始',
+  PICKUP_WINDOW_LUNCH_END:       '中餐取餐結束',
+  PICKUP_WINDOW_DINNER_START:    '晚餐取餐開始',
+  PICKUP_WINDOW_DINNER_END:      '晚餐取餐結束',
+  ABANDONMENT_CUTOFF_BREAKFAST:  '早餐棄單截止',
+  ABANDONMENT_CUTOFF_LUNCH:      '中餐棄單截止',
+  ABANDONMENT_CUTOFF_DINNER:     '晚餐棄單截止',
+  WALKIN_WINDOW_BREAKFAST_START: '早餐現場開始',
+  WALKIN_WINDOW_BREAKFAST_STOP:  '早餐現場截止',
+  WALKIN_WINDOW_LUNCH_START:     '中餐現場開始',
+  WALKIN_WINDOW_LUNCH_STOP:      '中餐現場截止',
+  WALKIN_WINDOW_DINNER_START:    '晚餐現場開始',
+  WALKIN_WINDOW_DINNER_STOP:     '晚餐現場截止',
+  BLOCKLIST_THRESHOLD:           '停權門檻（次）',
+  BLOCKLIST_WINDOW_DAYS:         '觀察視窗（天）',
+  BLOCKLIST_DURATION_DAYS:       '停權持續（天）',
+  RATE_WINDOW_MINUTES:           '速率視窗（分鐘）',
+  RATE_MAX_REQUESTS:             '視窗內最大次數',
+};
+
+let _configItems = [];
+
+async function loadConfig() {
+  const btn = document.getElementById('configLoadBtn');
+  const msgEl = document.getElementById('configMsg');
+  const result = document.getElementById('configResult');
+  msgEl.hidden = true;
+  btn.disabled = true;
+  btn.textContent = '載入中…';
+  try {
+    const data = await postJson({ action: 'getConfig', idToken });
+    if (!data.ok) throw new Error(data.error || '載入失敗');
+    _configItems = data.items;
+    renderConfigFields(data.items);
+    result.hidden = false;
+  } catch (e) {
+    showConfigMsg(e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '載入目前設定';
+  }
+}
+
+function renderConfigFields(items) {
+  const itemMap = {};
+  items.forEach(it => { itemMap[it.key] = it; });
+  const container = document.getElementById('configFields');
+  let html = '';
+  Object.entries(CONFIG_GROUP_LABELS).forEach(([groupName, keys]) => {
+    html += `<div class="config-group"><div class="config-group-label">${escapeHtml(groupName)}</div>`;
+    keys.forEach(k => {
+      const it = itemMap[k];
+      if (!it) return;
+      const isTime = k.includes('CUTOFF') || k.includes('WINDOW');
+      const niceName = CONFIG_NICE_NAMES[k] || k;
+      const changed = it.value !== it.defaultValue ? ' config-changed' : '';
+      html += `
+        <label class="config-row${changed}" title="${escapeHtml(it.desc)}">
+          <span class="config-label">${escapeHtml(niceName)}</span>
+          <input
+            class="config-input"
+            type="${isTime ? 'text' : 'number'}"
+            name="${escapeHtml(k)}"
+            value="${escapeHtml(it.value)}"
+            ${isTime ? 'pattern="\\d{2}:\\d{2}" placeholder="HH:mm"' : 'min="0" step="1"'}
+            data-default="${escapeHtml(it.defaultValue)}"
+          >
+          <span class="config-default">預設 ${escapeHtml(it.defaultValue)}</span>
+        </label>`;
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+
+  // 即時標記已修改
+  container.querySelectorAll('.config-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const row = inp.closest('.config-row');
+      const changed = inp.value.trim() !== inp.dataset.default;
+      row.classList.toggle('config-changed', changed);
+    });
+  });
+}
+
+async function saveConfig(e) {
+  e.preventDefault();
+  const form = document.getElementById('configForm');
+  const saveBtn = document.getElementById('configSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '儲存中…';
+  const updates = [];
+  form.querySelectorAll('.config-input').forEach(inp => {
+    updates.push({ key: inp.name, value: inp.value.trim() });
+  });
+  try {
+    const data = await postJson({ action: 'updateConfig', idToken, updates });
+    if (!data.ok) throw new Error(data.error || '儲存失敗');
+    showConfigMsg(`已更新 ${data.updated} 個設定項，下次請求即生效。`, false);
+    await loadConfig();
+  } catch (e) {
+    showConfigMsg(e.message, true);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '儲存設定';
+  }
+}
+
+function showConfigMsg(text, isErr) {
+  const el = document.getElementById('configMsg');
+  el.textContent = text;
+  el.className = 'msg' + (isErr ? ' err' : '');
+  el.hidden = false;
+  setTimeout(() => { el.hidden = true; }, 5000);
 }
 
 async function onScanCode() {
