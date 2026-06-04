@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>雄好竹軒智慧用餐系統分析報告</title>
+<title>雄好築軒智慧用餐系統分析報告</title>
 <style>
 :root {
   --green: #06c755;
@@ -183,7 +183,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
 <body>
 
 <div class="cover">
-  <h1>雄好竹軒智慧用餐系統</h1>
+  <h1>雄好築軒智慧用餐系統</h1>
   <p class="sub">系統分析報告 · 資通安全評估 · 待改進事項 · 未來功能建議</p>
   <p class="meta">報告日期：2026-05-25 ／ 版本：v1.0 ／ 機密等級：內部使用</p>
 </div>
@@ -232,7 +232,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
 
     <div class="card">
       <h3 style="margin-top:0">系統定位</h3>
-      <p>雄好竹軒智慧用餐系統是一套專為警政單位（雄好竹軒）設計的 LINE 內嵌訂餐平台。使用者透過 LINE App 開啟 LIFF 頁面完成訂餐、查單、領餐，管理員透過同一介面管理菜單、統計出餐、標記領取。</p>
+      <p>雄好築軒智慧用餐系統是一套專為警政單位（雄好築軒）設計的 LINE 內嵌訂餐平台。使用者透過 LINE App 開啟 LIFF 頁面完成訂餐、查單、領餐，管理員透過同一介面管理菜單、統計出餐、標記領取。</p>
       <p>系統以「低成本、零伺服器」為核心設計原則：前端部署於 GitHub Pages（免費靜態主機），後端以 Google Apps Script 搭配 Google Sheets 作為資料庫，無需月費主機費用。</p>
       <p>由於服務對象為警政人員，系統涉及<strong>個人資料（姓名、警用電話、LINE userId）</strong>與<strong>業務資料（訂餐紀錄、用餐習慣）</strong>，資通安全應列為與功能並重的設計要素。</p>
     </div>
@@ -710,7 +710,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
 
     <div class="feature-card">
       <div class="priority-row"><span class="badge badge-gray">長期</span><h4 style="margin:0">多店點支援</h4></div>
-      <p>若未來雄好竹軒擴充地點，系統可透過 URL 參數 <code>?store=</code> 加上 GAS 多工作表支援，擴展為多店點共用同一套前端程式碼。</p>
+      <p>若未來雄好築軒擴充地點，系統可透過 URL 參數 <code>?store=</code> 加上 GAS 多工作表支援，擴展為多店點共用同一套前端程式碼。</p>
     </div>
   </section>
 
@@ -773,7 +773,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
     <h2>九、結論</h2>
 
     <div class="card">
-      <p>雄好竹軒智慧用餐系統以「零伺服器費用、LINE 生態整合」為核心，已實現完整的訂餐、菜單管理、領餐稽核流程，並於本次修正中解決 iOS 相容性、日期更新及錯誤倉庫等關鍵問題。</p>
+      <p>雄好築軒智慧用餐系統以「零伺服器費用、LINE 生態整合」為核心，已實現完整的訂餐、菜單管理、領餐稽核流程，並於本次修正中解決 iOS 相容性、日期更新及錯誤倉庫等關鍵問題。</p>
 
       <p><strong>資通安全層面</strong>，系統目前最迫切的問題是<strong>個資法告知義務缺失</strong>及<strong>Google Sheets 個人資料存取控制不足</strong>，這兩項為法律合規要求，應列為最高優先、本週內完成。其次是後端 LINE Token 完整驗證及管理員帳號時效管理，屬技術安全強化，應於一個月內完成。</p>
 
@@ -785,7 +785,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
 
   <hr>
   <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:24px">
-    雄好竹軒智慧用餐系統分析報告 · 2026-05-25 · 機密文件，僅供內部使用
+    雄好築軒智慧用餐系統分析報告 · 2026-05-25 · 機密文件，僅供內部使用
   </p>
 </div>
 </body>
