@@ -683,8 +683,9 @@ async function loadMenu() {
       if (walkinMealActive) {
         selWM.innerHTML =
           `<label class="order-check-item">` +
-          `<input type="checkbox" name="walkinMeal">` +
+          `<input type="checkbox" name="walkinMeal" checked>` +
           `<span>現場點餐（${_mL[walkinMealActive] || walkinMealActive}）</span></label>`;
+        if (stWM) stWM.hidden = false;
       } else {
         selWM.innerHTML =
           `<label class="order-check-item item-closed">` +
