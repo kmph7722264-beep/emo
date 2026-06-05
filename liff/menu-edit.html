@@ -26,7 +26,7 @@
   font-size: 15px; font-weight: 700; color: var(--text);
 }
 .this-week-row {
-  display: flex; justify-content: center; margin-bottom: 14px;
+  display: flex; justify-content: center; gap: 10px; margin-bottom: 14px;
 }
 .this-week-row button {
   display: inline-flex; width: auto; margin: 0; padding: 7px 20px;
@@ -137,6 +137,39 @@
   animation: shimmer 1.3s infinite;
 }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── Import modal ── */
+.import-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.import-overlay.hidden { display: none; }
+.import-modal {
+  background: #fff; border-radius: 16px;
+  width: 100%; max-width: 480px;
+  padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.import-modal h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.import-ta {
+  width: 100%; box-sizing: border-box;
+  height: 200px; padding: 10px;
+  font-size: 13px; font-family: inherit; line-height: 1.5;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  resize: vertical; outline: none;
+}
+.import-ta:focus { border-color: var(--line-green); box-shadow: 0 0 0 2px rgba(6,199,85,.15); }
+.import-hint { margin: 0; font-size: 12px; color: #6b7280; line-height: 1.5; }
+.import-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.import-actions button { width: auto; margin: 0; padding: 9px 20px; font-size: 14px; }
+.btn-cancel {
+  background: #f1f5f9; color: var(--text);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-weight: 600; cursor: pointer;
+}
+.btn-cancel:hover { background: #e2e8f0; }
 </style>
 </head>
 <body>
@@ -150,6 +183,7 @@
   </div>
   <div class="this-week-row">
     <button type="button" id="btnThisWeek" class="secondary">回本週</button>
+    <button type="button" id="btnImport" class="secondary">📋 貼上匯入</button>
   </div>
 
   <div id="dayCards"></div>
@@ -165,6 +199,33 @@
   <p id="msg" class="msg" hidden></p>
   <p class="footer"><a href="#" id="backBtn">← 回管理頁</a></p>
 </main>
+
+<!-- Import modal -->
+<div id="importOverlay" class="import-overlay hidden">
+  <div class="import-modal">
+    <h2>📋 貼上菜單文字匯入</h2>
+    <textarea id="importText" class="import-ta"
+      placeholder="將菜單文字貼入此處，例如：
+6/8（一）
+早餐：湯包、炒蛋
+中餐：黑胡椒豬柳/烤腿排/蒸圓鱈
+晚餐：炒雞丁/蒸鱸魚
+------------------------------------
+6/9（二）
+早餐：蘿蔔糕+雞塊
+中餐：紅麴里肌/味噌鯖魚/滷雞腿
+晚餐：小戰斧豬排/白帶魚"></textarea>
+    <p class="import-hint">
+      中餐／晚餐以「/」分隔選項 A/B/C。<br>
+      日期格式如「6/8（一）」，年份自動推算。<br>
+      匯入後請確認各欄位再按「儲存變更」。
+    </p>
+    <div class="import-actions">
+      <button type="button" id="btnImportCancel" class="btn-cancel">取消</button>
+      <button type="button" id="btnImportConfirm">匯入</button>
+    </div>
+  </div>
+</div>
 
 <!-- History datalists -->
 <datalist id="hist-早餐"></datalist>
@@ -445,6 +506,96 @@ async function postJson(payload) {
   return res.json();
 }
 
+/* ── 貼上匯入 ── */
+function inferYear(month, day) {
+  const now = new Date();
+  const y = now.getFullYear();
+  for (const yr of [y, y + 1, y - 1]) {
+    const d = new Date(yr, month - 1, day);
+    const diff = (d - now) / 86400000;
+    if (diff >= -14 && diff <= 45) return yr;
+  }
+  return y;
+}
+
+function parseMenuText(text) {
+  const result = {};
+  // split on separator lines (4+ hyphens)
+  const sections = text.split(/\n?-{4,}\n?/).map(s => s.trim()).filter(s => s);
+  for (const section of sections) {
+    const lines = section.split('\n').map(l => l.trim()).filter(l => l);
+    let dateStr = null;
+    let startIdx = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^(\d{1,2})\/(\d{1,2})[（(]/);
+      if (m) {
+        const mo = parseInt(m[1]), day = parseInt(m[2]);
+        const yr = inferYear(mo, day);
+        dateStr = `${yr}-${String(mo).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        startIdx = i + 1;
+        break;
+      }
+    }
+    if (!dateStr) continue;
+    const menu = {};
+    for (let i = startIdx; i < lines.length; i++) {
+      const mm = lines[i].match(/^(早餐|中餐|午餐|晚餐)[：:](.+)/);
+      if (!mm) continue;
+      const type = mm[1], val = mm[2].trim();
+      if (type === '早餐') {
+        menu['早餐'] = val;
+      } else if (type === '中餐' || type === '午餐') {
+        const parts = val.split('/').map(p => p.trim());
+        if (parts[0]) menu['中餐A'] = parts[0];
+        if (parts[1]) menu['中餐B'] = parts[1];
+        if (parts[2]) menu['中餐C'] = parts[2];
+      } else if (type === '晚餐') {
+        const parts = val.split('/').map(p => p.trim());
+        if (parts[0]) menu['晚餐A'] = parts[0];
+        if (parts[1]) menu['晚餐B'] = parts[1];
+      }
+    }
+    if (Object.keys(menu).length) result[dateStr] = menu;
+  }
+  return result;
+}
+
+async function applyImport(parsed) {
+  const dates = Object.keys(parsed);
+  if (!dates.length) { showMsg('⚠ 未解析到任何菜單資料，請確認格式', true); return; }
+
+  // navigate to the week of the first parsed date if needed
+  const targetWeekStart = getWeekStart(new Date(dates[0]));
+  if (fmtDate(weekStart) !== fmtDate(targetWeekStart)) {
+    weekStart = targetWeekStart;
+    loading = true;
+    updateWeekLabel();
+    showSkeletons();
+    buildWeekCards();
+    await Promise.all([loadHistory(), loadWeekData()]);
+    loading = false;
+  }
+
+  let filled = 0;
+  dates.forEach(dateStr => {
+    const card = document.querySelector(`.day-card[data-date="${dateStr}"]`);
+    if (!card) return;
+    Object.entries(parsed[dateStr]).forEach(([mealKey, value]) => {
+      const inp = card.querySelector(`[data-meal="${mealKey}"]`);
+      if (inp) inp.value = value;
+    });
+    onInput(card);
+    filled++;
+  });
+
+  const missed = dates.length - filled;
+  const note = missed > 0 ? `（${missed} 天不在本週，已略過）` : '';
+  showMsg(filled > 0 ? `✅ 已匯入 ${filled} 天菜單${note}，請確認後儲存` : `⚠ 所選週內沒有符合的日期${note}`, filled === 0);
+}
+
+function openImportModal()  { document.getElementById('importOverlay').classList.remove('hidden'); document.getElementById('importText').focus(); }
+function closeImportModal() { document.getElementById('importOverlay').classList.add('hidden'); }
+
 /* ── 初始化 ── */
 async function init() {
   try {
@@ -492,6 +643,17 @@ async function init() {
   });
   document.getElementById('btnSaveAll').addEventListener('click', saveAll);
   document.getElementById('btnPushMenu').addEventListener('click', pushWeeklyMenu);
+  document.getElementById('btnImport').addEventListener('click', openImportModal);
+  document.getElementById('btnImportCancel').addEventListener('click', closeImportModal);
+  document.getElementById('btnImportConfirm').addEventListener('click', async () => {
+    const text = document.getElementById('importText').value;
+    const parsed = parseMenuText(text);
+    closeImportModal();
+    await applyImport(parsed);
+  });
+  document.getElementById('importOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('importOverlay')) closeImportModal();
+  });
   document.getElementById('backBtn').addEventListener('click', e => {
     e.preventDefault();
     if (window.liff && typeof liff.openWindow === 'function') {
