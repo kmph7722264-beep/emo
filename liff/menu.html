@@ -99,15 +99,19 @@
 
   <div class="order-btn-wrap">
     <button id="btnOrder">🛒 前往訂餐</button>
+    <button id="btnEditMenu" hidden style="margin-top:8px;background:#fff;color:var(--line-green-dark);border:1px solid var(--line-green)">✏️ 編輯菜單</button>
   </div>
 
   <p id="msg" class="msg" hidden></p>
 </main>
 
 <script>
-const LIFF_ID  = '2010095803-RMGuPkW1';
-const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
-const ORDER_URL = 'https://liff.line.me/2010095803-Neg2TBst';
+const LIFF_ID       = '2010095803-RMGuPkW1';
+const API_URL       = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+const ORDER_URL     = 'https://liff.line.me/2010095803-Neg2TBst';
+const MENU_EDIT_URL = 'https://kmph7722264-beep.github.io/emo/liff/menu-edit.html';
+
+let idToken = '';
 
 const $date    = document.getElementById('dateInput');
 const $content = document.getElementById('menuContent');
@@ -278,10 +282,39 @@ function defaultMenuDate() {
   return todayStr();
 }
 
+/** 若目前 LINE 用戶為管理員，顯示「編輯菜單」按鈕 */
+async function checkMenuEditPermission() {
+  if (!idToken) return;
+  try {
+    const res  = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'checkAdmin', idToken }),
+    });
+    const data = await res.json();
+    if (data.ok && data.isAdmin) {
+      const btn = document.getElementById('btnEditMenu');
+      if (btn) btn.hidden = false;
+    }
+  } catch (_) {}
+}
+
+document.getElementById('btnEditMenu').addEventListener('click', () => {
+  if (window.liff && typeof liff.openWindow === 'function') {
+    liff.openWindow({ url: MENU_EDIT_URL, external: false });
+  } else {
+    location.href = MENU_EDIT_URL;
+  }
+});
+
 (async () => {
   $date.value = defaultMenuDate();
   try {
     await liff.init({ liffId: LIFF_ID });
+    if (liff.isLoggedIn()) {
+      idToken = liff.getIDToken() || '';
+      checkMenuEditPermission();   // 背景靜默查詢，不阻塞菜單載入
+    }
   } catch (e) { /* 允許非 LIFF 環境使用 */ }
   loadMenu();
 })();

@@ -142,6 +142,9 @@ let idToken   = '';
 let allOrders = [];
 let curTab    = 'all';
 
+// 各餐預設時段（分鐘，供今日訂單排序用）
+const MEAL_MINUTES = { breakfast: 7 * 60, lunch: 12 * 60, dinner: 17 * 60 };
+
 const $list = document.getElementById('listContent');
 const $msg  = document.getElementById('msg');
 
@@ -178,10 +181,16 @@ function mealPickBadge(picked, pickedAt, abandoned) {
 }
 
 function renderOrder(o) {
+  const todayDate = new Date().toLocaleDateString('sv-SE');
+  const nowMin    = new Date().getHours() * 60 + new Date().getMinutes();
   const meals = [];
-  if (o.breakfast) meals.push({ tag:'早餐', name:o.breakfast, picked:o.breakfastPicked, at:o.breakfastPickedAt, abandoned:o.breakfastAbandoned });
-  if (o.lunch)     meals.push({ tag:'中餐', name:o.lunch,     picked:o.lunchPicked,     at:o.lunchPickedAt,     abandoned:o.lunchAbandoned     });
-  if (o.dinner)    meals.push({ tag:'晚餐', name:o.dinner,    picked:o.dinnerPicked,    at:o.dinnerPickedAt,    abandoned:o.dinnerAbandoned    });
+  if (o.breakfast) meals.push({ key:'breakfast', tag:'早餐', name:o.breakfast, picked:o.breakfastPicked, at:o.breakfastPickedAt, abandoned:o.breakfastAbandoned });
+  if (o.lunch)     meals.push({ key:'lunch',     tag:'中餐', name:o.lunch,     picked:o.lunchPicked,     at:o.lunchPickedAt,     abandoned:o.lunchAbandoned     });
+  if (o.dinner)    meals.push({ key:'dinner',    tag:'晚餐', name:o.dinner,    picked:o.dinnerPicked,    at:o.dinnerPickedAt,    abandoned:o.dinnerAbandoned    });
+  // 今日訂單：依最近用餐時段升序排列（最接近現在的餐別排最前）
+  if (o.date === todayDate) {
+    meals.sort((a, b) => Math.abs((MEAL_MINUTES[a.key] || 0) - nowMin) - Math.abs((MEAL_MINUTES[b.key] || 0) - nowMin));
+  }
 
   const mealRows = meals.map(m => `
     <div class="meal-row-item">
