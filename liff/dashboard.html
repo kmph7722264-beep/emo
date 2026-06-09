@@ -365,18 +365,26 @@ document.getElementById('btnRefreshNow').addEventListener('click', () => {
   loadDashboard();
 });
 
-// ── LIFF 初始化 ───────────────────────────────────────────
+// ── 初始化 ────────────────────────────────────────────────
 (async () => {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    idToken = liff.getIDToken() || '';
-    if (!idToken) {
-      showMsg('無法取得身份 token，請關閉後重新開啟。');
+  // 從 admin.html 開啟時，idToken 直接附在 URL 參數 ?t= 中，優先使用
+  const urlToken = new URLSearchParams(location.search).get('t');
+  if (urlToken) {
+    idToken = urlToken;
+  } else {
+    // 直接開啟時走 LIFF 登入
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      idToken = liff.getIDToken() || '';
+    } catch (e) {
+      showMsg('LIFF 初始化失敗：' + e.message);
       return;
     }
-  } catch (e) {
-    showMsg('LIFF 初始化失敗：' + e.message);
+  }
+
+  if (!idToken) {
+    showMsg('無法取得身份 token，請關閉後重新開啟。');
     return;
   }
 

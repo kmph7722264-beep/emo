@@ -1962,7 +1962,9 @@ function showDenied(extraMsg) {
 }
 
 document.getElementById('btnDashboard').addEventListener('click', () => {
-  const url = 'https://kmph7722264-beep.github.io/emo/liff/dashboard.html';
+  // 把目前已取得的 idToken 帶入 URL，避免 dashboard 另開頁面時需重新 LIFF auth
+  const base = 'https://kmph7722264-beep.github.io/emo/liff/dashboard.html';
+  const url  = idToken ? base + '?t=' + encodeURIComponent(idToken) : base;
   if (window.liff && typeof liff.openWindow === 'function') {
     liff.openWindow({ url, external: false });
   } else {
