@@ -23,6 +23,15 @@
 
   <div id="adminContent">
 
+  <!-- ▼ 儀表板入口 -->
+  <div style="margin-bottom:12px;text-align:right">
+    <button type="button" id="btnDashboard"
+      style="background:#0d3b66;color:#fff;border:0;border-radius:8px;padding:8px 16px;font:600 13px/1 inherit;cursor:pointer">
+      📊 系統儀表板
+    </button>
+  </div>
+  <!-- ▲ 儀表板入口 -->
+
   <!-- ▼ 現場點餐儀表板 -->
   <div id="walkinDashboard" class="wk-dashboard">
     <div style="display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:8px;padding:9px 14px;background:#0d3b66;color:#fff;overflow:hidden">
@@ -1951,6 +1960,15 @@ function showDenied(extraMsg) {
   const backBtn = document.getElementById('backToOrderBtn');
   if (backBtn) backBtn.addEventListener('click', e => { e.preventDefault(); gotoOrderPage(); });
 }
+
+document.getElementById('btnDashboard').addEventListener('click', () => {
+  const url = 'https://kmph7722264-beep.github.io/emo/liff/dashboard.html';
+  if (window.liff && typeof liff.openWindow === 'function') {
+    liff.openWindow({ url, external: false });
+  } else {
+    location.href = url;
+  }
+});
 
 init();
 </script>
