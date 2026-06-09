@@ -123,7 +123,8 @@
 
   <!-- Tab -->
   <div class="tab-bar">
-    <button class="tab-btn active" data-tab="all">全部訂單</button>
+    <button class="tab-btn active" data-tab="today">今日訂單</button>
+    <button class="tab-btn" data-tab="all">全部訂單</button>
     <button class="tab-btn" data-tab="survey">待填問卷</button>
   </div>
 
@@ -138,9 +139,11 @@
 const LIFF_ID  = '2010095803-3unJvtGw';
 const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
 
-let idToken   = '';
-let allOrders = [];
-let curTab    = 'all';
+let idToken     = '';
+let todayOrders = null; // 今日訂單（初始載入）
+let allOrders   = null; // 全部訂單（切換 tab 時懶載入）
+let curTab      = 'today';
+const todayStr  = new Date().toLocaleDateString('sv-SE');
 
 // 各餐預設時段（分鐘，供今日訂單排序用）
 const MEAL_MINUTES = { breakfast: 7 * 60, lunch: 12 * 60, dinner: 17 * 60 };
@@ -165,11 +168,15 @@ function showMsg(text, type='err') {
 
 // ── Tab 切換 ─────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     curTab = btn.dataset.tab;
-    render();
+    if (curTab === 'all' && allOrders === null) {
+      await loadAllOrders();
+    } else {
+      render();
+    }
   });
 });
 
@@ -188,14 +195,13 @@ function mealPickBadge(picked, pickedAt, abandoned, mealKey) {
 }
 
 function renderOrder(o) {
-  const todayDate = new Date().toLocaleDateString('sv-SE');
-  const nowMin    = new Date().getHours() * 60 + new Date().getMinutes();
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const meals = [];
   if (o.breakfast) meals.push({ key:'breakfast', tag:'早餐', name:o.breakfast, picked:o.breakfastPicked, at:o.breakfastPickedAt, abandoned:o.breakfastAbandoned });
   if (o.lunch)     meals.push({ key:'lunch',     tag:'中餐', name:o.lunch,     picked:o.lunchPicked,     at:o.lunchPickedAt,     abandoned:o.lunchAbandoned     });
   if (o.dinner)    meals.push({ key:'dinner',    tag:'晚餐', name:o.dinner,    picked:o.dinnerPicked,    at:o.dinnerPickedAt,    abandoned:o.dinnerAbandoned    });
   // 今日訂單：依最近用餐時段升序排列（最接近現在的餐別排最前）
-  if (o.date === todayDate) {
+  if (o.date === todayStr) {
     meals.sort((a, b) => Math.abs((MEAL_MINUTES[a.key] || 0) - nowMin) - Math.abs((MEAL_MINUTES[b.key] || 0) - nowMin));
   }
 
@@ -238,18 +244,25 @@ function renderOrder(o) {
 }
 
 function render() {
-  let list = allOrders;
-  if (curTab === 'survey') {
-    const today = new Date(); today.setHours(0,0,0,0);
-    list = allOrders.filter(o =>
-      !o.cancelled && !o.surveyed && new Date(o.date) <= today
-    );
+  let list;
+  if (curTab === 'today') {
+    list = todayOrders || [];
+  } else if (curTab === 'all') {
+    list = allOrders || [];
+  } else {
+    // survey：今日未填問卷的訂單
+    list = (todayOrders || []).filter(o => !o.cancelled && !o.surveyed);
   }
+  const emptyMsg = curTab === 'survey'
+    ? { icon: '✅', text: '今日沒有待填的問卷，感謝您！' }
+    : curTab === 'today'
+    ? { icon: '📭', text: '今日尚無訂單' }
+    : { icon: '📭', text: '尚無訂單紀錄' };
   if (!list.length) {
     $list.innerHTML = `
       <div class="empty-state">
-        <div class="ei">${curTab === 'survey' ? '✅' : '📭'}</div>
-        <p>${curTab === 'survey' ? '目前沒有待填的問卷，感謝您！' : '尚無訂單紀錄'}</p>
+        <div class="ei">${emptyMsg.icon}</div>
+        <p>${emptyMsg.text}</p>
       </div>`;
     return;
   }
@@ -282,18 +295,22 @@ async function openSurvey(btn) {
 }
 
 // ── 載入訂單 ─────────────────────────────────────────────────
-async function loadOrders() {
+async function postJson(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+async function loadTodayOrders() {
   $list.innerHTML = '<div class="loading-spin"><div class="spin"></div></div>';
   $msg.hidden = true;
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getMyOrders', idToken, limit: 50 }),
-    });
-    const data = await res.json();
+    const data = await postJson({ action: 'getMyOrders', idToken, filter: 'today', limit: 10 });
     if (!data.ok) throw new Error(data.error);
-    allOrders = data.orders || [];
+    todayOrders = data.orders || [];
     // URL 帶 survey=1 → 預設開啟「待填問卷」Tab
     if (new URLSearchParams(location.search).get('survey') === '1') {
       document.querySelectorAll('.tab-btn').forEach(b => {
@@ -301,6 +318,20 @@ async function loadOrders() {
       });
       curTab = 'survey';
     }
+    render();
+  } catch (e) {
+    $list.innerHTML = '';
+    showMsg('載入失敗：' + e.message);
+  }
+}
+
+async function loadAllOrders() {
+  $list.innerHTML = '<div class="loading-spin"><div class="spin"></div></div>';
+  $msg.hidden = true;
+  try {
+    const data = await postJson({ action: 'getMyOrders', idToken, filter: 'all', limit: 50 });
+    if (!data.ok) throw new Error(data.error);
+    allOrders = data.orders || [];
     render();
   } catch (e) {
     $list.innerHTML = '';
@@ -324,7 +355,7 @@ async function loadOrders() {
     showMsg('LIFF 初始化失敗：' + e.message, 'err');
     return;
   }
-  loadOrders();
+  loadTodayOrders();
 })();
 </script>
 </body>
