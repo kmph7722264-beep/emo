@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好築軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好築軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260602a">
+<link rel="stylesheet" href="style.css?v=20260609b">
 <script>
 (function(){
-  var V='20260602a';
+  var V='20260609b';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -818,6 +818,13 @@ async function onSubmit(ev) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
 
+    // ── 先顯示 LIFF 頁面訊息（LINE 呼叫 sendMessages 後可能關閉視窗，必須在此之前顯示）
+    const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
+    const walkinNote = data.walkin
+      ? '（現場點餐，未發送通知）'
+      : useLineSend ? '（確認訊息已傳送至 LINE 對話）' : '（請於領餐時出示訂單編號）';
+    showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
+
     // 前端在 LINE 內傳送確認訊息（liff.sendMessages 從用戶端發出，0 quota）
     if (useLineSend && !data.walkin && data.orderNo) {
       try {
@@ -833,12 +840,6 @@ async function onSubmit(ev) {
         }]);
       } catch (_) { /* sendMessages 失敗不影響訂單流程 */ }
     }
-
-    const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
-    const walkinNote = data.walkin
-      ? '（現場點餐，未發送通知）'
-      : useLineSend ? '（確認訊息已傳送至 LINE 對話）' : '（請於領餐時出示訂單編號）';
-    showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
 
     // ── 儲存個人資料（首次設定 or 修改後）
     const u = String(order.unit  || '').trim();
