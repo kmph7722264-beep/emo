@@ -806,16 +806,38 @@ async function onSubmit(ev) {
     }
   }
 
+  // 在 LINE App 內開啟時，改以 liff.sendMessages() 傳送確認（不消耗 LINE quota）
+  const useLineSend = typeof liff !== 'undefined' && liff.isInClient && liff.isInClient();
+
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避開 CORS preflight
-      body: JSON.stringify({ action: 'order', idToken, order, walkin: isWalkin, byob, takeout, dineIn }),
+      body: JSON.stringify({ action: 'order', idToken, order, walkin: isWalkin, byob, takeout, dineIn, skipPush: useLineSend }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送出失敗');
+
+    // 前端在 LINE 內傳送確認訊息（liff.sendMessages 從用戶端發出，0 quota）
+    if (useLineSend && !data.walkin && data.orderNo) {
+      try {
+        const mealLines = [
+          order.breakfast ? `早餐：${order.breakfast}` : '',
+          order.lunch     ? `中餐：${order.lunch}` : '',
+          order.dinner    ? `晚餐：${order.dinner}` : '',
+        ].filter(Boolean).join('\n');
+        const noteStr = order.note ? `\n備註：${order.note}` : '';
+        await liff.sendMessages([{
+          type: 'text',
+          text: `✅ 訂單已收到，感謝您！\n訂單編號：${data.orderNo}\n日期：${order.date}\n${mealLines}${noteStr}\n\n領餐時請出示訂單編號。`,
+        }]);
+      } catch (_) { /* sendMessages 失敗不影響訂單流程 */ }
+    }
+
     const noText = data.orderNo ? `　訂單編號：${data.orderNo}` : '';
-    const walkinNote = data.walkin ? '（現場點餐，未發送通知）' : '（請於領餐時出示訂單編號）';
+    const walkinNote = data.walkin
+      ? '（現場點餐，未發送通知）'
+      : useLineSend ? '（確認訊息已傳送至 LINE 對話）' : '（請於領餐時出示訂單編號）';
     showMsg(`訂單已送出，感謝您！${noText}${walkinNote}`);
 
     // ── 儲存個人資料（首次設定 or 修改後）
