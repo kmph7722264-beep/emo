@@ -23,6 +23,27 @@
 <main class="card">
     <h1>雄好築軒智慧用餐</h1>
 
+  <!-- 用餐時段自助報到卡 -->
+  <div id="checkinCard" hidden style="
+    background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;
+    padding:16px 18px;margin-bottom:16px;
+  ">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <span style="font-size:32px;flex-shrink:0">🍽️</span>
+      <div>
+        <div id="checkinMealTitle" style="font-weight:700;font-size:16px;color:#15803d">用餐時段</div>
+        <div id="checkinOrderNo" style="font-size:12px;color:#6b7280;font-family:monospace;margin-top:2px"></div>
+      </div>
+    </div>
+    <div id="checkinInfo" style="font-size:14px;color:#374151;margin-bottom:12px;line-height:1.7"></div>
+    <button type="button" id="checkinBtn" style="
+      width:100%;padding:13px;border:none;border-radius:10px;
+      background:#16a34a;color:#fff;font-size:17px;font-weight:700;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    ">確認入場 / 領餐</button>
+    <div id="checkinMsg" hidden style="margin-top:8px;font-size:13px;text-align:center"></div>
+  </div>
+
   <form id="orderForm">
 
     <!-- ── 個人資料卡（已綁定時顯示，取代重複填寫） ── -->
@@ -337,6 +358,7 @@ let walkinWindows = null; // { breakfast:{start:'HH:MM',stop:'HH:MM'}, ... }
 let submitting = false;   // 防止重複送出
 let walkinWindowData = null; // menu API 回傳的現場點餐時段設定
 let walkinMealActive = null; // 目前在哪一餐的現場點餐時段
+let pickupWindowData = null; // menu API 回傳的取餐時段設定
 let userProfile = null;      // 已綁定的個人資料 {unit,name,phone}，null=尚未設定
 let profileEditing = false;  // 是否正在修改個人資料
 let lastOrderable = {};      // 最近一次 loadMenu 回傳的 orderable 狀態
@@ -568,6 +590,9 @@ async function init() {
   const orderParam = params.get('order');
   if (orderParam) {
     await activateWalkinFromOrder(orderParam);
+  } else {
+    // 用餐時段自助報到（已有今日訂單者，直接帶出報到卡）
+    await checkMealCheckin();
   }
 }
 
@@ -674,6 +699,7 @@ async function loadMenu() {
 
     // 現場點餐欄：依當前時段開放或標示「不適用」
     walkinWindowData = data.walkinWindow || null;
+    pickupWindowData  = data.pickupWindow  || null;
     const _selDate = document.querySelector('input[name="date"]').value || '';
     walkinMealActive = (_selDate === localDateStr()) ? getCurrentWalkinMeal(walkinWindowData) : null;
     const _mL = { breakfast: '早餐', lunch: '中餐', dinner: '晚餐' };
@@ -878,6 +904,102 @@ function showMealConfirmToast({ orderNo, mealLabel, mealItem, unit, name }) {
   document.getElementById('mcLines').innerHTML =
     lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
   document.getElementById('mealConfirmToast').hidden = false;
+}
+
+/** 依本地時間判斷當前是否在取餐時段，是則回傳餐別 key，否則回 null */
+function getCurrentPickupMeal(pw) {
+  if (!pw) return null;
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  for (const meal of ['breakfast', 'lunch', 'dinner']) {
+    const w = pw[meal];
+    if (!w || !w.start || !w.end) continue;
+    const [sh, sm] = w.start.split(':').map(Number);
+    const [eh, em] = w.end.split(':').map(Number);
+    if (nowMin >= sh * 60 + sm && nowMin < eh * 60 + em) return meal;
+  }
+  return null;
+}
+
+function showCheckinMsg(text, isError) {
+  const el = document.getElementById('checkinMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isError ? '#dc2626' : '#15803d';
+  el.hidden = false;
+}
+
+/** 用餐時段開啟時，若該 LINE ID 已有今日訂單，顯示自助報到卡 */
+async function checkMealCheckin() {
+  if (!idToken) return;
+  const currentMeal = getCurrentPickupMeal(pickupWindowData);
+  if (!currentMeal) return;
+
+  let res;
+  try {
+    res = await postJson({ action: 'getMyOrders', idToken, filter: 'today', limit: 10 });
+  } catch (_) { return; }
+  if (!res || !res.ok) return;
+
+  const mealLabels = { breakfast: '早餐', lunch: '中餐', dinner: '晚餐' };
+  const mealLabel  = mealLabels[currentMeal] || currentMeal;
+  const orders     = res.orders || [];
+  const order      = orders.find(o => !o.cancelled && o[currentMeal] && String(o[currentMeal]).trim());
+  if (!order) return;
+
+  const card = document.getElementById('checkinCard');
+  if (!card) return;
+
+  document.getElementById('checkinMealTitle').textContent = `${mealLabel}用餐時段 — 歡迎入場`;
+  document.getElementById('checkinOrderNo').textContent   = `訂單：${order.orderNo}`;
+  const infoLines = [
+    [order.unit, order.name].filter(Boolean).join('　'),
+    `${mealLabel}：${order[currentMeal]}`,
+  ].filter(Boolean);
+  document.getElementById('checkinInfo').innerHTML =
+    infoLines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
+
+  const btn        = document.getElementById('checkinBtn');
+  const pickedKey  = currentMeal + 'Picked';
+  const pickedAtKey = currentMeal + 'PickedAt';
+
+  function markDone(pickedAtText) {
+    btn.textContent = '✅ 已完成領餐';
+    btn.disabled    = true;
+    btn.style.background = '#86efac';
+    btn.style.color      = '#14532d';
+    btn.style.cursor     = 'default';
+    if (pickedAtText) showCheckinMsg(`領餐時間：${pickedAtText}`, false);
+  }
+
+  if (order[pickedKey]) {
+    markDone(order[pickedAtKey] || '');
+  } else {
+    btn.onclick = async () => {
+      btn.disabled    = true;
+      btn.textContent = '處理中…';
+      try {
+        const r = await postJson({ action: 'selfCheckin', idToken });
+        if (r.ok) {
+          markDone('');
+          showCheckinMsg('領餐完成！祝您用餐愉快 🎉', false);
+        } else if (r.reason === 'already_picked') {
+          markDone(r.pickedAt || '');
+          showCheckinMsg(r.error || '已完成領餐', false);
+        } else {
+          btn.disabled    = false;
+          btn.textContent = '確認入場 / 領餐';
+          showCheckinMsg(r.error || '操作失敗，請重試', true);
+        }
+      } catch (_) {
+        btn.disabled    = false;
+        btn.textContent = '確認入場 / 領餐';
+        showCheckinMsg('網路錯誤，請重試', true);
+      }
+    };
+  }
+
+  card.hidden = false;
 }
 
 function escapeHtml(s) {
