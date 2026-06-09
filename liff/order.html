@@ -977,15 +977,38 @@ async function checkMealCheckin() {
   } else {
     btn.onclick = async () => {
       btn.disabled    = true;
+      btn.textContent = '取得位置中…';
+
+      // 嘗試取得 GPS 座標（需位置權限）
+      const payload = { action: 'selfCheckin', idToken };
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject,
+              { timeout: 8000, maximumAge: 10000, enableHighAccuracy: true })
+          );
+          payload.lat = pos.coords.latitude;
+          payload.lng = pos.coords.longitude;
+        } catch (_) { /* 無法取得位置 — 讓後端決定是否拒絕 */ }
+      }
+
       btn.textContent = '處理中…';
       try {
-        const r = await postJson({ action: 'selfCheckin', idToken });
+        const r = await postJson(payload);
         if (r.ok) {
           markDone('');
           showCheckinMsg('領餐完成！祝您用餐愉快 🎉', false);
         } else if (r.reason === 'already_picked') {
           markDone(r.pickedAt || '');
           showCheckinMsg(r.error || '已完成領餐', false);
+        } else if (r.reason === 'out_of_range') {
+          btn.disabled    = false;
+          btn.textContent = '確認入場 / 領餐';
+          showCheckinMsg(`📍 距離用餐地點約 ${r.dist} 公尺（限 ${r.radius} 公尺內）`, true);
+        } else if (r.reason === 'geo_required') {
+          btn.disabled    = false;
+          btn.textContent = '確認入場 / 領餐';
+          showCheckinMsg('請允許瀏覽器存取位置權限，以驗證您在用餐地點附近。', true);
         } else {
           btn.disabled    = false;
           btn.textContent = '確認入場 / 領餐';
