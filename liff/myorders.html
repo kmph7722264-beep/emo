@@ -174,9 +174,16 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ── 渲染訂單列表 ─────────────────────────────────────────────
-function mealPickBadge(picked, pickedAt, abandoned) {
-  if (abandoned) return '<span class="pick-badge pick-abandoned">已棄單</span>';
-  if (picked)    return `<span class="pick-badge pick-ok">已領 ${fmtTime(pickedAt)}</span>`;
+// 各餐棄單截止時間（顯示用，與後端 ABANDONMENT_CUTOFF 一致）
+const ABANDON_CUTOFF_LABEL = { breakfast: '08:00', lunch: '12:30', dinner: '18:00' };
+
+function mealPickBadge(picked, pickedAt, abandoned, mealKey) {
+  if (abandoned) {
+    const cutLabel = ABANDON_CUTOFF_LABEL[mealKey] || '';
+    const tip = cutLabel ? `逾 ${cutLabel} 未領` : '';
+    return `<span class="pick-badge pick-abandoned" title="${tip}">已棄單${cutLabel ? '　' + tip : ''}</span>`;
+  }
+  if (picked) return `<span class="pick-badge pick-ok">已領 ${fmtTime(pickedAt)}</span>`;
   return '<span class="pick-badge pick-pending">未領</span>';
 }
 
@@ -196,7 +203,7 @@ function renderOrder(o) {
     <div class="meal-row-item">
       <span class="meal-tag">${m.tag}</span>
       <span class="meal-item-name">${m.name}</span>
-      ${o.cancelled ? '' : mealPickBadge(m.picked, m.at, m.abandoned)}
+      ${o.cancelled ? '' : mealPickBadge(m.picked, m.at, m.abandoned, m.key)}
     </div>`).join('');
 
   const noteHtml = o.note

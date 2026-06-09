@@ -23,14 +23,32 @@
 
   <div id="adminContent">
 
-  <!-- ▼ 儀表板入口 -->
+  <!-- ▼ 系統儀表板面板（內嵌，使用同一 LIFF session） -->
+  <div id="sysDashPanel" style="display:none;margin-bottom:16px;border:2px solid #0d3b66;border-radius:12px;overflow:hidden">
+    <!-- 標題列 -->
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;background:#0d3b66;color:#fff">
+      <span style="font-weight:700;font-size:14px;flex:1">📊 系統儀表板</span>
+      <span id="sdDate" style="font-size:11px;opacity:.75"></span>
+      <span id="sdMeal" style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);border-radius:999px;padding:2px 8px"></span>
+      <span id="sdCountdown" style="font-size:11px;opacity:.65"></span>
+      <button type="button" id="sdRefreshBtn" title="重新整理"
+        style="all:unset;cursor:pointer;border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:6px;padding:2px 8px;font-size:14px">↺</button>
+      <button type="button" id="sdCloseBtn"
+        style="all:unset;cursor:pointer;color:#fff;font-size:18px;line-height:1;opacity:.8;padding:0 2px">×</button>
+    </div>
+    <!-- 內容 -->
+    <div id="sdBody" style="padding:12px 14px;background:#f8fafc">
+      <div style="text-align:center;color:#6b7280;font-size:13px;padding:16px">載入中…</div>
+    </div>
+  </div>
+
   <div style="margin-bottom:12px;text-align:right">
     <button type="button" id="btnDashboard"
       style="background:#0d3b66;color:#fff;border:0;border-radius:8px;padding:8px 16px;font:600 13px/1 inherit;cursor:pointer">
       📊 系統儀表板
     </button>
   </div>
-  <!-- ▲ 儀表板入口 -->
+  <!-- ▲ 系統儀表板面板 -->
 
   <!-- ▼ 現場點餐儀表板 -->
   <div id="walkinDashboard" class="wk-dashboard">
@@ -1961,16 +1979,191 @@ function showDenied(extraMsg) {
   if (backBtn) backBtn.addEventListener('click', e => { e.preventDefault(); gotoOrderPage(); });
 }
 
-document.getElementById('btnDashboard').addEventListener('click', () => {
-  // 把目前已取得的 idToken 帶入 URL，避免 dashboard 另開頁面時需重新 LIFF auth
-  const base = 'https://kmph7722264-beep.github.io/emo/liff/dashboard.html';
-  const url  = idToken ? base + '?t=' + encodeURIComponent(idToken) : base;
-  if (window.liff && typeof liff.openWindow === 'function') {
-    liff.openWindow({ url, external: false });
-  } else {
-    location.href = url;
+// ── 系統儀表板（內嵌面板）──────────────────────────────────
+(function () {
+  const PICKUP_W = {
+    breakfast: { start: '07:00', end: '08:00' },
+    lunch:     { start: '11:30', end: '12:30' },
+    dinner:    { start: '16:50', end: '18:00' },
+  };
+  const MEAL_META = {
+    breakfast: { label: '早餐', icon: '🌅' },
+    lunch:     { label: '中餐', icon: '☀️' },
+    dinner:    { label: '晚餐', icon: '🌙' },
+  };
+
+  let sdTimer = null, sdCountdownSec = 0;
+
+  function currentMeal() {
+    const now = new Date();
+    const cur = now.getHours() * 60 + now.getMinutes();
+    for (const [k, w] of Object.entries(PICKUP_W)) {
+      const [sh, sm] = w.start.split(':').map(Number);
+      const [eh, em] = w.end.split(':').map(Number);
+      if (cur >= sh * 60 + sm && cur <= eh * 60 + em) return k;
+    }
+    return null;
   }
-});
+
+  function pct(a, b) { return b > 0 ? Math.round(a / b * 100) : 0; }
+
+  function renderDash(orders, counts) {
+    const meal = currentMeal();
+    const todayStr = new Date().toLocaleDateString('sv-SE');
+
+    // 從訂單列表計算待領名單
+    const pending = { breakfast: [], lunch: [], dinner: [] };
+    orders.forEach(o => {
+      if (o.cancelled) return;
+      if (o.breakfast && !o.breakfastPicked && !o.breakfastAbandoned)
+        pending.breakfast.push(o);
+      if (o.lunch && !o.lunchPicked && !o.lunchAbandoned)
+        pending.lunch.push(o);
+      if (o.dinner && !o.dinnerPicked && !o.dinnerAbandoned)
+        pending.dinner.push(o);
+    });
+
+    // 標題列更新
+    document.getElementById('sdDate').textContent = todayStr;
+    const ml = meal ? `${MEAL_META[meal].icon} ${MEAL_META[meal].label}` : '餐間';
+    document.getElementById('sdMeal').textContent = ml;
+
+    // 備料數量
+    const qtyHtml = `
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        ${[
+          ['早餐', counts.breakfast],
+          [`中A`, counts.lunchA],
+          [`中B`, counts.lunchB],
+          [`中C`, counts.lunchC],
+          ['晚餐', counts.dinner],
+          ['現場', counts.walkin],
+        ].map(([l, n]) => `
+          <div style="flex:1;min-width:52px;text-align:center;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:6px 2px">
+            <div style="font-size:20px;font-weight:700">${n || 0}</div>
+            <div style="font-size:10px;color:#6b7280;margin-top:1px">${l}</div>
+          </div>`).join('')}
+      </div>`;
+
+    // 領餐進度（3 個餐別卡）
+    const mealCards = ['breakfast', 'lunch', 'dinner'].map(k => {
+      const m   = MEAL_META[k];
+      const ord = k === 'lunch' ? counts.lunchA + counts.lunchB + counts.lunchC : counts[k] || 0;
+      const pk  = counts[k + 'Picked'] || 0;
+      const ab  = counts[k + 'Abandoned'] || 0; // not in counts; derive from orders
+      // derive from orders for accuracy
+      let ordered = 0, picked = 0, abandoned = 0;
+      orders.forEach(o => {
+        if (o.cancelled) return;
+        const hasMeal = !!o[k];
+        if (!hasMeal) return;
+        ordered++;
+        if (o[k + 'Picked'])    picked++;
+        else if (o[k + 'Abandoned']) abandoned++;
+      });
+      const pendCnt = ordered - picked - abandoned;
+      const p = pct(picked, ordered);
+      const isCur = meal === k;
+      return `
+        <div style="border:${isCur ? '2px solid #22c55e' : '1px solid #e5e7eb'};border-radius:10px;overflow:hidden;flex:1;min-width:0">
+          <div style="padding:7px 10px;font-size:12px;font-weight:700;background:${isCur ? '#dcfce7' : '#f8fafc'}">
+            ${m.icon} ${m.label}${isCur ? ' ◀ 現在' : ''}
+          </div>
+          <div style="padding:8px 10px">
+            <div style="display:flex;gap:4px;margin-bottom:6px;text-align:center">
+              <div style="flex:1;background:#f1f5f9;border-radius:6px;padding:4px 2px">
+                <div style="font-size:16px;font-weight:700">${ordered}</div>
+                <div style="font-size:9px;color:#6b7280">訂購</div>
+              </div>
+              <div style="flex:1;background:#dcfce7;border-radius:6px;padding:4px 2px;color:#166534">
+                <div style="font-size:16px;font-weight:700">${picked}</div>
+                <div style="font-size:9px">已領</div>
+              </div>
+              <div style="flex:1;background:#fff7ed;border-radius:6px;padding:4px 2px;color:#92400e">
+                <div style="font-size:16px;font-weight:700">${pendCnt}</div>
+                <div style="font-size:9px">待領</div>
+              </div>
+            </div>
+            <div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden">
+              <div style="height:100%;width:${p}%;background:#22c55e"></div>
+            </div>
+            <div style="text-align:right;font-size:10px;color:#6b7280;margin-top:2px">${p}%</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // 待領名單（當前時段）
+    const pendList = meal ? pending[meal] : [];
+    let pendHtml = '';
+    if (!meal) {
+      pendHtml = '<div style="color:#6b7280;font-size:12px;padding:8px 0">（目前非取餐時段）</div>';
+    } else if (pendList.length === 0) {
+      pendHtml = '<div style="color:#166534;font-weight:700;font-size:13px;padding:8px 0">✅ 本時段已全數領取！</div>';
+    } else {
+      pendHtml = pendList.map(o => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:12px;border-bottom:1px solid #f1f5f9">
+          <span style="font:700 10px/1 monospace;background:#0d3b66;color:#fff;border-radius:999px;padding:2px 6px;flex-shrink:0">${o.orderNo || '—'}</span>
+          <span style="flex:1">${o.unit || ''} ${o.name || ''}</span>
+          <span style="color:#6b7280">${o[meal] || ''}</span>
+        </div>`).join('');
+    }
+
+    const pendTitle = meal ? `${MEAL_META[meal].icon} ${MEAL_META[meal].label} 待領名單` : '待領名單';
+
+    document.getElementById('sdBody').innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:6px">📦 備料數量</div>
+      ${qtyHtml}
+      <div style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:6px">✅ 領餐進度</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">${mealCards}</div>
+      <div style="border-radius:8px;overflow:hidden;border:1px solid #e5e7eb">
+        <div style="padding:7px 10px;background:#0d3b66;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px">
+          ${pendTitle}
+          ${pendList.length > 0 ? `<span style="background:#ef4444;color:#fff;border-radius:999px;padding:1px 7px;font-size:11px;margin-left:auto">${pendList.length}</span>` : ''}
+        </div>
+        <div>${pendHtml}</div>
+      </div>`;
+  }
+
+  async function loadSysDash() {
+    const todayStr = new Date().toLocaleDateString('sv-SE');
+    try {
+      const data = await postJson({ action: 'stats', idToken, date: todayStr });
+      if (!data.ok) throw new Error(data.error || '載入失敗');
+      renderDash(data.orders || [], data.counts || {});
+    } catch (e) {
+      document.getElementById('sdBody').innerHTML =
+        `<div style="color:#b91c1c;font-size:13px;padding:12px">載入失敗：${e.message}</div>`;
+    }
+  }
+
+  function startSdCycle() {
+    clearInterval(sdTimer);
+    sdCountdownSec = 60;
+    sdTimer = setInterval(() => {
+      sdCountdownSec--;
+      const el = document.getElementById('sdCountdown');
+      if (el) el.textContent = sdCountdownSec + 's';
+      if (sdCountdownSec <= 0) { sdCountdownSec = 60; loadSysDash(); }
+    }, 1000);
+  }
+
+  function openDash() {
+    const panel = document.getElementById('sysDashPanel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    loadSysDash();
+    startSdCycle();
+  }
+
+  function closeDash() {
+    document.getElementById('sysDashPanel').style.display = 'none';
+    clearInterval(sdTimer);
+  }
+
+  document.getElementById('btnDashboard').addEventListener('click', openDash);
+  document.getElementById('sdCloseBtn').addEventListener('click', closeDash);
+  document.getElementById('sdRefreshBtn').addEventListener('click', () => { sdCountdownSec = 60; loadSysDash(); });
+})();
 
 init();
 </script>
