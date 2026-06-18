@@ -234,6 +234,42 @@
   </div>
 </main>
 
+<!-- 內嵌週菜單維護（不另開頁面，沿用管理頁 LIFF 憑證） -->
+<div id="weekMenuPanel" class="week-menu-panel" hidden>
+  <div class="week-menu-inner card">
+    <h1>📅 每週菜單維護</h1>
+    <div class="week-nav">
+      <button type="button" id="wkBtnPrev" class="week-btn">‹ 上週</button>
+      <span id="wkWeekLabel" class="week-label"></span>
+      <button type="button" id="wkBtnNext" class="week-btn">下週 ›</button>
+    </div>
+    <div class="this-week-row">
+      <button type="button" id="wkBtnThisWeek" class="secondary">回本週</button>
+      <button type="button" id="wkBtnImport" class="secondary">📋 貼上匯入</button>
+    </div>
+    <div id="wkDayCards"></div>
+    <div class="save-bar">
+      <button type="button" id="wkBtnSaveAll" disabled>💾 無變更可儲存</button>
+    </div>
+    <div class="push-bar">
+      <button type="button" id="wkBtnPushMenu">📤 傳送本週菜單至廚房群組</button>
+    </div>
+    <p id="wkMsg" class="msg" hidden></p>
+    <p class="footer"><a href="#" id="wkBtnClose">← 回管理頁</a></p>
+  </div>
+  <div id="wkImportOverlay" class="wk-import-overlay hidden">
+    <div class="wk-import-modal">
+      <h2>📋 貼上菜單文字匯入</h2>
+      <textarea id="wkImportText" class="wk-import-ta" placeholder="將菜單文字貼入此處…"></textarea>
+      <p style="margin:0;font-size:12px;color:#6b7280">中餐／晚餐以「/」分隔 A/B/C；日期如「6/8（一）」</p>
+      <div class="btn-row" style="justify-content:flex-end;margin:0">
+        <button type="button" id="wkBtnImportCancel" class="secondary" style="width:auto">取消</button>
+        <button type="button" id="wkBtnImportConfirm" style="width:auto">匯入</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 領餐大通知（手機 + 筆電皆顯示） -->
 <div id="pickupToast" class="pickup-toast" hidden>
   <div class="pickup-toast-card" id="pickupToastCard">
@@ -424,7 +460,107 @@
   .wk-simple + .wk-bd-row {
     justify-content: center; margin-bottom: 4px;
   }
+
+  /* ── 內嵌週菜單維護面板 ── */
+  .week-menu-panel {
+    position: fixed; inset: 0; z-index: 9000;
+    background: #f0f4f8; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .week-menu-panel[hidden] { display: none !important; }
+  .week-menu-inner { max-width: 520px; margin: 0 auto; padding: 16px 14px 28px; }
+  .week-menu-panel .week-nav {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .week-menu-panel .week-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: auto; margin: 0; padding: 8px 14px;
+    border: 1.5px solid var(--line-green); border-radius: 8px;
+    background: #f0fdf4; color: var(--line-green-dark);
+    font: 600 14px/1 inherit; cursor: pointer; flex-shrink: 0;
+  }
+  .week-menu-panel .week-label {
+    flex: 1; text-align: center; font-size: 15px; font-weight: 700;
+  }
+  .week-menu-panel .this-week-row {
+    display: flex; justify-content: center; gap: 10px; margin-bottom: 14px;
+  }
+  .week-menu-panel .this-week-row button {
+    display: inline-flex; width: auto; margin: 0; padding: 7px 20px; font-size: 13px;
+  }
+  .week-menu-panel .day-card {
+    border: 1.5px solid var(--border); border-radius: 12px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .week-menu-panel .day-card.is-today { border-color: var(--line-green); }
+  .week-menu-panel .day-card.is-dirty { border-color: #f59f00; box-shadow: 0 0 0 2px rgba(245,159,0,.12); }
+  .week-menu-panel .day-card.is-past { opacity: 0.78; }
+  .week-menu-panel .day-header {
+    display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+    background: #f8fafc; border-bottom: 1px solid var(--border);
+    font-weight: 700; font-size: 15px;
+  }
+  .week-menu-panel .day-card.is-today .day-header { background: #f0fdf4; }
+  .week-menu-panel .today-badge {
+    display: inline-block; padding: 2px 8px; background: var(--line-green);
+    color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700;
+  }
+  .week-menu-panel .meal-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .week-menu-panel .meal-tag {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px;
+    font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .week-menu-panel .tag-bf { background: #d97706; }
+  .week-menu-panel .tag-la { background: #2563eb; }
+  .week-menu-panel .tag-lb { background: #16a34a; }
+  .week-menu-panel .tag-lc { background: #d97706; }
+  .week-menu-panel .tag-ls { background: #0e7490; }
+  .week-menu-panel .tag-lf { background: #15803d; }
+  .week-menu-panel .tag-ld { background: #0284c7; }
+  .week-menu-panel .tag-da { background: #7c3aed; }
+  .week-menu-panel .tag-db { background: #0891b2; }
+  .week-menu-panel .tag-ds { background: #6d28d9; }
+  .week-menu-panel .tag-df { background: #b45309; }
+  .week-menu-panel .meal-inp {
+    flex: 1; padding: 7px 10px; font-size: 14px;
+    border: 1px solid var(--border); border-radius: 8px; background: #fff;
+  }
+  .week-menu-panel .save-bar { position: sticky; bottom: 12px; z-index: 100; margin-top: 8px; }
+  .week-menu-panel .save-bar button { margin: 0; box-shadow: 0 4px 20px rgba(0,0,0,.2); }
+  .week-menu-panel .push-bar { margin-top: 10px; text-align: center; }
+  .week-menu-panel .push-bar button {
+    display: inline-flex; width: auto; margin: 0; padding: 10px 22px;
+    background: #0d3b66; color: #fff; font-size: 14px; font-weight: 700;
+    border: none; border-radius: 10px; cursor: pointer;
+  }
+  .week-menu-panel .skeleton-card {
+    border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 10px;
+  }
+  .week-menu-panel .skeleton-head { height: 42px; background: #f3f4f6; }
+  .week-menu-panel .skeleton-line {
+    height: 34px; margin: 6px 12px; border-radius: 8px;
+    background: linear-gradient(90deg,#f3f4f6 25%,#e9ecef 50%,#f3f4f6 75%);
+    background-size: 200% 100%; animation: wkShimmer 1.3s infinite;
+  }
+  @keyframes wkShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .week-menu-panel .wk-import-overlay {
+    position: fixed; inset: 0; z-index: 9100; background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .week-menu-panel .wk-import-overlay.hidden { display: none; }
+  .week-menu-panel .wk-import-modal {
+    background: #fff; border-radius: 16px; width: 100%; max-width: 480px;
+    padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .week-menu-panel .wk-import-ta {
+    width: 100%; box-sizing: border-box; height: 200px; padding: 10px;
+    font-size: 13px; border: 1.5px solid var(--border); border-radius: 10px;
+    resize: vertical;
+  }
 </style>
+<script src="lib/menu-week.js?v=20260618b"></script>
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
@@ -494,14 +630,18 @@ async function init() {
     return;
   }
 
-  // 供週菜單維護頁沿用同一 LIFF 登入（避免換頁後 idToken 遺失）
-  sessionStorage.setItem('emoAdminOk', String(Date.now()));
-  sessionStorage.setItem('emoIdToken', idToken);
+  WeekMenu.init({
+    root: document.getElementById('weekMenuPanel'),
+    getIdToken: () => liff.getIDToken() || idToken,
+    postJson,
+    apiUrl: API_URL,
+  });
 
-  // 從每日菜單頁「編輯菜單」經管理 LIFF 導向時，驗證通過後直達週菜單維護
-  if (new URLSearchParams(location.search).get('goto') === 'menu-edit') {
-    window.location.replace('menu-edit.html');
-    return;
+  const openWeekMenu = () => WeekMenu.open();
+  const urlParams = new URLSearchParams(location.search);
+  if (urlParams.get('goto') === 'menu-edit' || urlParams.get('weekMenu') === '1') {
+    history.replaceState(null, '', location.pathname);
+    openWeekMenu();
   }
 
   const today = new Date();
@@ -525,12 +665,7 @@ async function init() {
     if (!d) { showMsg('請選擇日期', true); return; }
     loadMenuForDate(d);
   });
-  document.getElementById('menuEditPageBtn').addEventListener('click', () => {
-    sessionStorage.setItem('emoAdminOk', String(Date.now()));
-    sessionStorage.setItem('emoIdToken', idToken);
-    // 同視窗導航，避免 liff.openWindow 子視窗在 iOS 上 idToken 尚未就緒而誤判無權限
-    window.location.href = 'menu-edit.html';
-  });
+  document.getElementById('menuEditPageBtn').addEventListener('click', openWeekMenu);
   document.getElementById('menuDate').addEventListener('change', () => {
     const d = document.getElementById('menuDate').value;
     if (d) loadMenuForDate(d);
