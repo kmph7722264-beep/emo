@@ -3,15 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="referrer" content="no-referrer">
 <title>雄好築軒智慧用餐 - 管理員</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20260618c">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="lib/menu-week.js?v=20260618c"></script>
+<script>
+window.__emoOpenWeekMenu = function (e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (window.WeekMenu) {
+    WeekMenu.open();
+    return false;
+  }
+  location.href = 'https://liff.line.me/2010095803-1ayMPRJ6?weekMenu=1';
+  return false;
+};
+</script>
 </head>
 <body>
 <main class="card">
   <h1>管理員後台</h1>
-  <p class="hint">僅限白名單管理員。</p>
+  <p class="hint">僅限白名單管理員。<small style="color:#9ca3af">（v20260618c）</small></p>
 
   <div id="denied" class="msg err" hidden>
     <strong>無管理員權限</strong>
@@ -124,7 +139,8 @@
   <h2>每日餐點維護</h2>
   <p class="hint">可指定特定日期；新日期可直接儲存（系統先帶入最近一日的菜單作為基底）。輸入欄可從歷史菜單下拉選或直接打新名稱。</p>
   <div class="btn-row" style="margin-bottom:12px">
-    <button type="button" id="menuEditPageBtn" class="secondary" style="display:inline-flex;width:auto;align-items:center;gap:6px">
+    <button type="button" id="menuEditPageBtn" class="secondary" style="display:inline-flex;width:auto;align-items:center;gap:6px"
+      onclick="return window.__emoOpenWeekMenu(event)">
       📅 週覽一鍵維護
     </button>
   </div>
@@ -237,7 +253,7 @@
 <!-- 內嵌週菜單維護（不另開頁面，沿用管理頁 LIFF 憑證） -->
 <div id="weekMenuPanel" class="week-menu-panel" hidden>
   <div class="week-menu-inner card">
-    <h1>📅 每週菜單維護</h1>
+    <h1>📅 每週菜單維護 <small style="font-size:12px;color:#9ca3af;font-weight:400">內嵌版</small></h1>
     <div class="week-nav">
       <button type="button" id="wkBtnPrev" class="week-btn">‹ 上週</button>
       <span id="wkWeekLabel" class="week-label"></span>
@@ -560,7 +576,6 @@
     resize: vertical;
   }
 </style>
-<script src="lib/menu-week.js?v=20260618b"></script>
 
 <script>
 const LIFF_ID = '2010095803-1ayMPRJ6';
@@ -630,14 +645,28 @@ async function init() {
     return;
   }
 
-  WeekMenu.init({
-    root: document.getElementById('weekMenuPanel'),
-    getIdToken: () => liff.getIDToken() || idToken,
-    postJson,
-    apiUrl: API_URL,
-  });
+  let openWeekMenu = () => {
+    location.href = 'https://liff.line.me/2010095803-1ayMPRJ6?weekMenu=1';
+  };
+  try {
+    if (window.WeekMenu) {
+      WeekMenu.init({
+        root: document.getElementById('weekMenuPanel'),
+        getIdToken: () => liff.getIDToken() || idToken,
+        postJson,
+        apiUrl: API_URL,
+      });
+      openWeekMenu = () => WeekMenu.open();
+      window.__emoOpenWeekMenu = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        WeekMenu.open();
+        return false;
+      };
+    }
+  } catch (e) {
+    console.warn('WeekMenu init failed:', e);
+  }
 
-  const openWeekMenu = () => WeekMenu.open();
   const urlParams = new URLSearchParams(location.search);
   if (urlParams.get('goto') === 'menu-edit' || urlParams.get('weekMenu') === '1') {
     history.replaceState(null, '', location.pathname);

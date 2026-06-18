@@ -2,12 +2,25 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=admin.html?weekMenu=1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>每週菜單維護</title>
-<script>location.replace('admin.html?weekMenu=1');</script>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>導向週菜單維護</title>
+<!-- CACHE_BUST_V4_20260618: 舊版獨立頁已停用，一律導回管理 LIFF -->
+<script>
+(function () {
+  var url = 'https://liff.line.me/2010095803-1ayMPRJ6?weekMenu=1&_=' + Date.now();
+  location.replace(url);
+})();
+</script>
 </head>
 <body>
-<p>正在導向管理頁的週菜單維護…若未自動跳轉請<a href="admin.html?weekMenu=1">按此</a>。</p>
+<p style="font-family:sans-serif;padding:16px">正在導向管理頁週菜單維護…</p>
+<p style="font-family:sans-serif;padding:0 16px"><a id="fallback" href="#">若未自動跳轉請按此</a></p>
+<script>
+document.getElementById('fallback').href =
+  'https://liff.line.me/2010095803-1ayMPRJ6?weekMenu=1&_=' + Date.now();
+</script>
 </body>
 </html>
