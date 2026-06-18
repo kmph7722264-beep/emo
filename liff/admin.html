@@ -494,6 +494,16 @@ async function init() {
     return;
   }
 
+  // 供週菜單維護頁沿用同一 LIFF 登入（避免換頁後 idToken 遺失）
+  sessionStorage.setItem('emoAdminOk', String(Date.now()));
+  sessionStorage.setItem('emoIdToken', idToken);
+
+  // 從每日菜單頁「編輯菜單」經管理 LIFF 導向時，驗證通過後直達週菜單維護
+  if (new URLSearchParams(location.search).get('goto') === 'menu-edit') {
+    window.location.replace('menu-edit.html');
+    return;
+  }
+
   const today = new Date();
   document.getElementById('statsDate').valueAsDate = today;
   document.getElementById('menuDate').valueAsDate  = today;
@@ -516,12 +526,10 @@ async function init() {
     loadMenuForDate(d);
   });
   document.getElementById('menuEditPageBtn').addEventListener('click', () => {
-    const url = 'https://kmph7722264-beep.github.io/emo/liff/menu-edit.html';
-    if (window.liff && typeof liff.openWindow === 'function') {
-      liff.openWindow({ url, external: false });
-    } else {
-      window.location.href = 'menu-edit.html';
-    }
+    sessionStorage.setItem('emoAdminOk', String(Date.now()));
+    sessionStorage.setItem('emoIdToken', idToken);
+    // 同視窗導航，避免 liff.openWindow 子視窗在 iOS 上 idToken 尚未就緒而誤判無權限
+    window.location.href = 'menu-edit.html';
   });
   document.getElementById('menuDate').addEventListener('change', () => {
     const d = document.getElementById('menuDate').value;

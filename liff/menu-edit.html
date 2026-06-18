@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="referrer" content="no-referrer">
 <title>每週菜單維護</title>
-<link rel="stylesheet" href="style.css?v=20260601a">
+<link rel="stylesheet" href="style.css?v=20260618a">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 /* ── Week navigation ── */
@@ -243,7 +243,6 @@
 <script>
 const LIFF_ID  = '2010095803-1ayMPRJ6';
 const API_URL  = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
-const ADMIN_URL = 'https://liff.line.me/2010095803-1ayMPRJ6';
 
 const MEAL_DEFS = [
   { key: '早餐',    label: '早',  cls: 'bf', ph: '例：燒餅油條 / 飯糰' },
@@ -409,6 +408,8 @@ async function loadHistory() {
 async function saveAll() {
   const dirtyCds = [...document.querySelectorAll('.day-card[data-dirty="true"]')];
   if (!dirtyCds.length || loading) return;
+  idToken = liff.getIDToken() || sessionStorage.getItem('emoIdToken') || idToken;
+  if (!idToken) { showMsg('登入憑證已過期，請回管理頁重新進入', true); return; }
   loading = true;
 
   const btn = document.getElementById('btnSaveAll');
@@ -457,6 +458,8 @@ async function saveAll() {
 
 /* ── 傳送菜單至廚房群組 ── */
 async function pushWeeklyMenu() {
+  idToken = liff.getIDToken() || sessionStorage.getItem('emoIdToken') || idToken;
+  if (!idToken) { showMsg('登入憑證已過期，請回管理頁重新進入', true); return; }
   const mondayStr = fmtDate(weekStart);
   const endDate   = new Date(weekStart);
   endDate.setDate(endDate.getDate() + 4);
@@ -504,6 +507,65 @@ async function postJson(payload) {
     body: JSON.stringify(payload),
   });
   return res.json();
+}
+
+async function getIdTokenWithRetry() {
+  for (let i = 0; i < 6; i++) {
+    const token = liff.getIDToken();
+    if (token) {
+      sessionStorage.setItem('emoIdToken', token);
+      return token;
+    }
+    await new Promise(r => setTimeout(r, 300 * (i + 1)));
+  }
+  return sessionStorage.getItem('emoIdToken') || '';
+}
+
+async function ensureIdToken() {
+  idToken = await getIdTokenWithRetry();
+  if (idToken) return idToken;
+  if (liff.isLoggedIn()) {
+    liff.login({ redirectUri: location.href });
+  }
+  return '';
+}
+
+async function probeAdminAccess(token) {
+  const chk = await postJson({ action: 'checkAdmin', idToken: token });
+  if (chk.ok && chk.isAdmin) return true;
+
+  const hist = await postJson({ action: 'menuHistory', idToken: token });
+  if (hist.ok) return true;
+
+  const stats = await postJson({ action: 'stats', idToken: token, date: todayStr() });
+  return !!stats.ok;
+}
+
+async function verifyAdmin() {
+  for (let i = 0; i < 3; i++) {
+    idToken = await getIdTokenWithRetry();
+    if (!idToken) {
+      await new Promise(r => setTimeout(r, 400));
+      continue;
+    }
+    try {
+      if (await probeAdminAccess(idToken)) return true;
+    } catch (_) {}
+    await new Promise(r => setTimeout(r, 500));
+  }
+  return false;
+}
+
+function showDeniedUI() {
+  document.getElementById('dayCards').innerHTML =
+    '<p class="msg err" style="margin:0">無管理員權限，請聯絡系統管理員。<br><small style="font-weight:400">若您剛從管理頁進入，請先按下方返回後再試一次。</small></p>' +
+    '<p style="margin:10px 0 0"><button type="button" class="secondary" id="btnRetryAdmin" style="width:auto;margin:0">↩ 回管理頁重新驗證</button></p>';
+  document.getElementById('btnSaveAll').hidden = true;
+  document.getElementById('btnPushMenu').hidden = true;
+  document.getElementById('btnImport').hidden = true;
+  document.getElementById('btnRetryAdmin')?.addEventListener('click', () => {
+    window.location.href = 'admin.html';
+  });
 }
 
 /* ── 貼上匯入 ── */
@@ -600,20 +662,23 @@ function closeImportModal() { document.getElementById('importOverlay').classList
 async function init() {
   try {
     await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    idToken = liff.getIDToken() || '';
+    await liff.ready;
+    if (!liff.isLoggedIn()) {
+      idToken = sessionStorage.getItem('emoIdToken') || '';
+      if (!idToken) { liff.login({ redirectUri: location.href }); return; }
+    } else {
+      idToken = await ensureIdToken();
+      if (!idToken) return;
+    }
   } catch (e) {
     showMsg('LIFF 初始化失敗：' + e.message, true);
     return;
   }
 
-  // 管理員驗證
+  // 管理員驗證（含重試，避免子視窗或頁面切換後 token 尚未就緒）
   try {
-    const chk = await postJson({ action: 'checkAdmin', idToken });
-    if (!chk.ok || !chk.isAdmin) {
-      document.getElementById('dayCards').innerHTML =
-        '<p class="msg err" style="margin:0">無管理員權限，請聯絡系統管理員。</p>';
-      document.getElementById('btnSaveAll').hidden = true;
+    if (!(await verifyAdmin())) {
+      showDeniedUI();
       return;
     }
   } catch (e) {
@@ -656,11 +721,7 @@ async function init() {
   });
   document.getElementById('backBtn').addEventListener('click', e => {
     e.preventDefault();
-    if (window.liff && typeof liff.openWindow === 'function') {
-      liff.openWindow({ url: ADMIN_URL, external: false });
-    } else {
-      history.back();
-    }
+    window.location.href = 'admin.html';
   });
 }
 
