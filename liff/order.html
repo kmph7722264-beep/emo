@@ -10,10 +10,10 @@
 <meta property="og:title" content="雄好築軒智慧用餐">
 <meta property="og:description" content="線上訂餐、查單、現場點餐一體化服務">
 <title>雄好築軒智慧用餐</title>
-<link rel="stylesheet" href="style.css?v=20260609b">
+<link rel="stylesheet" href="style.css?v=20260907a">
 <script>
 (function(){
-  var V='20260609b';
+  var V='20260907a';
   try { if(localStorage.getItem('orderV')!==V){localStorage.setItem('orderV',V);location.reload(true);} } catch(e){}
 })();
 </script>
@@ -93,6 +93,7 @@
 
     <fieldset>
       <legend>訂購餐點</legend>
+      <p id="menuEmptyHint" class="msg warn" hidden>該日尚未上傳菜單，不會顯示過期餐點。請改選其他日期，或聯絡管理員先上傳當日菜單。</p>
       <div class="form-meal-label">早餐</div>
       <div id="sel-breakfast" class="order-check-group"></div>
       <div class="qty-stepper" id="qty-breakfast" hidden>
@@ -341,6 +342,22 @@
 <script>
 const LIFF_ID = '2010095803-Neg2TBst';
     const API_URL = 'https://script.google.com/macros/s/AKfycbyjoxk4f7EFUE0UR_B7ZxBVFFpJNYqo6_f8ZDYyBBkjtfr04fmzqLAxi9RpdsyhyYh15g/exec';
+
+/** 只取該日實際寫入的菜名；未上傳不帶出過期菜單。晚餐A 相容後端「晚餐」欄。 */
+function menuNameFromApi(data, key) {
+  if (!data || !data.menu) return '';
+  if (data.uploaded === false) return '';
+  const pick = k => {
+    if (data.explicit && data.explicit[k] === false) return '';
+    if (data.explicit && data.explicit[k] === true) return String(data.menu[k] || '');
+    return '';
+  };
+  if (key === '晚餐A' || key === '晚餐') return pick('晚餐A') || pick('晚餐') || '';
+  if (data.explicit && Object.prototype.hasOwnProperty.call(data.explicit, key)) {
+    return data.explicit[key] ? String(data.menu[key] || '') : '';
+  }
+  return String(data.menu[key] || '');
+}
 
 // 停止受理時間（今日訂單前端補強，後端仍為最終關卡）
 const ORDER_CUTOFF = { breakfast: '08:30', lunch: '13:00', dinner: '18:30' };
@@ -622,7 +639,7 @@ async function loadMenu() {
       const parts = [];
       let validCount = 0, capFullCount = 0;
       for (const { key, prefix, bookedKey } of items) {
-        const menuName = data.menu[key] || '';
+        const menuName = menuNameFromApi(data, key);
         if (!menuName) continue;
         validCount++;
         const baseLabel = (prefix || '') + menuName;
@@ -665,7 +682,7 @@ async function loadMenu() {
 
       wrap.innerHTML = parts.length
         ? parts.join('')
-        : '<span class="no-menu-text">今日無此餐</span>';
+        : `<span class="no-menu-text">${data.uploaded === false ? '該日尚未上傳菜單' : '今日無此餐'}</span>`;
     }
 
     rebuildMeal('breakfast', [{ key: '早餐',  prefix: '',      bookedKey: 'breakfast' }]);
@@ -694,8 +711,11 @@ async function loadMenu() {
         el.hidden = true;
       }
     }
-    updateAddon('lunch-addon',  data.menu['中餐湯品'] || '', data.menu['中餐飲品'] || '', data.menu['中餐水果'] || '');
-    updateAddon('dinner-addon', data.menu['晚餐湯品'] || '', '', data.menu['晚餐水果'] || '');
+    updateAddon('lunch-addon',  menuNameFromApi(data, '中餐湯品'), menuNameFromApi(data, '中餐飲品'), menuNameFromApi(data, '中餐水果'));
+    updateAddon('dinner-addon', menuNameFromApi(data, '晚餐湯品'), '', menuNameFromApi(data, '晚餐水果'));
+
+    const emptyHint = document.getElementById('menuEmptyHint');
+    if (emptyHint) emptyHint.hidden = data.uploaded !== false;
 
     // 現場點餐欄：依當前時段開放或標示「不適用」
     walkinWindowData = data.walkinWindow || null;

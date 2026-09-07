@@ -468,3 +468,6 @@ button.danger:hover:not(:disabled) {
   font-size: 13px;
   padding: 6px 2px;
 }
+#menuEmptyHint {
+  margin: 0 0 10px;
+}

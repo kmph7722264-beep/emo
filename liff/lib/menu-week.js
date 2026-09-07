@@ -36,6 +36,22 @@ window.WeekMenu = (function () {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
   function pad(n) { return String(n).padStart(2, '0'); }
+
+  /** 只取該日實際寫入的菜名；未上傳不帶出過期菜單。晚餐A 相容後端「晚餐」欄。 */
+  function menuName(data, key) {
+    if (!data || !data.menu) return '';
+    if (data.uploaded === false) return '';
+    const pick = k => {
+      if (data.explicit && data.explicit[k] === false) return '';
+      if (data.explicit && data.explicit[k] === true) return String(data.menu[k] || '');
+      return '';
+    };
+    if (key === '晚餐A' || key === '晚餐') return pick('晚餐A') || pick('晚餐') || '';
+    if (data.explicit && Object.prototype.hasOwnProperty.call(data.explicit, key)) {
+      return data.explicit[key] ? String(data.menu[key] || '') : '';
+    }
+    return String(data.menu[key] || '');
+  }
   function getWeekStart(ref) {
     const d = new Date(ref); d.setHours(0, 0, 0, 0);
     const day = d.getDay();
@@ -142,9 +158,10 @@ window.WeekMenu = (function () {
       try {
         const res = await fetch(`${apiUrl}?action=menu&date=${date}`);
         const data = await res.json();
-        const menu = (data.ok && data.menu) ? data.menu : {};
+        const uploaded = !!(data && data.ok && data.uploaded !== false);
+        card.classList.toggle('is-unset', data && data.ok && data.uploaded === false);
         card.querySelectorAll('.meal-inp').forEach(inp => {
-          const v = menu[inp.dataset.meal] || '';
+          const v = (data && data.ok && uploaded) ? menuName(data, inp.dataset.meal) : '';
           inp.value = v;
           inp.dataset.orig = v;
         });
@@ -190,6 +207,7 @@ window.WeekMenu = (function () {
       const date = card.dataset.date;
       const menu = {};
       card.querySelectorAll('.meal-inp').forEach(inp => { menu[inp.dataset.meal] = inp.value.trim(); });
+      if (menu['晚餐A'] !== undefined && menu['晚餐'] === undefined) menu['晚餐'] = menu['晚餐A'];
       try {
         const data = await postJson({ action: 'updateMenu', idToken, date, menu });
         return { card, ok: !!data.ok, error: data.error };
